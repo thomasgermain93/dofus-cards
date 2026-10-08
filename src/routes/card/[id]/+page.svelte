@@ -74,7 +74,7 @@
 
 	<div class="flex flex-col gap-4 min-w-0">
 		<div>
-			<p class="footnote font-bold" style="color: color-mix(in srgb, {rarityColor(c.rarity)} 60%, var(--label))">{RARITY[c.rarity].name}</p>
+			<p class="footnote font-bold" style="color: color-mix(in srgb, {rarityColor(c.rarity)} 40%, var(--label))">{RARITY[c.rarity].name}</p>
 			<h1 class="large-title">{data.owned ? c.name : 'Carte manquante'}</h1>
 			<p class="text-label-2">{c.subtype}{c.category !== 'class' ? `, niveau ${c.level}` : ''}</p>
 		</div>

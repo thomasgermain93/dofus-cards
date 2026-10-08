@@ -61,7 +61,7 @@
 		<header>
 			<div class="titles">
 				<span class="type">{typeLabel(card)}</span>
-				<h3 title={missing ? undefined : card.name}>{missing ? '???' : card.name}</h3>
+				<p class="name" title={missing ? undefined : card.name}>{missing ? '???' : card.name}</p>
 			</div>
 			{#if foil && !missing}<span class="foil-tag" title="Carte brillante"><Icon name="sparkles" size={12} fill /></span>{/if}
 			<span class="gem" title={r.name}><span>{r.code}</span></span>
@@ -171,7 +171,7 @@
 		letter-spacing: 0.04em;
 		color: var(--card-ink-2);
 	}
-	h3 {
+	.name {
 		margin: 0;
 		font-size: 7.6cqw;
 		line-height: 1.12;
@@ -349,7 +349,7 @@
 
 	/* Grandes cartes : le nom peut tenir sur 2 lignes */
 	@container (min-width: 260px) {
-		h3 {
+		.name {
 			white-space: normal;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
@@ -369,7 +369,7 @@
 		.short {
 			display: inline;
 		}
-		h3 {
+		.name {
 			font-size: 8.6cqw;
 		}
 		.type {
