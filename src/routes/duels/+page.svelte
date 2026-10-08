@@ -21,12 +21,12 @@
 
 <svelte:head><title>Duels</title></svelte:head>
 
-<h1 class="large-title mb-1">Duels</h1>
+<h1 class="large-title mb-1">Jouer</h1>
 <nav class="segmented my-3">
 	<a href="/duels" aria-current="page">Duels</a>
 	<a href="/battle">Bataille de groupe</a>
 </nav>
-<p class="text-label-2 mb-4">{data.stats.wins ?? 0} victoire{(data.stats.wins ?? 0) > 1 ? 's' : ''} sur {data.stats.played} duel{data.stats.played > 1 ? 's' : ''}</p>
+<p class="text-label-2 mb-4">{data.stats.played ? `${data.stats.wins ?? 0} victoire${(data.stats.wins ?? 0) > 1 ? 's' : ''} sur ${data.stats.played} duel${data.stats.played > 1 ? 's' : ''}` : 'Lance ton premier duel : l’entraînement contre l’ordinateur est parfait pour commencer.'}</p>
 
 <div class="grid grid-cols-2 gap-3 mb-5">
 	<a href="/duels/new" class="action"><span class="ic bg-a"><Icon name="swords" size={24} /></span><span class="headline">Défier un ami</span><span class="footnote text-label-2">Chacun répond à son rythme</span></a>

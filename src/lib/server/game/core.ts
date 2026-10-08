@@ -45,6 +45,8 @@ export interface UserRow {
 	title: string | null;
 	streak_best: number;
 	joker_week: string | null;
+	hunt_day?: string | null;
+	onboarding?: string;
 	created_at: number;
 }
 

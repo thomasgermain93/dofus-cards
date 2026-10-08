@@ -74,7 +74,12 @@
 			</div>
 		</a>
 	{:else}
-		<p class="text-label-2 text-center py-10 col-span-full">Aucune enchère ici pour le moment.</p>
+		<div class="empty col-span-full">
+			<Icon name="gavel" size={36} />
+			<p class="headline">{data.tab === 'all' ? 'Aucune enchère en cours' : 'Rien ici pour le moment'}</p>
+			<p class="footnote">Mets une carte en vente depuis sa fiche, ou ajoute des cartes à ta liste de souhaits pour être prévenu.</p>
+			<a class="btn btn-secondary btn-sm" href="/album?own=dupes">Mes doublons</a>
+		</div>
 	{/each}
 </div>
 

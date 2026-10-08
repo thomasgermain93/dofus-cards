@@ -32,7 +32,12 @@
 			</div>
 		</div>
 	{:else}
-		<p class="text-label-2 text-center py-10 col-span-full">Ta liste est vide. Sur la fiche d'une carte, touche « Souhaiter ».</p>
+		<div class="empty col-span-full">
+			<Icon name="star" size={36} />
+			<p class="headline">Ta liste est vide</p>
+			<p class="footnote">Sur la fiche d'une carte manquante, touche « Souhaiter cette carte ».</p>
+			<a class="btn btn-secondary btn-sm" href="/album?own=missing">Voir les cartes manquantes</a>
+		</div>
 	{/each}
 </div>
 

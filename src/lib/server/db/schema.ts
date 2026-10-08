@@ -376,6 +376,11 @@ export const MIGRATIONS: string[] = [
 		PRIMARY KEY (user_id, card_id, tag)
 	);
 	CREATE INDEX card_tags_tag ON card_tags(user_id, tag);
+	`,
+	/* 6 : premières minutes (tutoriel, objectifs de bienvenue) et chasse aux cartes */ `
+	ALTER TABLE users ADD COLUMN onboarding TEXT NOT NULL DEFAULT 'done'; -- active | done | skipped
+	ALTER TABLE users ADD COLUMN onboarding_flags TEXT NOT NULL DEFAULT '[]';
+	ALTER TABLE users ADD COLUMN hunt_day TEXT;
 	`
 ];
 export function migrate(db: Database.Database) {

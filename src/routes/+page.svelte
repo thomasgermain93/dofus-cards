@@ -35,12 +35,15 @@
 
 	type Todo = { key: string; icon: string; text: string; action?: string; href?: string };
 	const R = $derived((data as { retention?: RetentionSummary }).retention ?? null);
-	const BOOSTER_KINDS = ['bronze', 'silver', 'gold'] as const;
-	const boosterTotal = $derived(R ? R.boosters.bronze + R.boosters.silver + R.boosters.gold : 0);
+	const BOOSTER_KINDS = ['welcome', 'bronze', 'silver', 'gold'] as const;
+	const boosterTotal = $derived(R ? R.boosters.bronze + R.boosters.silver + R.boosters.gold + R.boosters.welcome : 0);
+	const starter = $derived(R ? R.quests.filter((q) => q.period === 'starter' && !q.claimed_at) : []);
+	const ev = $derived(page.data.event as { name: string; description: string; end: number } | null);
 	const dailyQuests = $derived(R ? R.quests.filter((q) => q.period === 'day') : []);
 	const todo: Todo[] = $derived(
 		R
 			? ([
+					R.boosters.welcome ? { key: 'welcome', icon: 'gift', text: 'Ouvre ton booster de bienvenue', action: 'welcome' } : null,
 					me && me.packs > 0 ? { key: 'packs', icon: 'package', text: `${me.packs} paquet${me.packs > 1 ? 's' : ''} prêt${me.packs > 1 ? 's' : ''}`, action: 'open' } : null,
 					boosterTotal ? { key: 'boosters', icon: 'sparkles', text: `${boosterTotal} booster${boosterTotal > 1 ? 's' : ''} bonus à ouvrir`, href: '#boosters' } : null,
 					R.daily.available ? { key: 'daily', icon: 'gift', text: `Récompense du jour ${R.daily.todayIndex} / 7`, href: '#streak' } : null,
@@ -121,7 +124,11 @@
 	<section class="now group mb-4" data-testid="now">
 		<h2 class="headline px-4 pt-4 pb-1">Maintenant</h2>
 		{#each todo as t (t.key)}
-			{#if t.action === 'open'}
+			{#if t.action === 'welcome'}
+				<button class="cell w-full text-left bg-transparent border-0 cursor-pointer" onclick={() => openPack('welcome')} disabled={opening} data-testid="open-welcome-now">
+					<span class="dot-ic"><Icon name={t.icon} size={18} /></span><span class="flex-1 font-semibold">{t.text}</span><span class="btn btn-sm">Ouvrir</span>
+				</button>
+			{:else if t.action === 'open'}
 				<button class="cell w-full text-left bg-transparent border-0 cursor-pointer" onclick={() => openPack()} disabled={opening}>
 					<span class="dot-ic"><Icon name={t.icon} size={18} /></span><span class="flex-1 font-semibold">{t.text}</span><span class="btn btn-sm">Ouvrir</span>
 				</button>
@@ -138,6 +145,23 @@
 			Nouvelles quêtes dans {duration(R.nextMidnight - R.now)}.
 		</p>
 	</section>
+
+	{#if ev}
+		<a class="event mb-4" href="#paquets" data-testid="event">
+			<span class="ev-ic"><Icon name="sparkles" size={22} fill /></span>
+			<span class="flex-1 min-w-0">
+				<span class="block font-bold">{ev.name}</span>
+				<span class="block footnote">{ev.description} Encore {duration(ev.end - R.now)}.</span>
+			</span>
+		</a>
+	{/if}
+
+	{#if starter.length}
+		<section class="mb-4" data-testid="starter">
+			<h2 class="section-label">Objectifs de bienvenue (3 premiers jours)</h2>
+			<QuestList quests={starter} />
+		</section>
+	{/if}
 
 	<div class="dash">
 		<!-- Paquets -->
@@ -370,6 +394,26 @@
 		gap: 8px;
 	}
 
+	.event {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-lg);
+		background: var(--pack-gold);
+		color: var(--on-gold);
+		text-decoration: none;
+		box-shadow: var(--shadow-card);
+	}
+	.ev-ic {
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		display: grid;
+		place-items: center;
+		background: rgba(255, 255, 255, 0.45);
+		flex: none;
+	}
 	.dot-ic {
 		width: 32px;
 		height: 32px;
@@ -419,6 +463,9 @@
 	}
 	.b-silver::before {
 		background: var(--pack-silver);
+	}
+	.b-welcome::before {
+		background: var(--pack-welcome);
 	}
 	.b-gold::before {
 		background: var(--pack-gold);

@@ -8,12 +8,12 @@
 
 <svelte:head><title>Bataille de groupe</title></svelte:head>
 
-<h1 class="large-title mb-1">Bataille de groupe</h1>
-<p class="text-label-2 mb-4">De 3 à 50 joueurs sur les mêmes questions Dofus. Chacun amène 3 cartes, 15 secondes par question, plus de points quand peu de joueurs trouvent.</p>
-<nav class="segmented mb-4">
+<h1 class="large-title mb-1">Jouer</h1>
+<nav class="segmented my-3">
 	<a href="/duels">Duels</a>
 	<a href="/battle" aria-current="page">Bataille de groupe</a>
 </nav>
+<p class="text-label-2 mb-4">De 3 à 50 joueurs sur les mêmes questions Dofus. Chacun amène 3 cartes, 15 secondes par question, plus de points quand peu de joueurs trouvent.</p>
 {#if form?.error}<p class="alert alert-error mb-3">{form.error}</p>{/if}
 
 <div class="grid gap-3 sm:grid-cols-2 mb-5">

@@ -2,6 +2,7 @@ import type { DB } from '../db';
 import type { BoosterKind } from './constants';
 import { addKamas, assert, notify } from './core';
 import { brusselsDay, brusselsWeek } from './time';
+import { STARTER_LABELS } from './starter';
 
 /**
  * Quêtes du jour (3, renouvelées à minuit à Bruxelles) et de la semaine (3,
@@ -87,7 +88,7 @@ export function pickQuests(pool: QuestDef[], count: number, seed: string, first?
 
 export interface QuestRow {
 	id: number;
-	period: 'day' | 'week';
+	period: 'day' | 'week' | 'starter';
 	period_key: string;
 	code: string;
 	event: QuestEvent;
@@ -109,8 +110,11 @@ export function ensureQuests(db: DB, userId: number, now = Date.now()) {
 	);
 	const has = (period: string, key: string) =>
 		!!db.prepare('SELECT 1 FROM quests WHERE user_id = ? AND period = ? AND period_key = ? LIMIT 1').get(userId, period, key);
+	// Nouveaux joueurs (3 premiers jours) : « Ouvrir 3 paquets » est toujours proposé (étape du tutoriel)
+	const createdAt = (db.prepare('SELECT created_at FROM users WHERE id = ?').get(userId) as { created_at: number } | undefined)?.created_at ?? 0;
+	const newbie = now - createdAt < 3 * 86_400_000;
 	if (!has('day', day))
-		for (const q of pickQuests(DAILY_POOL, DAILY_COUNT, `${userId}:${day}`))
+		for (const q of pickQuests(DAILY_POOL, DAILY_COUNT, `${userId}:${day}`, newbie ? 'd-pack-3' : undefined))
 			ins.run(userId, 'day', day, q.code, q.event, q.target, q.kamas, q.fragments ?? 0, q.booster ?? null);
 	if (!has('week', week))
 		for (const q of pickQuests(WEEKLY_POOL, WEEKLY_COUNT, `${userId}:${week}`, 'w-quests-10'))
@@ -121,9 +125,9 @@ export function ensureQuests(db: DB, userId: number, now = Date.now()) {
 export function listQuests(db: DB, userId: number, now = Date.now()) {
 	const { day, week } = ensureQuests(db, userId, now);
 	const rows = db
-		.prepare('SELECT * FROM quests WHERE user_id = ? AND ((period = ? AND period_key = ?) OR (period = ? AND period_key = ?)) ORDER BY period, id')
+		.prepare("SELECT * FROM quests WHERE user_id = ? AND ((period = ? AND period_key = ?) OR (period = ? AND period_key = ?) OR period = 'starter') ORDER BY period, id")
 		.all(userId, 'day', day, 'week', week) as QuestRow[];
-	const label = (code: string) => [...DAILY_POOL, ...WEEKLY_POOL].find((q) => q.code === code)?.label ?? code;
+	const label = (code: string) => [...DAILY_POOL, ...WEEKLY_POOL].find((q) => q.code === code)?.label ?? STARTER_LABELS[code] ?? code;
 	return rows.map((r) => ({ ...r, label: label(r.code), done: r.progress >= r.target }));
 }
 
@@ -134,7 +138,7 @@ export function track(db: DB, userId: number, event: QuestEvent, amount = 1, now
 	const rows = db
 		.prepare(
 			`SELECT id, code, progress, target, notified FROM quests WHERE user_id = ? AND event = ? AND claimed_at IS NULL
-			 AND ((period = 'day' AND period_key = ?) OR (period = 'week' AND period_key = ?))`
+			 AND ((period = 'day' AND period_key = ?) OR (period = 'week' AND period_key = ?) OR period = 'starter')`
 		)
 		.all(userId, event, day, week) as { id: number; code: string; progress: number; target: number; notified: number }[];
 	const upd = db.prepare('UPDATE quests SET progress = ?, notified = ? WHERE id = ?');
@@ -144,7 +148,7 @@ export function track(db: DB, userId: number, event: QuestEvent, amount = 1, now
 		const done = p >= r.target;
 		upd.run(p, done ? 1 : r.notified, r.id);
 		if (done && !r.notified) {
-			const label = [...DAILY_POOL, ...WEEKLY_POOL].find((q) => q.code === r.code)?.label ?? 'Quête';
+			const label = [...DAILY_POOL, ...WEEKLY_POOL].find((q) => q.code === r.code)?.label ?? STARTER_LABELS[r.code] ?? 'Quête';
 			notify(db, userId, 'quest', `Quête terminée : ${label}. Viens récupérer ta récompense !`, '/quests', now);
 		}
 	}
@@ -172,7 +176,7 @@ export function claimQuest(db: DB, userId: number, questId: number, now = Date.n
 		assert(q.claimed_at == null, 'Récompense déjà récupérée.');
 		assert(q.progress >= q.target, 'Quête pas encore terminée.');
 		const { day, week } = ensureQuests(db, userId, now);
-		assert(q.period_key === (q.period === 'day' ? day : week), 'Cette quête a expiré.');
+		assert(q.period === 'starter' || q.period_key === (q.period === 'day' ? day : week), 'Cette quête a expiré.');
 		db.prepare('UPDATE quests SET claimed_at = ? WHERE id = ?').run(now, questId);
 		if (q.reward_kamas) addKamas(db, userId, q.reward_kamas, `quest:${q.code}`, now);
 		if (q.reward_fragments) addFragments(db, userId, q.reward_fragments);

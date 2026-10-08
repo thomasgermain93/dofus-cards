@@ -13,7 +13,8 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"import:dofusdb": "node scripts/import-dofusdb.ts",
-		"user:create": "node scripts/create-user.ts"
+		"user:create": "node scripts/create-user.ts",
+		"images:webp": "node scripts/images-webp.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^6.0.0",
@@ -38,6 +39,7 @@
 	"dependencies": {
 		"@node-rs/argon2": "^2.2.2",
 		"better-sqlite3": "^13.0.3",
+		"sharp": "^0.35.5",
 		"web-push": "^3.6.7"
 	}
 }

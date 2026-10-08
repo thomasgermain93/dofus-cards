@@ -8,6 +8,9 @@ import { version } from '$app/env';
 
 const APP = `app-${version}`;
 const IMG = 'card-images-v1';
+const PAGES = 'pages-v1';
+/** Pages consultables hors ligne (lecture seule) : album, fiches, collections, accueil */
+const OFFLINE_PREFIXES = ['/album', '/card/', '/collections', '/u/'];
 const ASSETS = [...immutable, ...assets].map((f) => '/' + f.path.replace(/^\//, '')).filter((f) => !f.endsWith('.webmanifest'));
 
 sw.addEventListener('install', (event) => {
@@ -18,7 +21,7 @@ sw.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches
 			.keys()
-			.then((keys) => Promise.all(keys.filter((k) => k !== APP && k !== IMG).map((k) => caches.delete(k))))
+			.then((keys) => Promise.all(keys.filter((k) => k !== APP && k !== IMG && k !== PAGES).map((k) => caches.delete(k))))
 			.then(() => sw.clients.claim())
 	);
 });
@@ -46,7 +49,18 @@ sw.addEventListener('fetch', (event) => {
 			})
 		);
 	}
-	// Pages et données : toujours le réseau (contenu propre à chaque joueur)
+	// Album, fiches, collections : réseau d'abord, copie gardée pour la lecture hors ligne
+	if (OFFLINE_PREFIXES.some((p) => url.pathname === p || url.pathname.startsWith(p)) || url.pathname === '/' || url.pathname === '/__data.json') {
+		event.respondWith(
+			fetch(req)
+				.then((res) => {
+					if (res.ok && res.type === 'basic') caches.open(PAGES).then((c) => c.put(req, res.clone()));
+					return res;
+				})
+				.catch(async () => (await caches.match(req)) ?? new Response('<!doctype html><meta charset="utf-8"><title>Hors ligne</title><body style="font-family:-apple-system,sans-serif;padding:40px;text-align:center"><h1>Hors ligne</h1><p>Cette page n’a pas encore été consultée. Ton album reste lisible sur les pages déjà ouvertes.</p>', { headers: { 'content-type': 'text/html; charset=utf-8' }, status: 503 }))
+		);
+	}
+	// Le reste (actions, marché, duels) : toujours le réseau
 });
 
 // Clic sur une notification : ouvrir le jeu
@@ -78,4 +92,9 @@ sw.addEventListener('push', (event) => {
 			data: { url: data.url ?? '/' }
 		})
 	);
+});
+
+// À la déconnexion : on oublie les pages gardées hors ligne (appareil partagé)
+sw.addEventListener('message', (event) => {
+	if (event.data === 'clear-pages') event.waitUntil(caches.delete(PAGES));
 });

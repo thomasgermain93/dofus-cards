@@ -23,14 +23,31 @@ export const XP = { pack: 5, newCard: 2, duelWin: 30, duelLoss: 10, duelDraw: 15
 
 /* ---------------- Rétention (boucle 2) ---------------- */
 
-export type BoosterKind = 'bronze' | 'silver' | 'gold';
+export type BoosterKind = 'bronze' | 'silver' | 'gold' | 'welcome';
 
 /** Boosters bonus (jamais achetables) : rareté minimale de la 5e carte et multiplicateur des chances Rare+. */
 export const BOOSTERS: Record<BoosterKind, { name: string; minLast: number; boost: number; shiny: boolean }> = {
 	bronze: { name: 'Booster Bronze', minLast: 2, boost: 1, shiny: false },
 	silver: { name: 'Booster Argent', minLast: 3, boost: 1.6, shiny: false },
-	gold: { name: 'Booster Or', minLast: 4, boost: 2.2, shiny: true }
+	gold: { name: 'Booster Or', minLast: 4, boost: 2.2, shiny: true },
+	welcome: { name: 'Booster de bienvenue', minLast: 2, boost: 1.5, shiny: false }
 };
+
+/** Événement temporaire (idée Ankama « extension ») : raretés boostées et cartes mises en avant. */
+export const EVENT = {
+	key: 'semaine-dofus-2026',
+	name: 'Semaine des Dofus',
+	description: 'Toute la semaine, chaque paquet a 1 chance sur 6 de remplacer sa dernière carte par un Dofus ou une Prysmaradite.',
+	start: Date.UTC(2026, 9, 8, 22), // 9 octobre 00:00 à Bruxelles
+	end: Date.UTC(2026, 9, 18, 22), // 19 octobre 00:00 à Bruxelles
+	chance: 1 / 6,
+	subtypes: ['Dofus', 'Prysmaradite']
+};
+export const eventActive = (now = Date.now()) => now >= EVENT.start && now < EVENT.end;
+
+/** Récompenses des premières minutes. */
+export const ONBOARDING_REWARD = { kamas: 200, fragments: 60 };
+export const HUNT_REWARD = { kamas: 30, fragments: 25 };
 
 /** Calendrier de la série de connexion (7 jours, puis on recommence). +1 paquet gratuit chaque jour. */
 export const DAILY_CALENDAR: { kamas: number; fragments?: number; booster?: BoosterKind }[] = [

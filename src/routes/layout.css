@@ -186,8 +186,14 @@ body {
 		text-decoration: none;
 	}
 	.btn:active {
-		transform: scale(0.97);
-		opacity: 0.85;
+		transform: scale(0.96);
+		opacity: 0.88;
+		transition-duration: 80ms;
+	}
+	@media (hover: hover) {
+		.btn:hover {
+			filter: brightness(1.06);
+		}
 	}
 	.btn:disabled {
 		opacity: 0.4;
@@ -327,6 +333,56 @@ body {
 		background: var(--success-soft);
 		color: var(--success);
 	}
+}
+
+/* Transitions de page façon iOS : la nouvelle page glisse depuis la droite (retour : depuis la gauche) */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.32s;
+	animation-timing-function: var(--ease-ios);
+}
+::view-transition-old(root) {
+	animation-name: vt-out;
+}
+::view-transition-new(root) {
+	animation-name: vt-in;
+}
+html[data-nav='back']::view-transition-old(root) {
+	animation-name: vt-out-back;
+}
+html[data-nav='back']::view-transition-new(root) {
+	animation-name: vt-in-back;
+}
+@keyframes vt-in {
+	from {
+		transform: translateX(24px);
+		opacity: 0;
+	}
+}
+@keyframes vt-out {
+	to {
+		transform: translateX(-12px);
+		opacity: 0;
+	}
+}
+@keyframes vt-in-back {
+	from {
+		transform: translateX(-24px);
+		opacity: 0;
+	}
+}
+@keyframes vt-out-back {
+	to {
+		transform: translateX(12px);
+		opacity: 0;
+	}
+}
+/* La barre du haut et les onglets restent en place pendant la transition */
+.topbar {
+	view-transition-name: topbar;
+}
+.tabbar {
+	view-transition-name: tabbar;
 }
 
 /* Focus clavier visible partout, jamais pour la souris */

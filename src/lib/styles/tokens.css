@@ -137,6 +137,7 @@
 	--pack-bronze: linear-gradient(160deg, #6b3a12 0%, #c77d3a 50%, #8a4a1c 100%);
 	--pack-silver: linear-gradient(160deg, #3b4450 0%, #aab4c0 50%, #5c6672 100%);
 	--pack-gold: linear-gradient(160deg, #7a5200 0%, #f5c842 50%, #b07800 100%);
+	--pack-welcome: linear-gradient(160deg, #0f766e 0%, #34d399 50%, #0ea5e9 100%);
 
 	/* ---------- Formes ---------- */
 	--radius-card: 20px;

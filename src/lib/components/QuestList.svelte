@@ -55,6 +55,22 @@
 	.quest {
 		align-items: center;
 	}
+	.claimed .ring {
+		background: var(--success);
+		color: white;
+		animation: tick 0.5s var(--ease-ios);
+	}
+	@keyframes tick {
+		0% {
+			transform: scale(0.6);
+		}
+		60% {
+			transform: scale(1.18);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
 	.claimed .font-semibold {
 		color: var(--label-2);
 		text-decoration: line-through;

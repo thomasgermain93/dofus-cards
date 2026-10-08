@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { getDb } from '#lib/server/db';
 import { createSession, createUser, SESSION_COOKIE } from '#lib/server/auth';
 import { GameError } from '#lib/server/game/core';
+import { startOnboarding } from '#lib/server/game/onboarding';
 import { rateLimit } from '#lib/server/moderation';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,6 +22,7 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 			const id = await createUser(db, username, password);
+			startOnboarding(db, id);
 			const s = createSession(db, id);
 			cookies.set(SESSION_COOKIE, s.token, { path: '/', httpOnly: true, sameSite: 'lax', secure: url.protocol === 'https:' || process.env.NODE_ENV === 'production', expires: s.expires });
 		} catch (e) {

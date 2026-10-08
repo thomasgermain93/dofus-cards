@@ -4,7 +4,7 @@ import { nextStreak, calendarDay, claimDaily, chestStatus, claimChest } from '..
 import { ensureQuests, listQuests, track, claimQuest, pickQuests, DAILY_POOL } from '../game/quests';
 import { craftCard, sellCards } from '../game/collection';
 import { allCollections, claimCollection, userCollections } from '../game/collections';
-import { openPack, boosterCounts } from '../game/packs';
+import { openPack, boosterCounts, givePacks } from '../game/packs';
 import { addBooster } from '../game/quests';
 import { CRAFT_COSTS, RECYCLE_VALUES, SELL_VALUES, SHINY_VALUE_MULT, DAILY_CALENDAR } from '../game/constants';
 import { seededRng } from '../game/rng';
@@ -55,7 +55,7 @@ describe('série de connexion', () => {
 			total += DAILY_CALENDAR[d].kamas;
 		}
 		expect(kamas(db, u)).toBe(total);
-		expect(boosterCounts(db, u)).toEqual({ bronze: 1, silver: 1, gold: 1 });
+		expect(boosterCounts(db, u)).toEqual({ bronze: 1, silver: 1, gold: 1, welcome: 0 });
 		expect(claimDaily(db, u, t0 + 7 * D).day).toBe(1);
 	});
 });
@@ -186,5 +186,65 @@ describe('collections', () => {
 		expect(kamas(db, u)).toBe(r.kamas);
 		expect((db.prepare('SELECT COUNT(*) n FROM user_cards WHERE user_id = ? AND shiny = 1').get(u) as { n: number }).n).toBe(1);
 		expect(() => claimCollection(db, u, set.key, seededRng(1))).toThrow(/déjà/);
+	});
+});
+
+import { startOnboarding, onboardingState, finishOnboarding, skipOnboarding, markVisited, huntPage, claimHunt } from '../game/onboarding';
+import { saveShowcase } from '../game/profile';
+import { EVENT } from '../game/constants';
+
+describe('premières minutes', () => {
+	it('tutoriel : étapes réelles, booster de bienvenue Rare+, récompense à la fin, sautable', () => {
+		const db = testDb();
+		const u = addUser(db, 'nouveau', 0, Date.now());
+		startOnboarding(db, u);
+		expect(boosterCounts(db, u).welcome).toBe(1);
+		expect(onboardingState(db, u)?.current).toBe(0);
+		const pack = openPack(db, u, seededRng(4), Date.now(), 'welcome');
+		expect(pack[pack.length - 1].card.rarity).toBeGreaterThanOrEqual(2);
+		expect(onboardingState(db, u)?.steps[0].done).toBe(true);
+		expect(() => finishOnboarding(db, u)).toThrow(/étapes/);
+		sellCards(db, u, [{ cardId: pack[0].card.id, count: 1 }]);
+		const q = listQuests(db, u).find((x) => x.period === 'day')!;
+		track(db, u, q.event, q.target);
+		claimQuest(db, u, q.id);
+		markVisited(db, u, 'album');
+		saveShowcase(db, u, null, 'Vitrine', [pack[1].card.id]);
+		expect(onboardingState(db, u)?.finished).toBe(true);
+		const before = kamas(db, u);
+		finishOnboarding(db, u);
+		expect(kamas(db, u)).toBe(before + 200);
+		expect(onboardingState(db, u)).toBeNull();
+		// objectifs de bienvenue présents dans les quêtes
+		expect(listQuests(db, u).filter((x) => x.period === 'starter')).toHaveLength(3);
+		const v = addUser(db, 'pressé', 0, Date.now());
+		startOnboarding(db, v);
+		skipOnboarding(db, v);
+		expect(onboardingState(db, v)).toBeNull();
+	});
+	it('chasse aux cartes : une fois par jour, sur la bonne page seulement', () => {
+		const db = testDb();
+		const u = addUser(db, 'chasseur', 0);
+		const now = Date.UTC(2026, 9, 9, 12);
+		const page = huntPage(db, u, now)!;
+		expect(page).toMatch(/^\//);
+		expect(() => claimHunt(db, u, page === '/album' ? '/market' : '/album', seededRng(1), now)).toThrow(/ici/);
+		expect(claimHunt(db, u, page, seededRng(1), now).kamas).toBe(30);
+		expect(huntPage(db, u, now)).toBeNull();
+		expect(() => claimHunt(db, u, page, seededRng(1), now)).toThrow(/demain/);
+		expect(huntPage(db, u, now + D)).not.toBeNull();
+	});
+	it('événement : la dernière carte peut devenir un Dofus pendant la semaine', () => {
+		const db = testDb();
+		db.prepare("UPDATE cards SET subtype = 'Dofus' WHERE id IN (101, 102)").run();
+		const u = addUser(db, 'e');
+		givePacks(db, u, 10, EVENT.start + 1);
+		let dofus = 0;
+		for (let i = 0; i < 40; i++) {
+			const r = openPack(db, u, seededRng(i), EVENT.start + 1 + i);
+			if (r.some((x) => x.card.subtype === 'Dofus')) dofus++;
+			db.prepare('UPDATE users SET pack_stock = 10 WHERE id = ?').run(u);
+		}
+		expect(dofus).toBeGreaterThan(0);
 	});
 });

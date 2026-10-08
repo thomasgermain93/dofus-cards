@@ -5,4 +5,6 @@ if [ ! -f "$DATA_DIR/game.db" ] || [ "$(node -e "const D=require('better-sqlite3
 	echo "Base vide : import DofusDB..."
 	node scripts/import-dofusdb.ts
 fi
+# Images WebP (ne convertit que les manquantes)
+node scripts/images-webp.ts || true
 exec "$@"

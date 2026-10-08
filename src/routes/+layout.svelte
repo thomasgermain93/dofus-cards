@@ -7,12 +7,81 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import Logo from '#lib/components/Logo.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
+	import Toaster from '#lib/components/Toaster.svelte';
+	import LevelUp from '#lib/components/LevelUp.svelte';
+	import Coach from '#lib/components/Coach.svelte';
+	import HuntSpark from '#lib/components/HuntSpark.svelte';
+	import { toast } from '#lib/toast.svelte';
+	import { onNavigate } from '$app/navigation';
 	import KamasCounter from '#lib/components/KamasCounter.svelte';
 	import Disclaimer from '#lib/components/Disclaimer.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
 	onMount(initHolo);
+	let offline = $state(false);
+	onMount(() => {
+		offline = !navigator.onLine;
+		const on = () => (offline = false);
+		const off = () => (offline = true);
+		addEventListener('online', on);
+		addEventListener('offline', off);
+		if (!data.me) navigator.serviceWorker?.controller?.postMessage('clear-pages');
+		return () => {
+			removeEventListener('online', on);
+			removeEventListener('offline', off);
+		};
+	});
+
+	// Transitions de page façon iOS (View Transitions API si disponible)
+	onNavigate((nav) => {
+		if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (nav.from?.url.pathname === nav.to?.url.pathname) return;
+		// Uniquement pour les liens et le bouton retour (pas après un formulaire : on veut le résultat tout de suite)
+		if (nav.type !== 'link' && nav.type !== 'popstate') return;
+		const back = nav.type === 'popstate' && ((nav as { delta?: number }).delta ?? -1) < 0;
+		document.documentElement.dataset.nav = back ? 'back' : 'forward';
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await nav.complete;
+			});
+		});
+	});
+
+	// Toasts pour les nouveautés (succès, quêtes, collections...) et célébration des niveaux
+	let levelUp = $state<number | null>(null);
+	const read = (k: string) => {
+		try {
+			return Number(localStorage.getItem(k) ?? 0);
+		} catch {
+			return 0;
+		}
+	};
+	const write = (k: string, v: number) => {
+		try {
+			localStorage.setItem(k, String(v));
+		} catch {
+			/* ignore */
+		}
+	};
+	const ICONS: Record<string, string> = { achievement: 'award', quest: 'check', collection: 'album', chest: 'gift', wish: 'star', battle: 'users', trade: 'repeat', duel: 'swords' };
+	$effect(() => {
+		if (!me) return;
+		const seenKey = `dc-seen-${me.id}`;
+		const seen = read(seenKey);
+		if (seen) for (const n of [...(data.recent ?? [])].reverse()) if (n.id > seen) toast(n.body, n.kind === 'achievement' || n.kind === 'chest' ? 'reward' : 'info', ICONS[n.kind]);
+		write(seenKey, Math.max(seen, me.lastNotifId));
+		const lvlKey = `dc-level-${me.id}`;
+		const prev = read(lvlKey);
+		if (prev && me.level > prev) levelUp = me.level;
+		write(lvlKey, me.level);
+	});
+	// Tutoriel : l'étape « album » est validée en visitant l'album
+	$effect(() => {
+		if (data.onboarding?.steps.some((s) => s.key === 'album' && !s.done) && page.url.pathname === '/album')
+			fetch('/api/onboarding', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'album' }) });
+	});
 	const me = $derived(data.me);
 
 	const tabs = $derived([
@@ -107,7 +176,8 @@
 				</div>
 			</header>
 
-			<main class="page" aria-busy={slow}>
+			{#if offline}<p class="offline" role="status">Hors ligne : ton album reste consultable, les actions reviendront avec la connexion.</p>{/if}
+			<main class="page" class:with-coach={!!data.onboarding} aria-busy={slow}>
 				{#if slow}
 					<div class="sk" aria-label="Chargement">
 						<div class="skeleton" style="height: 40px; width: 60%"></div>
@@ -120,6 +190,11 @@
 				<Disclaimer />
 			</main>
 		</div>
+
+		{#if data.onboarding && !hideTabs}<Coach info={data.onboarding} />{/if}
+		{#if data.hunt}<HuntSpark path={data.hunt} />{/if}
+		{#if levelUp}<LevelUp level={levelUp} ondone={() => (levelUp = null)} />{/if}
+		<Toaster />
 
 		{#if !hideTabs}
 			<nav class="tabbar material" aria-label="Navigation principale">
@@ -175,6 +250,17 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
+	}
+	.page.with-coach {
+		padding-bottom: calc(var(--tabbar-h) + 220px + env(safe-area-inset-bottom));
+	}
+	.offline {
+		margin: 0;
+		padding: var(--space-2) var(--gutter);
+		text-align: center;
+		font-size: var(--text-sm);
+		background: var(--surface-3);
+		color: var(--label);
 	}
 	.pill-hit {
 		display: inline-flex;

@@ -39,7 +39,7 @@ export const load: PageServerLoad = ({ locals }) => {
 export const actions: Actions = {
 	open: async ({ locals, request }) => {
 		const f = await request.formData().catch(() => new FormData());
-		const source = (['bronze', 'silver', 'gold'].includes(str(f.get('source'))) ? str(f.get('source')) : 'free') as PackSource;
+		const source = (['bronze', 'silver', 'gold', 'welcome'].includes(str(f.get('source'))) ? str(f.get('source')) : 'free') as PackSource;
 		return run(locals, (uid) => {
 			limit(`open:${uid}`, 20, 60_000);
 			const res = openPack(getDb(), uid, cryptoRng, Date.now(), source);

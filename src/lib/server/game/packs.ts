@@ -1,5 +1,5 @@
 import type { DB } from '../db';
-import { BOOSTERS, PACK_INTERVAL_MS, PACK_MAX, PACK_ODDS, PACK_SIZE, SHINY_CHANCE, XP, type BoosterKind } from './constants';
+import { BOOSTERS, EVENT, eventActive, PACK_INTERVAL_MS, PACK_MAX, PACK_ODDS, PACK_SIZE, SHINY_CHANCE, XP, type BoosterKind } from './constants';
 import { track } from './quests';
 import { addXp, assert, grantCard, getUser, type CardRow } from './core';
 import type { Rng } from './rng';
@@ -98,7 +98,15 @@ export function openPack(db: DB, userId: number, rng: Rng, now = Date.now(), sou
 			opts = { minLast: b.minLast, boost: b.boost };
 			forceShiny = b.shiny;
 		}
-		const cards = drawPack(db, rng, opts);
+		let cards = drawPack(db, rng, opts);
+		// Événement : la dernière carte peut devenir un Dofus ou une Prysmaradite
+		if (eventActive(now) && rng() < EVENT.chance) {
+			const pool = db.prepare(`SELECT * FROM cards WHERE active = 1 AND subtype IN (${EVENT.subtypes.map(() => '?').join(',')})`).all(...EVENT.subtypes) as CardRow[];
+			if (pool.length) {
+				cards[cards.length - 1] = pool[Math.floor(rng() * pool.length)];
+				cards = cards.sort((a, b) => a.rarity - b.rarity || a.attack - b.attack);
+			}
+		}
 		const shinyIdx = forceShiny ? cards.length - 1 : -1;
 		const result = cards.map((c, i) => {
 			const shiny = i === shinyIdx || rng() < SHINY_CHANCE;
@@ -120,7 +128,7 @@ export function openPack(db: DB, userId: number, rng: Rng, now = Date.now(), sou
 
 export function boosterCounts(db: DB, userId: number): Record<BoosterKind, number> {
 	const rows = db.prepare('SELECT kind, qty FROM boosters WHERE user_id = ?').all(userId) as { kind: BoosterKind; qty: number }[];
-	const out = { bronze: 0, silver: 0, gold: 0 };
+	const out = { bronze: 0, silver: 0, gold: 0, welcome: 0 };
 	for (const r of rows) out[r.kind] = r.qty;
 	return out;
 }

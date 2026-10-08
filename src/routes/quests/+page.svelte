@@ -7,6 +7,7 @@
 	const R = $derived(data.retention);
 	const day = $derived(R.quests.filter((q) => q.period === 'day'));
 	const week = $derived(R.quests.filter((q) => q.period === 'week'));
+	const starter = $derived(R.quests.filter((q) => q.period === 'starter'));
 </script>
 
 <svelte:head><title>Quêtes</title></svelte:head>
@@ -16,6 +17,12 @@
 
 <div class="cols">
 	<div class="flex flex-col gap-5">
+		{#if starter.length}
+			<section>
+				<h2 class="section-label">Objectifs de bienvenue</h2>
+				<QuestList quests={starter} />
+			</section>
+		{/if}
 		<section>
 			<h2 class="section-label">Du jour</h2>
 			<QuestList quests={day} />

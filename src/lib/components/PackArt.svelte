@@ -2,7 +2,7 @@
 	import { GAME_NAME } from '#lib/config';
 	import Logo from './Logo.svelte';
 	let { width = 170, glow = false, kind = 'free' }: { width?: number; glow?: boolean; kind?: string } = $props();
-	const LABEL: Record<string, string> = { bronze: 'Bronze', silver: 'Argent', gold: 'Or' };
+	const LABEL: Record<string, string> = { bronze: 'Booster Bronze', silver: 'Booster Argent', gold: 'Booster Or', welcome: 'Bienvenue !' };
 </script>
 
 <div class="pack k-{kind}" class:glow style="width:{width}px; font-size:{Math.round(width * 0.09)}px">
@@ -11,7 +11,7 @@
 	<div class="body">
 		<Logo size={width * 0.32} text={false} />
 		<span class="title">{GAME_NAME}</span>
-		<span class="sub">{LABEL[kind] ? `Booster ${LABEL[kind]}` : '5 cartes'}</span>
+		<span class="sub">{LABEL[kind] ?? '5 cartes'}</span>
 	</div>
 	<div class="crimp bottom"></div>
 </div>
@@ -35,6 +35,9 @@
 	}
 	.k-silver {
 		background: var(--pack-silver);
+	}
+	.k-welcome {
+		background: var(--pack-welcome);
 	}
 	.k-gold {
 		background: var(--pack-gold);
