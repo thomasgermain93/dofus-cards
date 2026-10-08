@@ -23,4 +23,5 @@ export function ago(ts: number, now = Date.now()) {
 	return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
-export const imgUrl = (path: string | null) => (path ? `/img/${path}` : null);
+/** `?w` : clé de cache distincte depuis le passage au WebP (les PNG restent en cache immuable chez Cloudflare). */
+export const imgUrl = (path: string | null) => (path ? `/img/${path}?w` : null);
