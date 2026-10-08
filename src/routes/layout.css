@@ -36,6 +36,24 @@ html {
 	-webkit-font-smoothing: antialiased;
 	-webkit-tap-highlight-color: transparent;
 	text-size-adjust: 100%;
+	/* Pas de zoom au double tap (le pincement reste possible) */
+	touch-action: manipulation;
+}
+body,
+a,
+button,
+input,
+select,
+textarea,
+label,
+[role='button'] {
+	touch-action: manipulation;
+}
+/* iOS zoome au focus d'un champ en dessous de 16 px */
+input,
+select,
+textarea {
+	font-size: max(16px, 1em);
 }
 body {
 	margin: 0;

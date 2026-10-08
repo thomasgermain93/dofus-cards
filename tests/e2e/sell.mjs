@@ -127,9 +127,17 @@ for (const [vp, tag] of [
 
 	// 4. Fiche : vendre le dernier exemplaire (confirmation obligatoire)
 	await p.goto(BASE + '/album?own=owned&sort=rarity');
-	await p.locator('.grid-cards a.card-link').last().click();
-	await p.waitForURL(/\/card\/\d+/);
-	const cardUrl = p.url();
+	// carte la moins rare dont un exemplaire est vendable (les cartes engagées n'ont pas de bouton)
+	const links = await p.locator('.grid-cards a.card-link').evaluateAll((els) => els.map((e) => e.getAttribute('href')).reverse());
+	let cardUrl = '';
+	for (const href of links.slice(0, 8)) {
+		await p.goto(BASE + href);
+		if (await p.locator('[data-testid=sell]').count()) {
+			cardUrl = p.url();
+			break;
+		}
+	}
+	ok(!!cardUrl, `[${tag}] carte vendable trouvée`);
 	await p.locator('[data-testid=sell-box] .chip:has-text("Tout")').click().catch(() => {});
 	await p.click('[data-testid=sell]');
 	await p.waitForSelector('[data-testid=confirm-sheet]');

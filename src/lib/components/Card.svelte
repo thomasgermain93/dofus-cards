@@ -71,6 +71,7 @@
 		box-shadow: var(--shadow-card);
 		container-type: inline-size;
 		user-select: none;
+		touch-action: manipulation;
 		width: 100%;
 		color: var(--label);
 		text-align: left;
