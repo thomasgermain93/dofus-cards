@@ -54,8 +54,28 @@ sw.addEventListener('notificationclick', (event) => {
 	event.notification.close();
 	event.waitUntil(
 		sw.clients.matchAll({ type: 'window' }).then((list) => {
-			const open = list.find((c) => 'focus' in c);
-			return open ? (open as WindowClient).focus() : sw.clients.openWindow('/');
+			const url = (event.notification.data as { url?: string } | null)?.url ?? '/';
+			const open = list.find((c) => 'focus' in c) as WindowClient | undefined;
+			if (open) return open.navigate(url).then((c) => c?.focus());
+			return sw.clients.openWindow(url);
+		})
+	);
+});
+
+// Notifications push envoyées par le serveur
+sw.addEventListener('push', (event) => {
+	let data: { title?: string; body?: string; url?: string } = {};
+	try {
+		data = event.data?.json() ?? {};
+	} catch {
+		data = { body: event.data?.text() };
+	}
+	event.waitUntil(
+		sw.registration.showNotification(data.title ?? 'Dofus Cards', {
+			body: data.body ?? '',
+			icon: '/icons/icon-192.png',
+			badge: '/icons/icon-192.png',
+			data: { url: data.url ?? '/' }
 		})
 	);
 });

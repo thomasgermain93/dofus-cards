@@ -22,7 +22,8 @@
 		missing = false,
 		count = 0,
 		favorite = false,
-		holo = true
+		holo = true,
+		foil = false
 	}: {
 		card: CardView;
 		size?: 'sm' | 'md' | 'lg';
@@ -31,11 +32,13 @@
 		favorite?: boolean;
 		/** reflet holographique (Rare et au-dessus) */
 		holo?: boolean;
+		/** version brillante (rare) : reflet renforcé et liseré doré, quelle que soit la rareté */
+		foil?: boolean;
 	} = $props();
 
 	const r = $derived(RARITY[card.rarity]);
 	const src = $derived(imgUrl(card.image));
-	const shiny = $derived(holo && !missing && card.rarity >= 2);
+	const shiny = $derived(!missing && (foil || (holo && card.rarity >= 2)));
 	const subtitle = $derived(card.category === 'class' ? card.info1 : card.subtype);
 </script>
 
@@ -44,6 +47,7 @@
 	class:missing
 	class:shiny
 	class:legendary={card.rarity === 5 && !missing}
+	class:foil={foil && !missing}
 	style="--rc: {rarityColor(card.rarity)}"
 	aria-label="{missing ? 'Carte manquante' : card.name}, {r.name}"
 >
@@ -54,6 +58,7 @@
 				<span class="type">{typeLabel(card)}</span>
 				<h3>{missing ? '???' : card.name}</h3>
 			</div>
+			{#if foil && !missing}<span class="foil-tag" title="Carte brillante"><Icon name="sparkles" size={12} fill /></span>{/if}
 			<span class="gem" title={r.name}><span>{r.code}</span></span>
 		</header>
 
@@ -428,6 +433,45 @@
 		box-shadow:
 			0 0 0 1px rgba(224, 168, 0, 0.5),
 			0 8px 28px rgba(224, 168, 0, 0.35);
+	}
+	/* Brillante : reflet arc-en-ciel fort et liseré doré */
+	.foil .holo {
+		--holo-o: 0.75 !important;
+		animation: foilshift 5s linear infinite;
+	}
+	.foil .frame {
+		box-shadow:
+			inset 0 0 0 0.9cqw #e0b400,
+			inset 0 0 0 1.6cqw rgba(255, 245, 200, 0.8),
+			inset 0 0 6cqw rgba(224, 180, 0, 0.35);
+	}
+	.foil .shell {
+		box-shadow:
+			0 0 0 0.5cqw #f5d36b,
+			0 6px 22px rgba(224, 180, 0, 0.35);
+	}
+	.foil-tag {
+		flex: none;
+		width: 8cqw;
+		height: 8cqw;
+		margin-top: 1.4cqw;
+		border-radius: 999px;
+		display: grid;
+		place-items: center;
+		color: #b8860b;
+		background: radial-gradient(circle, #fff7d1, #f5d36b);
+	}
+	.foil-tag :global(svg) {
+		width: 5cqw;
+		height: 5cqw;
+	}
+	@keyframes foilshift {
+		from {
+			filter: hue-rotate(0deg);
+		}
+		to {
+			filter: hue-rotate(360deg);
+		}
 	}
 	@property --angle {
 		syntax: '<angle>';

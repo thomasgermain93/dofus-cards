@@ -215,6 +215,61 @@ export const MIGRATIONS: string[] = [
 	`,
 	/* 2 : texte d'ambiance des cartes */ `
 	ALTER TABLE cards ADD COLUMN flavor TEXT;
+	`,
+	/* 3 : rétention (quêtes, série, collections, brillantes, fabrication, boosters bonus, coffre, web push) */ `
+	ALTER TABLE users ADD COLUMN fragments INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE users ADD COLUMN title TEXT;
+	ALTER TABLE users ADD COLUMN streak_best INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE users ADD COLUMN joker_week TEXT;
+	ALTER TABLE users ADD COLUMN push_pack_notified INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE user_cards ADD COLUMN shiny INTEGER NOT NULL DEFAULT 0;
+
+	CREATE TABLE boosters (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		kind TEXT NOT NULL,                  -- bronze | silver | gold
+		qty INTEGER NOT NULL DEFAULT 0,
+		PRIMARY KEY (user_id, kind)
+	);
+
+	CREATE TABLE quests (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		period TEXT NOT NULL,                -- day | week
+		period_key TEXT NOT NULL,            -- AAAA-MM-JJ (jour, ou lundi de la semaine) heure de Bruxelles
+		code TEXT NOT NULL,
+		event TEXT NOT NULL,
+		target INTEGER NOT NULL,
+		progress INTEGER NOT NULL DEFAULT 0,
+		reward_kamas INTEGER NOT NULL DEFAULT 0,
+		reward_fragments INTEGER NOT NULL DEFAULT 0,
+		reward_booster TEXT,
+		notified INTEGER NOT NULL DEFAULT 0,
+		claimed_at INTEGER,
+		UNIQUE (user_id, period, period_key, code)
+	);
+	CREATE INDEX quests_user ON quests(user_id, period_key);
+
+	CREATE TABLE collections_claimed (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		key TEXT NOT NULL,
+		claimed_at INTEGER NOT NULL,
+		PRIMARY KEY (user_id, key)
+	);
+
+	CREATE TABLE chests_claimed (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		week_key TEXT NOT NULL,
+		tier TEXT NOT NULL,
+		claimed_at INTEGER NOT NULL,
+		PRIMARY KEY (user_id, week_key)
+	);
+
+	CREATE TABLE push_subscriptions (
+		endpoint TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		keys TEXT NOT NULL,
+		created_at INTEGER NOT NULL
+	);
 	`
 ];
 

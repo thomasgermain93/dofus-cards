@@ -1,6 +1,7 @@
 import type { DB } from '../db';
 import { AUCTION_DURATIONS_H, AUCTION_MAX_OPEN, AUCTION_MIN_INCREMENT, XP } from './constants';
 import { addKamas, addXp, assert, freeCopies, getCard, moveCopy, notify } from './core';
+import { track } from './quests';
 
 export interface AuctionRow {
 	id: number;
@@ -78,6 +79,7 @@ export function placeBid(db: DB, auctionId: number, bidderId: number, amount: nu
 			amount,
 			now
 		);
+		track(db, bidderId, 'bid', 1, now);
 	})();
 }
 

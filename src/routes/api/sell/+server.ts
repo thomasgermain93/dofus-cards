@@ -13,7 +13,7 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async ({ locals, request }) => {
 	if (!locals.user) error(401);
 	const uid = locals.user.id;
-	let body: { items?: SellItem[]; duplicates?: boolean; maxRarity?: number; nonce?: string };
+	let body: { items?: SellItem[]; duplicates?: boolean; maxRarity?: number; nonce?: string; mode?: string };
 	try {
 		body = await request.json();
 	} catch {
@@ -23,11 +23,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	if (!rateLimit(`sell:${uid}`, 40, 60_000)) return json({ error: 'Doucement ! Réessaie dans quelques secondes.' }, { status: 429 });
 	const db = getDb();
 	try {
+		const mode = body.mode === 'recycle' ? 'recycle' : 'sell';
 		const r = body.duplicates
-			? sellAllDuplicates(db, uid, Math.min(5, Math.max(0, Number(body.maxRarity ?? 2) | 0)), nonce)
-			: sellCards(db, uid, (body.items ?? []).map((i) => ({ cardId: Number(i.cardId), count: Number(i.count) })), nonce);
+			? sellAllDuplicates(db, uid, Math.min(5, Math.max(0, Number(body.maxRarity ?? 2) | 0)), nonce, Date.now(), mode)
+			: sellCards(db, uid, (body.items ?? []).map((i) => ({ cardId: Number(i.cardId), count: Number(i.count) })), nonce, Date.now(), mode);
 		checkAchievements(db, uid);
-		return json({ ...r, kamas: getUser(db, uid).kamas });
+		const u = getUser(db, uid);
+		return json({ ...r, kamas: u.kamas, fragments: u.fragments });
 	} catch (e) {
 		if (e instanceof GameError) return json({ error: e.message }, { status: 400 });
 		throw e;

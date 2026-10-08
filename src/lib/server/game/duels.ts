@@ -9,6 +9,7 @@ import {
 } from './constants';
 import { addXp, assert, getCard, getUser, notify, ownsCard, parseIds, type CardRow } from './core';
 import { questionsForCard } from './quiz';
+import { track } from './quests';
 import type { Rng } from './rng';
 
 export const BOT_NAME = 'Ordinateur';
@@ -244,6 +245,8 @@ export function finalizeDuel(db: DB, duelId: number, now = Date.now()) {
 	for (const uid of humans) {
 		const won = uid === winnerId;
 		addXp(db, uid, result === 'draw' ? XP.duelDraw : won ? XP.duelWin : XP.duelLoss);
+		track(db, uid, 'duel_play', 1, now);
+		if (won) track(db, uid, 'duel_win', 1, now);
 		if (won) {
 			// Les victoires contre l'ordinateur rapportent moins (évite le farm du classement).
 			db.prepare('INSERT INTO score_events (user_id, kind, points, created_at) VALUES (?, ?, ?, ?)').run(

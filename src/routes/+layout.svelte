@@ -15,13 +15,15 @@
 	const me = $derived(data.me);
 
 	const tabs = $derived([
-		{ href: '/', label: 'Accueil', icon: 'home', badge: 0 },
+		{ href: '/', label: 'Accueil', icon: 'home', badge: me?.homeTodo ?? 0 },
 		{ href: '/album', label: 'Album', icon: 'album', badge: 0 },
 		{ href: '/market', label: 'Marché', icon: 'gavel', badge: me?.tradesPending ?? 0 },
 		{ href: '/duels', label: 'Duels', icon: 'swords', badge: me?.duelsToPlay ?? 0 },
 		{ href: '/social', label: 'Social', icon: 'users', badge: (me?.unreadMessages ?? 0) + (me?.friendRequests ?? 0) }
 	]);
 	const extra = $derived([
+		{ href: '/quests', label: 'Quêtes', icon: 'check' },
+		{ href: '/collections', label: 'Collections', icon: 'album' },
 		{ href: '/leaderboard', label: 'Classement', icon: 'trophy' },
 		{ href: '/achievements', label: 'Succès', icon: 'award' },
 		...(me?.role === 'admin' ? [{ href: '/admin', label: 'Modération', icon: 'shield' }] : [])

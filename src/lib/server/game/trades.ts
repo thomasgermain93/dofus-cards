@@ -1,6 +1,7 @@
 import type { DB } from '../db';
 import { XP } from './constants';
 import { addKamas, addXp, assert, freeCopies, getUser, moveCopy, notify, parseIds } from './core';
+import { track } from './quests';
 
 export interface TradeRow {
 	id: number;
@@ -93,6 +94,8 @@ export function acceptTrade(db: DB, tradeId: number, userId: number, now = Date.
 		}
 		addXp(db, t.from_id, XP.trade);
 		addXp(db, t.to_id, XP.trade);
+		track(db, t.from_id, 'trade', 1, now);
+		track(db, t.to_id, 'trade', 1, now);
 		db.prepare("UPDATE trades SET status = 'accepted', resolved_at = ? WHERE id = ?").run(now, tradeId);
 		notify(db, t.from_id, 'trade', `${getUser(db, userId).username} a accepté ton échange !`, `/trades/${tradeId}`, now);
 	})();

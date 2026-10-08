@@ -2,7 +2,8 @@ import { error } from '@sveltejs/kit';
 import { getDb } from '#lib/server/db';
 import { sellableCounts } from '#lib/server/game/collection';
 import { createAuction } from '#lib/server/game/auctions';
-import { AUCTION_DURATIONS_H, SELL_VALUES } from '#lib/server/game/constants';
+import { AUCTION_DURATIONS_H, CRAFT_COSTS, RECYCLE_VALUES, SELL_VALUES } from '#lib/server/game/constants';
+import { craftCard } from '#lib/server/game/collection';
 import { CARD_COLS, int, limit, run } from '#lib/server/web';
 import type { Actions, PageServerLoad } from './$types';
 import type { CardView } from '#lib/types';
@@ -39,6 +40,10 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		owners,
 		lastSale: lastSale?.current_bid ?? null,
 		sellValue: SELL_VALUES[card.rarity],
+		recycleValue: RECYCLE_VALUES[card.rarity],
+		craftCost: CRAFT_COSTS[card.rarity],
+		fragments: (db.prepare('SELECT fragments n FROM users WHERE id = ?').get(uid) as { n: number }).n,
+		shinyCount: (db.prepare('SELECT COUNT(*) n FROM user_cards WHERE user_id = ? AND card_id = ? AND shiny = 1').get(uid, id) as { n: number }).n,
 		sellable: sellableCounts(db, uid, [id]).get(id) ?? 0,
 		inTrade: Math.max(0, (copies.free ?? 0) - (sellableCounts(db, uid, [id]).get(id) ?? 0)),
 		durations: AUCTION_DURATIONS_H
@@ -46,6 +51,11 @@ export const load: PageServerLoad = ({ locals, params }) => {
 };
 
 export const actions: Actions = {
+	craft: ({ locals, params }) =>
+		run(locals, (uid) => {
+			limit(`craft:${uid}`, 20, 60_000);
+			return { crafted: craftCard(getDb(), uid, int(params.id)) };
+		}),
 	fav: ({ locals, params }) =>
 		run(locals, (uid) => {
 			const db = getDb();

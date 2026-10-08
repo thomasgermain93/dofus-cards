@@ -1,9 +1,10 @@
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit/hooks';
 import { building } from '$app/env';
-import { getDb } from '#lib/server/db';
 import { SESSION_COOKIE, purgeSessions, sessionUser } from '#lib/server/auth';
 import { settleExpiredAuctions } from '#lib/server/game/auctions';
+import { dataDir, getDb } from '#lib/server/db';
+import { initPush, notifyFullReserves } from '#lib/server/push';
 
 const PUBLIC = ['/login', '/register', '/mentions', '/img/', '/icons/', '/manifest.webmanifest', '/favicon', '/service-worker.js', '/robots.txt'];
 
@@ -19,6 +20,18 @@ if (!building && !g.__dcTimers && process.env.NODE_ENV !== 'test') {
 		}
 	}, 15_000).unref();
 	setInterval(() => purgeSessions(getDb()), 3_600_000).unref();
+	try {
+		initPush(dataDir());
+		setInterval(() => {
+			try {
+				notifyFullReserves(getDb());
+			} catch (e) {
+				console.error('[push]', e);
+			}
+		}, 60_000).unref();
+	} catch (e) {
+		console.error('[push] désactivé', e);
+	}
 }
 
 export const handle: Handle = async ({ event, resolve }) => {

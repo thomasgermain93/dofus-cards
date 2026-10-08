@@ -2,6 +2,7 @@ import { getDb } from '#lib/server/db';
 import { getUser } from '#lib/server/game/core';
 import { getPackState } from '#lib/server/game/packs';
 import { levelFromXp, xpForLevel } from '#lib/server/game/constants';
+import { brusselsDay, brusselsWeek } from '#lib/server/game/time';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = ({ locals }) => {
@@ -34,7 +35,14 @@ export const load: LayoutServerLoad = ({ locals }) => {
 				u.id
 			),
 			tradesPending: n("SELECT COUNT(*) n FROM trades WHERE to_id = ? AND status = 'pending'", u.id),
-			friendRequests: n("SELECT COUNT(*) n FROM friendships WHERE friend_id = ? AND status = 'pending'", u.id)
+			friendRequests: n("SELECT COUNT(*) n FROM friendships WHERE friend_id = ? AND status = 'pending'", u.id),
+			homeTodo:
+				n(
+					"SELECT COUNT(*) n FROM quests WHERE user_id = ? AND progress >= target AND claimed_at IS NULL AND ((period = 'day' AND period_key = ?) OR (period = 'week' AND period_key = ?))",
+					u.id,
+					brusselsDay(now),
+					brusselsWeek(now)
+				) + (u.daily_last !== brusselsDay(now) ? 1 : 0)
 		}
 	};
 };

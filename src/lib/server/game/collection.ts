@@ -1,7 +1,9 @@
 import type { DB } from '../db';
-import { DAILY_BASE_KAMAS, DAILY_BONUS_PACK, DAILY_STREAK_BONUS, SELL_VALUES } from './constants';
-import { addKamas, assert, freeCopies, getCard, getUser, parseIds } from './core';
-import { givePacks } from './packs';
+import { CRAFT_COSTS, RECYCLE_VALUES, SELL_VALUES, SHINY_VALUE_MULT } from './constants';
+import { addKamas, assert, freeCopies, getCard, getUser, grantCard, parseIds } from './core';
+import { addFragments, track } from './quests';
+
+export type DisposeMode = 'sell' | 'recycle';
 
 export interface SellItem {
 	cardId: number;
@@ -35,13 +37,13 @@ export function sellableCounts(db: DB, userId: number, cardIds: number[]): Map<n
  * pas disponible, rien n'est vendu. `nonce` (facultatif) rend l'appel idempotent :
  * un double clic renvoie le résultat de la première vente sans revendre.
  */
-export function sellCards(db: DB, userId: number, items: SellItem[], nonce: string | null = null, now = Date.now()) {
+export function sellCards(db: DB, userId: number, items: SellItem[], nonce: string | null = null, now = Date.now(), mode: DisposeMode = 'sell') {
 	return db.transaction(() => {
 		assert(Array.isArray(items) && items.length > 0 && items.length <= 200, 'Aucune carte à vendre.');
-		const reason = nonce ? `sell:${nonce}` : null;
+		const reason = nonce ? `${mode}:${nonce}` : null;
 		if (reason) {
 			const prev = db.prepare('SELECT delta FROM ledger WHERE user_id = ? AND reason = ?').get(userId, reason) as { delta: number } | undefined;
-			if (prev) return { gain: prev.delta, cards: 0, duplicate: true };
+			if (prev) return { gain: prev.delta, cards: 0, duplicate: true, mode };
 		}
 		const merged = new Map<number, number>();
 		for (const it of items) {
@@ -56,19 +58,31 @@ export function sellCards(db: DB, userId: number, items: SellItem[], nonce: stri
 			const card = getCard(db, cardId);
 			const ids = sellableIds(db, userId, cardId, reserved);
 			assert(ids.length >= count, `Tu ne peux vendre que ${ids.length} exemplaire${ids.length > 1 ? 's' : ''} de ${card.name} (les cartes en vente ou proposées en échange sont bloquées).`);
-			for (const id of ids.slice(ids.length - count)) del.run(id);
-			gain += SELL_VALUES[card.rarity] * count;
+			const base = (mode === 'sell' ? SELL_VALUES : RECYCLE_VALUES)[card.rarity];
+			const isShiny = db.prepare('SELECT shiny FROM user_cards WHERE id = ?');
+			for (const id of ids.slice(ids.length - count)) {
+				const sh = (isShiny.get(id) as { shiny: number }).shiny;
+				gain += base * (sh ? SHINY_VALUE_MULT : 1);
+				del.run(id);
+			}
 			cards += count;
 		}
-		addKamas(db, userId, gain, reason ?? `sell:${now}`, now);
+		if (mode === 'sell') {
+			addKamas(db, userId, gain, reason ?? `sell:${now}`, now);
+		} else {
+			addFragments(db, userId, gain);
+			// trace dans le journal (delta = fragments) pour l'idempotence et l'historique
+			db.prepare('INSERT INTO ledger (user_id, delta, reason, created_at) VALUES (?, ?, ?, ?)').run(userId, gain, reason ?? `recycle:${now}`, now);
+		}
+		track(db, userId, mode === 'sell' ? 'sell' : 'recycle', cards, now);
 		// Une carte vendue n'est plus favorite si on n'en a plus
 		db.prepare('DELETE FROM favorites WHERE user_id = ? AND card_id NOT IN (SELECT card_id FROM user_cards WHERE user_id = ?)').run(userId, userId);
-		return { gain, cards, duplicate: false };
+		return { gain, cards, duplicate: false, mode };
 	})();
 }
 
 /** Vend tous les doublons (on garde 1 exemplaire de chaque carte), jusqu'à une rareté maximale. */
-export function sellAllDuplicates(db: DB, userId: number, maxRarity: number, nonce: string | null = null, now = Date.now()) {
+export function sellAllDuplicates(db: DB, userId: number, maxRarity: number, nonce: string | null = null, now = Date.now(), mode: DisposeMode = 'sell') {
 	return db.transaction(() => {
 		const rows = db
 			.prepare(
@@ -82,29 +96,22 @@ export function sellAllDuplicates(db: DB, userId: number, maxRarity: number, non
 			const count = Math.min(sellableIds(db, userId, r.card_id, reserved).length, r.n - 1);
 			if (count > 0) items.push({ cardId: r.card_id, count });
 		}
-		if (!items.length) return { gain: 0, cards: 0, duplicate: false };
-		return sellCards(db, userId, items, nonce, now);
+		if (!items.length) return { gain: 0, cards: 0, duplicate: false, mode };
+		return sellCards(db, userId, items, nonce, now, mode);
 	})();
 }
 
-export const dayKey = (now: number) => new Date(now).toISOString().slice(0, 10);
-
-export function dailyAvailable(lastDay: string | null, now: number) {
-	return lastDay !== dayKey(now);
-}
-
-/** Récompense quotidienne : kamas (+ bonus de série jusqu'à 7 jours) + 1 paquet. */
-export function claimDaily(db: DB, userId: number, now = Date.now()) {
+/** Fabrique une carte précise contre des fragments (coût selon la rareté). */
+export function craftCard(db: DB, userId: number, cardId: number, now = Date.now()) {
 	return db.transaction(() => {
-		const u = getUser(db, userId);
-		const today = dayKey(now);
-		assert(u.daily_last !== today, 'Récompense déjà récupérée aujourd’hui. Reviens demain !');
-		const yesterday = dayKey(now - 86_400_000);
-		const streak = u.daily_last === yesterday ? u.daily_streak + 1 : 1;
-		const kamas = DAILY_BASE_KAMAS + DAILY_STREAK_BONUS * Math.min(streak - 1, 6);
-		db.prepare('UPDATE users SET daily_last = ?, daily_streak = ? WHERE id = ?').run(today, streak, userId);
-		addKamas(db, userId, kamas, 'daily', now);
-		givePacks(db, userId, DAILY_BONUS_PACK, now);
-		return { kamas, streak, packs: DAILY_BONUS_PACK };
+		const card = getCard(db, cardId);
+		assert((card as unknown as { active?: number }).active !== 0, 'Cette carte ne peut pas être fabriquée.');
+		const cost = CRAFT_COSTS[card.rarity];
+		assert(getUser(db, userId).fragments >= cost, `Il te faut ${cost} fragments (tu en as ${getUser(db, userId).fragments}).`);
+		addFragments(db, userId, -cost);
+		const { isNew } = grantCard(db, userId, cardId, now, false);
+		db.prepare('INSERT INTO ledger (user_id, delta, reason, created_at) VALUES (?, ?, ?, ?)').run(userId, -cost, `craft:${cardId}`, now);
+		track(db, userId, 'craft', 1, now);
+		return { cost, isNew };
 	})();
 }

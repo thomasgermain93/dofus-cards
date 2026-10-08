@@ -86,6 +86,19 @@ Normalisation : `stat = 1 000 + 6 000 x percentile(log(brut)) dans la catégorie
 - Enchères : 1 h / 6 h / 24 h / 72 h, surenchère minimale +5 %, kamas réservés à l'enchère et rendus automatiquement au battu, prolongation de 2 min si enchère dans les 2 dernières minutes, clôture par tâche planifiée (15 s)
 - Échanges : jusqu'à 6 cartes de chaque côté + kamas, transfert atomique (transaction SQLite)
 
+### Rétention (boucle 2)
+
+Toutes les valeurs sont dans `src/lib/server/game/constants.ts` et `quests.ts`. Les jours changent à **minuit heure de Bruxelles** (`time.ts`), les semaines le lundi.
+
+- **Série de connexion** (calendrier de 7 jours qui recommence, +1 paquet chaque jour) : J1 40 kamas, J2 50 + 20 fragments, J3 60 + Booster Bronze, J4 80 + 40 fragments, J5 100 + Booster Argent, J6 120 + 60 fragments, J7 150 + 100 fragments + Booster Or (600 kamas, 220 fragments et 3 boosters par semaine). Rattrapage doux : un jour manqué est couvert par le joker hebdomadaire, au-delà la série est divisée par deux (jamais remise à zéro).
+- **Quêtes du jour** : 3 tirées (de façon stable par joueur et par jour) parmi 10 (ouvrir 3 ou 6 paquets, vendre 5 cartes, recycler 3 cartes, 5 nouvelles cartes, une Rare ou mieux, 6 monstres, terminer ou gagner un duel, placer une enchère), 20 à 80 kamas (+ fragments). **Quêtes de la semaine** : 3, dont toujours « terminer 10 quêtes du jour » (Booster Or), récompenses 100 à 200 kamas + boosters ou fragments. À récupérer à la main avant la fin de la période.
+- **Coffre de la semaine** : selon les quêtes récupérées dans la semaine, à ouvrir à partir du lundi suivant. Bronze dès 4 (100 kamas, 40 fragments, Booster Bronze), Argent dès 10 (250, 120, Booster Argent), Or dès 16 (500, 300, Booster Or).
+- **Boosters bonus** (jamais achetables) : Bronze = 5e carte Rare ou mieux ; Argent = Super rare ou mieux, chances Rare+ x1,6 ; Or = Ultra rare ou mieux, chances Rare+ x2,2 et une brillante garantie.
+- **Cartes brillantes** : 1 carte sur 40 tirée en paquet (et la récompense de chaque collection). Reflet arc-en-ciel et liseré doré, comptées à part dans l'album (filtre « Brillantes »), valent x5 à la vente et au recyclage, et sont toujours vendues en dernier.
+- **Fabrication** (fragments) : recycler 1 exemplaire rapporte 5 / 15 / 50 / 150 / 500 / 2 000 fragments selon la rareté ; fabriquer une carte précise coûte 30 / 80 / 250 / 800 / 2 400 / 8 000. En moyenne, un paquet entièrement recyclé donne environ 250 fragments (une Légendaire ciblée = environ 32 paquets recyclés), alors que vendu il rapporte environ 45 kamas : on choisit entre la monnaie d'échange (kamas, enchères) et la complétion (fragments).
+- **Collections** : régions (monstres, 5 cartes ou plus), donjons (monstres et boss, 3 ou plus) et panoplies (3 objets ou plus), calculées depuis les données. Récompense à la complétion : `15 x taille + 2 x valeur de vente des cartes` kamas (max 2 000), `10 x taille` fragments, une brillante de la collection, et le titre « Explorateur de… » (région) ou « Vainqueur de… » (donjon) affiché sur le profil.
+- **Notifications** : in-app (quête terminée, coffre, collection, duel, échange…) et **Web Push** si le joueur l'active (réserve de paquets pleine, défi, échange, ami, coffre). Clés VAPID créées au premier démarrage dans `DATA_DIR/vapid.json`. Sur iPhone, le push demande d'ajouter le jeu à l'écran d'accueil.
+
 ### Duel quiz
 
 Chaque joueur choisit 3 cartes ; PV = somme des DEF. Chacun répond (à son rythme) à 3 questions sur chaque carte adverse, générées automatiquement depuis les données (niveau, zone, famille, donjon gardé, archimonstre de, panoplie, type, monstre qui laisse tomber l'objet, famille de monture, rôle et sorts de classe, questions inversées « lequel de ces monstres vit à… »). Dégâts d'une carte = `ATK x mauvaises réponses / 3`. Vainqueur = meilleur ratio PV restants / PV max. Entraînement contre l'ordinateur (deck de même rareté, 55 % de bonnes réponses).
@@ -104,6 +117,5 @@ Rôle admin (`/admin`) : bannir / débannir (sessions coupées), masquer un mess
 
 ## Limites connues
 
-- Notifications : in-app + notification navigateur quand le paquet est prêt si l'onglet est ouvert ; pas encore de Web Push serveur (VAPID).
 - Limite de débit en mémoire (un seul processus).
 - Les montures n'ont pas d'illustration dédiée dans DofusDB : on utilise l'icône de l'objet monture.

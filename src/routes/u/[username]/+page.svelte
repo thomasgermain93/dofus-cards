@@ -3,11 +3,14 @@
 	import Card from '#lib/components/Card.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { ago, fmt } from '#lib/format';
+	import PushToggle from '#lib/components/PushToggle.svelte';
 
 	const REASONS: [string, string][] = [
 		['sell:', 'Vente au jeu'], ['discard:', 'Vente au jeu'], ['sale:', 'Carte vendue aux enchères'], ['bid:', 'Enchère placée'],
-		['refund:', 'Enchère remboursée'], ['trade:', 'Échange'], ['daily', 'Récompense du jour'], ['achievement:', 'Succès']
+		['refund:', 'Enchère remboursée'], ['trade:', 'Échange'], ['daily', 'Récompense du jour'], ['achievement:', 'Succès'],
+		['recycle:', 'Recyclage'], ['craft:', 'Fabrication'], ['quest:', 'Quête'], ['chest:', 'Coffre de la semaine'], ['collection:', 'Collection complétée']
 	];
+	const isFragments = (r: string) => r.startsWith('recycle:') || r.startsWith('craft:');
 	const reasonLabel = (r: string) => REASONS.find(([k]) => r.startsWith(k))?.[1] ?? 'Autre';
 
 	let { data, form } = $props();
@@ -21,6 +24,7 @@
 	<span class="avatar">{p.username.slice(0, 1).toUpperCase()}</span>
 	<div class="min-w-0">
 		<h1 class="large-title truncate">{p.username}</h1>
+		{#if p.title}<p class="title-tag">{p.title}</p>{/if}
 		<p class="text-label-2">
 			Niveau {p.level}{#if p.guild}, guilde <a class="text-accent" href="/guilds/{p.guild_id}">{p.guild} [{p.tag}]</a>{/if}{#if p.role === 'admin'}, modérateur{/if}
 		</p>
@@ -64,6 +68,7 @@
 	<div class="stat"><span class="v">{data.stats.legendary}</span><span class="l">légendaires</span></div>
 	<div class="stat"><span class="v">{data.stats.duelWins}</span><span class="l">victoires</span></div>
 	<div class="stat"><span class="v">{data.stats.unlocked}/{data.stats.totalAchievements}</span><span class="l">succès</span></div>
+	<div class="stat"><span class="v">{p.daily_streak}</span><span class="l">jours de série</span></div>
 </div>
 
 <h2 class="section-label">{data.favorites ? 'Vitrine (favoris)' : 'Meilleures cartes'}</h2>
@@ -77,13 +82,14 @@
 		{#each data.ledger as l, i (i)}
 			<div class="cell">
 				<span class="flex-1 min-w-0">{reasonLabel(l.reason)}<span class="block footnote text-label-2">{ago(l.created_at)}</span></span>
-				<span class="font-semibold tabular-nums {l.delta > 0 ? 'text-success' : 'text-danger'}">{l.delta > 0 ? '+' : ''}{fmt(l.delta)}</span>
+				<span class="font-semibold tabular-nums {l.delta > 0 ? 'text-success' : 'text-danger'}">{l.delta > 0 ? '+' : ''}{fmt(l.delta)}{isFragments(l.reason) ? ' fr.' : ''}</span>
 			</div>
 		{/each}
 	</div>
 {/if}
 
 {#if data.isMe}
+	<div class="mb-3"><PushToggle /></div>
 	<div class="group">
 		<a class="cell text-inherit no-underline" href="/achievements"><Icon name="award" class="text-accent" /><span class="flex-1">Mes succès</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 		<a class="cell text-inherit no-underline" href="/leaderboard"><Icon name="trophy" class="text-warning" /><span class="flex-1">Classement</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
@@ -95,6 +101,16 @@
 {/if}
 
 <style>
+	.title-tag {
+		display: inline-block;
+		margin: 2px 0 0;
+		font-size: 13px;
+		font-weight: 700;
+		color: #8a5a00;
+		background: linear-gradient(90deg, #fff1b8, #ffd76a);
+		border-radius: 999px;
+		padding: 2px 10px;
+	}
 	.head {
 		display: flex;
 		align-items: center;
@@ -115,7 +131,8 @@
 	}
 	.stats {
 		display: grid;
-		grid-template-columns: repeat(5, 1fr);
+		grid-template-columns: repeat(3, 1fr);
+		row-gap: 12px;
 		background: var(--surface);
 		border-radius: var(--radius-lg);
 		padding: 12px 4px;

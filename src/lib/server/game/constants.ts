@@ -21,9 +21,43 @@ export const DUEL_WIN_POINTS = 50;
 
 export const XP = { pack: 5, newCard: 2, duelWin: 30, duelLoss: 10, duelDraw: 15, trade: 10, auctionSold: 10 };
 
-export const DAILY_BASE_KAMAS = 50;
-export const DAILY_STREAK_BONUS = 10; // par jour consécutif, plafonné à 7 jours
+/* ---------------- Rétention (boucle 2) ---------------- */
+
+export type BoosterKind = 'bronze' | 'silver' | 'gold';
+
+/** Boosters bonus (jamais achetables) : rareté minimale de la 5e carte et multiplicateur des chances Rare+. */
+export const BOOSTERS: Record<BoosterKind, { name: string; minLast: number; boost: number; shiny: boolean }> = {
+	bronze: { name: 'Booster Bronze', minLast: 2, boost: 1, shiny: false },
+	silver: { name: 'Booster Argent', minLast: 3, boost: 1.6, shiny: false },
+	gold: { name: 'Booster Or', minLast: 4, boost: 2.2, shiny: true }
+};
+
+/** Calendrier de la série de connexion (7 jours, puis on recommence). +1 paquet gratuit chaque jour. */
+export const DAILY_CALENDAR: { kamas: number; fragments?: number; booster?: BoosterKind }[] = [
+	{ kamas: 40 },
+	{ kamas: 50, fragments: 20 },
+	{ kamas: 60, booster: 'bronze' },
+	{ kamas: 80, fragments: 40 },
+	{ kamas: 100, booster: 'silver' },
+	{ kamas: 120, fragments: 60 },
+	{ kamas: 150, fragments: 100, booster: 'gold' }
+];
 export const DAILY_BONUS_PACK = 1;
+
+/** Cartes brillantes : chance par carte tirée, et multiplicateur de valeur à la vente / au recyclage. */
+export const SHINY_CHANCE = 1 / 40;
+export const SHINY_VALUE_MULT = 5;
+
+/** Fabrication : fragments obtenus en recyclant 1 exemplaire, et coût pour fabriquer une carte, par rareté. */
+export const RECYCLE_VALUES = [5, 15, 50, 150, 500, 2000];
+export const CRAFT_COSTS = [30, 80, 250, 800, 2400, 8000];
+
+/** Coffre de la semaine : selon le nombre de quêtes récupérées dans la semaine (heure de Bruxelles). */
+export const CHEST_TIERS: { tier: 'gold' | 'silver' | 'bronze'; name: string; min: number; kamas: number; fragments: number; booster: BoosterKind }[] = [
+	{ tier: 'gold', name: 'Coffre en or', min: 16, kamas: 500, fragments: 300, booster: 'gold' },
+	{ tier: 'silver', name: 'Coffre en argent', min: 10, kamas: 250, fragments: 120, booster: 'silver' },
+	{ tier: 'bronze', name: 'Coffre en bronze', min: 4, kamas: 100, fragments: 40, booster: 'bronze' }
+];
 
 export const AUCTION_DURATIONS_H = [1, 6, 24, 72];
 export const AUCTION_MIN_INCREMENT = 0.05; // +5 % (au moins 1 kama)

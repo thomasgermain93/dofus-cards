@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { GAME_NAME } from '#lib/config';
 	import Logo from './Logo.svelte';
-	let { width = 170, glow = false }: { width?: number; glow?: boolean } = $props();
+	let { width = 170, glow = false, kind = 'free' }: { width?: number; glow?: boolean; kind?: string } = $props();
+	const LABEL: Record<string, string> = { bronze: 'Bronze', silver: 'Argent', gold: 'Or' };
 </script>
 
-<div class="pack" class:glow style="width:{width}px; font-size:{Math.round(width * 0.09)}px">
+<div class="pack k-{kind}" class:glow style="width:{width}px; font-size:{Math.round(width * 0.09)}px">
 	<div class="foil"></div>
 	<div class="crimp top"></div>
 	<div class="body">
 		<Logo size={width * 0.32} text={false} />
 		<span class="title">{GAME_NAME}</span>
-		<span class="sub">5 cartes</span>
+		<span class="sub">{LABEL[kind] ? `Booster ${LABEL[kind]}` : '5 cartes'}</span>
 	</div>
 	<div class="crimp bottom"></div>
 </div>
@@ -28,6 +29,15 @@
 		color: white;
 		display: flex;
 		flex-direction: column;
+	}
+	.k-bronze {
+		background: linear-gradient(160deg, #6b3a12 0%, #c77d3a 50%, #8a4a1c 100%);
+	}
+	.k-silver {
+		background: linear-gradient(160deg, #3b4450 0%, #aab4c0 50%, #5c6672 100%);
+	}
+	.k-gold {
+		background: linear-gradient(160deg, #7a5200 0%, #f5c842 50%, #b07800 100%);
 	}
 	.glow {
 		box-shadow:

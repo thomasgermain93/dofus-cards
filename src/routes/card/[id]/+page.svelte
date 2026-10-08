@@ -17,7 +17,10 @@
 	});
 	let confirmOpen = $state(false);
 	let selling = $state(false);
-	let sold = $state<{ gain: number; cards: number } | null>(null);
+	let sold = $state<{ gain: number; cards: number; unit: string } | null>(null);
+	let mode = $state<'sell' | 'recycle'>('sell');
+	const unitValue = $derived(mode === 'sell' ? data.sellValue : data.recycleValue);
+	const unitName = $derived(mode === 'sell' ? 'kamas' : 'fragments');
 	let sellError = $state<string | null>(null);
 	const isLast = $derived(qty >= data.owned);
 	const needsConfirm = $derived(isLast || data.fav || c.rarity === 5);
@@ -31,10 +34,10 @@
 		if (selling) return;
 		selling = true;
 		sellError = null;
-		const r = await sell({ items: [{ cardId: c.id, count: qty }] });
+		const r = await sell({ items: [{ cardId: c.id, count: qty }], mode });
 		selling = false;
 		if (r.error) sellError = r.error;
-		else sold = { gain: r.gain, cards: r.cards };
+		else sold = { gain: r.gain, cards: r.cards, unit: unitName };
 	}
 	let showSell = $state(false);
 
@@ -54,7 +57,7 @@
 
 <div class="layout">
 	<div class="card-col">
-		<div class="big" use:tilt><Card card={c} size="lg" missing={!data.owned} favorite={data.fav} /></div>
+		<div class="big" use:tilt><Card card={c} size="lg" missing={!data.owned} favorite={data.fav} foil={data.shinyCount > 0} /></div>
 	</div>
 
 	<div class="flex flex-col gap-4 min-w-0">
@@ -65,7 +68,8 @@
 		</div>
 
 		{#if form?.error}<p class="alert alert-error">{form.error}</p>{/if}
-		{#if sold}<p class="alert alert-ok" data-testid="sold">Vendu : +{fmt(sold.gain)} kamas.</p>{/if}
+		{#if sold}<p class="alert alert-ok" data-testid="sold">{sold.unit === 'kamas' ? 'Vendu' : 'Recyclé'} : +{fmt(sold.gain)} {sold.unit}.</p>{/if}
+		{#if form?.crafted}<p class="alert alert-ok" data-testid="crafted">Carte fabriquée pour {fmt(form.crafted.cost)} fragments !</p>{/if}
 		{#if sellError}<p class="alert alert-error">{sellError}</p>{/if}
 		{#if form?.auctionId}<p class="alert alert-ok">Carte mise en vente. <a class="underline" href="/market/{form.auctionId}">Voir l'enchère</a></p>{/if}
 
@@ -107,14 +111,18 @@
 				<section class="group p-4 flex flex-col gap-3" data-testid="sell-box">
 					<div class="flex items-center gap-3">
 						<div class="flex-1 min-w-0">
-							<p class="headline">Vendre au jeu</p>
-							<p class="footnote text-label-2">{data.sellValue} kamas par exemplaire, vente immédiate</p>
+							<p class="headline">{mode === 'sell' ? 'Vendre au jeu' : 'Recycler en fragments'}</p>
+							<p class="footnote text-label-2">{unitValue} {unitName} par exemplaire{data.shinyCount ? ', x5 pour une brillante (vendue en dernier)' : ''}</p>
 						</div>
 						<div class="stepper" aria-label="Quantité">
 							<button type="button" onclick={() => (qty = Math.max(1, qty - 1))} disabled={qty <= 1} aria-label="Moins">−</button>
 							<span class="tabular-nums" data-testid="sell-qty">{qty}</span>
 							<button type="button" onclick={() => (qty = Math.min(data.sellable, qty + 1))} disabled={qty >= data.sellable} aria-label="Plus">+</button>
 						</div>
+					</div>
+					<div class="segmented" role="group" aria-label="Vendre ou recycler">
+						<button type="button" aria-pressed={mode === 'sell'} onclick={() => (mode = 'sell')}>Vendre (kamas)</button>
+						<button type="button" aria-pressed={mode === 'recycle'} onclick={() => (mode = 'recycle')} data-testid="card-recycle">Recycler ({fmt(data.fragments)} fragments)</button>
 					</div>
 					{#if data.sellable > 1}
 						<div class="flex gap-2 flex-wrap">
@@ -123,7 +131,7 @@
 						</div>
 					{/if}
 					<button class="btn btn-block" disabled={selling} data-testid="sell" onclick={() => (needsConfirm ? (confirmOpen = true) : doSell())}>
-						<Icon name="coins" size={18} />Vendre {qty > 1 ? `${qty} exemplaires ` : ''}+{fmt(qty * data.sellValue)} kamas
+						<Icon name="coins" size={18} />{mode === 'sell' ? 'Vendre' : 'Recycler'} {qty > 1 ? `${qty} exemplaires ` : ''}+{fmt(qty * unitValue)} {unitName}
 					</button>
 					{#if data.owned - data.sellable > 0}<p class="footnote text-label-3">{data.owned - data.sellable} exemplaire{data.owned - data.sellable > 1 ? 's' : ''} bloqué{data.owned - data.sellable > 1 ? 's' : ''} (en vente aux enchères ou proposé en échange).</p>{/if}
 				</section>
@@ -131,7 +139,15 @@
 				<p class="footnote text-label-2">Tous tes exemplaires sont engagés (enchère ou échange en cours) : la vente au jeu est indisponible.</p>
 			{/if}
 		{:else}
-			<p class="alert" style="background: var(--surface-3)">Tu n'as pas encore cette carte. Ouvre des paquets, guette les enchères ou propose un échange.</p>
+			<p class="alert" style="background: var(--surface-3)">Tu n'as pas encore cette carte. Ouvre des paquets, guette les enchères, propose un échange ou fabrique-la.</p>
+			<form method="POST" action="?/craft" use:enhance class="group p-4 flex flex-col gap-3" data-testid="craft-box">
+				<div>
+					<p class="headline">Fabriquer cette carte</p>
+					<p class="footnote text-label-2">Coût : {fmt(data.craftCost)} fragments, tu en as {fmt(data.fragments)}. Les fragments s'obtiennent en recyclant tes cartes, avec les quêtes et la série du jour.</p>
+				</div>
+				<div class="bar"><span style="width: {Math.min(100, (data.fragments / data.craftCost) * 100)}%"></span></div>
+				<button class="btn btn-block" disabled={data.fragments < data.craftCost} data-testid="craft"><Icon name="sparkles" size={18} />Fabriquer ({fmt(data.craftCost)} fragments)</button>
+			</form>
 		{/if}
 
 		{#if data.owned && (facts.length || spells.length)}
@@ -165,9 +181,9 @@
 
 {#if confirmOpen}
 	<ConfirmSheet
-		title="Vendre {qty} x {c.name} pour {fmt(qty * data.sellValue)} kamas ?"
+		title="{mode === 'sell' ? 'Vendre' : 'Recycler'} {qty} x {c.name} pour {fmt(qty * unitValue)} {unitName} ?"
 		message={confirmMsg}
-		confirmLabel="Vendre"
+		confirmLabel={mode === 'sell' ? 'Vendre' : 'Recycler'}
 		destructive
 		onconfirm={doSell}
 		oncancel={() => (confirmOpen = false)}
@@ -175,6 +191,22 @@
 {/if}
 
 <style>
+	.bar {
+		height: 6px;
+		border-radius: 999px;
+		background: var(--surface-3);
+		overflow: hidden;
+	}
+	.bar span {
+		display: block;
+		height: 100%;
+		background: linear-gradient(90deg, #5e5ce6, #bf5af2);
+	}
+	.segmented button {
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+	}
 	.stepper {
 		display: inline-flex;
 		align-items: center;

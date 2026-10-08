@@ -1,5 +1,8 @@
 import type { DB } from '../db';
 import { COLLECTION_POINTS, XP } from './constants';
+import { queuePush } from '../push';
+
+const PUSH_KINDS = new Set(['duel', 'trade', 'friend', 'chest']);
 
 /** Erreur « métier » dont le message peut être montré au joueur. */
 export class GameError extends Error {}
@@ -38,6 +41,10 @@ export interface UserRow {
 	daily_streak: number;
 	guild_id: number | null;
 	bio: string | null;
+	fragments: number;
+	title: string | null;
+	streak_best: number;
+	joker_week: string | null;
 	created_at: number;
 }
 
@@ -80,13 +87,14 @@ export function notify(db: DB, userId: number, kind: string, body: string, link:
 		link,
 		now
 	);
+	if (PUSH_KINDS.has(kind)) queuePush(db, userId, body, link ?? '/');
 }
 
 /** Nombre d'exemplaires d'une carte possédés et non bloqués (enchère). */
 export function freeCopies(db: DB, userId: number, cardId: number): number[] {
 	return (
 		db
-			.prepare('SELECT id FROM user_cards WHERE user_id = ? AND card_id = ? AND locked IS NULL ORDER BY id')
+			.prepare('SELECT id FROM user_cards WHERE user_id = ? AND card_id = ? AND locked IS NULL ORDER BY shiny DESC, id')
 			.all(userId, cardId) as { id: number }[]
 	).map((r) => r.id);
 }
@@ -99,9 +107,9 @@ export function ownsCard(db: DB, userId: number, cardId: number): boolean {
  * Donne une carte à un joueur. Si c'est une carte qu'il n'avait pas, il gagne
  * des points de collection (classement hebdomadaire) et de l'XP.
  */
-export function grantCard(db: DB, userId: number, cardId: number, now = Date.now(), countScore = true): { isNew: boolean } {
+export function grantCard(db: DB, userId: number, cardId: number, now = Date.now(), countScore = true, shiny = false): { isNew: boolean } {
 	const isNew = !ownsCard(db, userId, cardId);
-	db.prepare('INSERT INTO user_cards (user_id, card_id, obtained_at) VALUES (?, ?, ?)').run(userId, cardId, now);
+	db.prepare('INSERT INTO user_cards (user_id, card_id, obtained_at, shiny) VALUES (?, ?, ?, ?)').run(userId, cardId, now, shiny ? 1 : 0);
 	if (isNew && countScore) {
 		const { rarity } = db.prepare('SELECT rarity FROM cards WHERE id = ?').get(cardId) as { rarity: number };
 		db.prepare('INSERT INTO score_events (user_id, kind, points, created_at) VALUES (?, ?, ?, ?)').run(

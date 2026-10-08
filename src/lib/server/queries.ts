@@ -28,3 +28,30 @@ export function friendsOf(db: DB, userId: number) {
 		)
 		.all(userId, userId, userId) as { id: number; username: string }[];
 }
+
+import { dailyStatus, chestStatus } from './game/retention';
+import { listQuests } from './game/quests';
+import { boosterCounts } from './game/packs';
+import { userCollections } from './game/collections';
+import { getUser } from './game/core';
+import { BOOSTERS } from './game/constants';
+import { nextBrusselsMidnight, nextBrusselsMonday } from './game/time';
+
+/** Tout ce qui fait revenir le joueur : série, quêtes, coffre, boosters, collections à réclamer. */
+export function retentionSummary(db: DB, userId: number, now = Date.now()) {
+	const quests = listQuests(db, userId, now);
+	const collections = userCollections(db, userId);
+	return {
+		daily: dailyStatus(db, userId, now),
+		quests,
+		questsToClaim: quests.filter((q) => q.done && !q.claimed_at).length,
+		chest: chestStatus(db, userId, now),
+		boosters: boosterCounts(db, userId),
+		boosterNames: Object.fromEntries(Object.entries(BOOSTERS).map(([k, v]) => [k, v.name])) as Record<string, string>,
+		fragments: getUser(db, userId).fragments,
+		collectionsToClaim: collections.filter((c) => c.complete && !c.claimed).length,
+		nextMidnight: nextBrusselsMidnight(now),
+		nextMonday: nextBrusselsMonday(now),
+		now
+	};
+}

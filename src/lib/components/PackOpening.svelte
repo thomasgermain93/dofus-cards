@@ -15,12 +15,14 @@
 		cards,
 		packsLeft = 0,
 		onclose,
-		onagain
+		onagain,
+		source = 'free'
 	}: {
-		cards: { card: CardView; isNew: boolean }[];
+		cards: { card: CardView; isNew: boolean; shiny?: boolean }[];
 		packsLeft?: number;
 		onclose: () => void;
 		onagain?: () => void;
+		source?: string;
 	} = $props();
 
 	const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -100,7 +102,7 @@
 		const c = cards[index].card;
 		const last = index === cards.length - 1;
 		// Anticipation : plus la carte est rare, plus on fait durer le suspense
-		const suspense = c.rarity >= 5 ? 1500 : c.rarity >= 4 ? 1000 : c.rarity >= 3 ? 600 : last && c.rarity >= 2 ? 350 : 0;
+		const suspense = cards[index].shiny && c.rarity < 3 ? 600 : c.rarity >= 5 ? 1500 : c.rarity >= 4 ? 1000 : c.rarity >= 3 ? 600 : last && c.rarity >= 2 ? 350 : 0;
 		if (suspense) {
 			charging = true;
 			teaser = c.rarity >= 4 ? 'Quelque chose brille très fort…' : 'Ça scintille…';
@@ -201,7 +203,7 @@
 	let busy = $state(false);
 	let sellError = $state<string | null>(null);
 	let ask = $state<number | null>(null);
-	const value = (i: number) => SELL_VALUES[cards[i].card.rarity];
+	const value = (i: number) => SELL_VALUES[cards[i].card.rarity] * (cards[i].shiny ? 5 : 1);
 	const dupIdx = $derived(cards.map((c, i) => i).filter((i) => !cards[i].isNew && status[i] === 'idle'));
 	const dupTotal = $derived(dupIdx.reduce((s, i) => s + value(i), 0));
 	const soldTotal = $derived(cards.reduce((s, c, i) => s + (status[i] === 'sold' ? value(i) : 0), 0));
@@ -272,8 +274,8 @@
 				}}
 				style="--tear: {tear}"
 			>
-				<div class="pack-top"><PackArt width={210} glow /></div>
-				<div class="pack-body"><PackArt width={210} glow /></div>
+				<div class="pack-top"><PackArt width={210} glow kind={source} /></div>
+				<div class="pack-body"><PackArt width={210} glow kind={source} /></div>
 				<div class="cut" style="width: {tear * 100}%"></div>
 			</div>
 			<p class="hint">
@@ -288,7 +290,7 @@
 				{#key index}
 					<div class="flipper" class:flipped>
 						<div class="face back"><CardBack /></div>
-						<div class="face front"><div use:tilt style="--holo-k: 1.7"><Card card={current.card} size="lg" /></div></div>
+						<div class="face front"><div use:tilt style="--holo-k: 1.7"><Card card={current.card} size="lg" foil={!!current.shiny} /></div></div>
 					</div>
 				{/key}
 			</div>
@@ -298,6 +300,7 @@
 				{:else if flipped}
 					<span class="rname" style="color: {rarityColor(current.card.rarity)}">{RARITY[current.card.rarity].name}</span>
 					{#if current.isNew}<span class="new">Nouvelle carte</span>{/if}
+					{#if current.shiny}<span class="shiny-tag">Brillante !</span>{/if}
 				{/if}
 			</div>
 			<div class="stack" aria-label="{remaining} carte(s) restante(s)">
@@ -312,13 +315,13 @@
 				{#each cards as c, i (i)}
 					<div class="sum-item" class:sold={status[i] === 'sold'} style="animation-delay: {i * 60}ms" data-testid="pack-item">
 						<div class="sum-card">
-							<Card card={c.card} size="sm" />
+							<Card card={c.card} size="sm" foil={!!c.shiny} />
 							{#if c.isNew}<span class="new small">Nouvelle</span>{:else}<span class="dup small">Doublon</span>{/if}
-							{#if status[i] === 'sold'}<span class="sold-tag">+{SELL_VALUES[c.card.rarity]} kamas</span>{/if}
+							{#if status[i] === 'sold'}<span class="sold-tag">+{value(i)} kamas</span>{/if}
 						</div>
 						{#if status[i] === 'idle'}
 							<div class="quick">
-								<button class="q sell" disabled={busy} onclick={() => sellOne(i)} data-testid="pack-sell">Vendre +{SELL_VALUES[c.card.rarity]}</button>
+								<button class="q sell" disabled={busy} onclick={() => sellOne(i)} data-testid="pack-sell">Vendre +{value(i)}</button>
 								<button class="q keep" onclick={() => (status[i] = 'kept')} data-testid="pack-keep">Garder</button>
 							</div>
 						{:else if status[i] === 'kept'}
@@ -594,6 +597,14 @@
 		font-weight: 800;
 		font-size: 20px;
 		filter: brightness(1.3);
+	}
+	.shiny-tag {
+		background: linear-gradient(90deg, #ffe680, #ff9ad5, #9ad5ff);
+		color: #3d2e00;
+		font-weight: 800;
+		font-size: 13px;
+		padding: 3px 10px;
+		border-radius: 999px;
 	}
 	.new {
 		background: #30d158;

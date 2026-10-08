@@ -3,7 +3,8 @@ import { computePacks, drawRarity, openPack, givePacks, getPackState } from '../
 import { PACK_INTERVAL_MS as P, PACK_MAX, PACK_ODDS, PACK_SIZE } from '../game/constants';
 import { seededRng } from '../game/rng';
 import { testDb, addUser } from './fixtures';
-import { sellCards, sellAllDuplicates, claimDaily } from '../game/collection';
+import { sellCards, sellAllDuplicates } from '../game/collection';
+import { claimDaily } from '../game/retention';
 import { createAuction } from '../game/auctions';
 import { createTrade } from '../game/trades';
 import { kamas, give, copies } from './fixtures';
@@ -147,14 +148,13 @@ describe('vente rapide et récompense quotidienne', () => {
 		expect(copies(db, u, c)).toBe(1);
 		expect(copies(db, u, r)).toBe(2);
 	});
-	it('récompense quotidienne une fois par jour, série incrémentée', () => {
+	it('récompense quotidienne une fois par jour (heure de Bruxelles)', () => {
 		const db = testDb();
 		const u = addUser(db, 'f', 0);
-		const day = 86_400_000;
-		const a = claimDaily(db, u, 10 * day);
-		expect(a.streak).toBe(1);
-		expect(() => claimDaily(db, u, 10 * day + 1000)).toThrow(/déjà/);
-		expect(claimDaily(db, u, 11 * day).streak).toBe(2);
-		expect(claimDaily(db, u, 13 * day).streak).toBe(1);
+		const t = Date.UTC(2026, 0, 10, 12);
+		expect(claimDaily(db, u, t).streak).toBe(1);
+		expect(() => claimDaily(db, u, t + 3_600_000)).toThrow(/déjà/);
+		expect(claimDaily(db, u, t + 86_400_000).streak).toBe(2);
 	});
+
 });

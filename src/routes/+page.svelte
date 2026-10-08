@@ -11,12 +11,20 @@
 	import Countdown from '#lib/components/Countdown.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import Logo from '#lib/components/Logo.svelte';
+	import StreakCalendar from '#lib/components/StreakCalendar.svelte';
+	import QuestList from '#lib/components/QuestList.svelte';
+	import ChestCard from '#lib/components/ChestCard.svelte';
+	import PushToggle from '#lib/components/PushToggle.svelte';
+	import { duration } from '#lib/format';
 	import type { CardView } from '#lib/types';
+	import type { retentionSummary } from '#lib/server/queries';
+	type RetentionSummary = ReturnType<typeof retentionSummary>;
 
 	let { data, form } = $props();
 	const me = $derived(data.me);
 
-	let opened = $state<{ card: CardView; isNew: boolean }[] | null>(null);
+	let opened = $state<{ card: CardView; isNew: boolean; shiny?: boolean }[] | null>(null);
+	let openedSource = $state<string>('free');
 	let opening = $state(false);
 	let error = $state<string | null>(null);
 	let notifPermission = $state<string>('default');
@@ -25,11 +33,33 @@
 		if ('Notification' in window) notifPermission = Notification.permission;
 	});
 
-	async function openPack() {
+	type Todo = { key: string; icon: string; text: string; action?: string; href?: string };
+	const R = $derived((data as { retention?: RetentionSummary }).retention ?? null);
+	const BOOSTER_KINDS = ['bronze', 'silver', 'gold'] as const;
+	const boosterTotal = $derived(R ? R.boosters.bronze + R.boosters.silver + R.boosters.gold : 0);
+	const dailyQuests = $derived(R ? R.quests.filter((q) => q.period === 'day') : []);
+	const todo: Todo[] = $derived(
+		R
+			? ([
+					me && me.packs > 0 ? { key: 'packs', icon: 'package', text: `${me.packs} paquet${me.packs > 1 ? 's' : ''} prêt${me.packs > 1 ? 's' : ''}`, action: 'open' } : null,
+					boosterTotal ? { key: 'boosters', icon: 'sparkles', text: `${boosterTotal} booster${boosterTotal > 1 ? 's' : ''} bonus à ouvrir`, href: '#boosters' } : null,
+					R.daily.available ? { key: 'daily', icon: 'gift', text: `Récompense du jour ${R.daily.todayIndex} / 7`, href: '#streak' } : null,
+					R.questsToClaim ? { key: 'quests', icon: 'check', text: `${R.questsToClaim} quête${R.questsToClaim > 1 ? 's' : ''} à récupérer`, href: '/quests' } : null,
+					R.chest.previous.tier && !R.chest.previous.claimed ? { key: 'chest', icon: 'gift', text: `${R.chest.previous.tier.name} à ouvrir`, href: '#chest' } : null,
+					R.collectionsToClaim ? { key: 'collections', icon: 'album', text: `${R.collectionsToClaim} collection${R.collectionsToClaim > 1 ? 's' : ''} complète${R.collectionsToClaim > 1 ? 's' : ''} à récupérer`, href: '/collections' } : null,
+					me?.duelsToPlay ? { key: 'duels', icon: 'swords', text: `${me.duelsToPlay} duel${me.duelsToPlay > 1 ? 's' : ''} t'attend${me.duelsToPlay > 1 ? 'ent' : ''}`, href: '/duels' } : null
+				] as (Todo | null)[]).filter((x): x is Todo => !!x)
+			: []
+	);
+
+	async function openPack(source: string = 'free') {
 		if (opening) return;
 		opening = true;
 		error = null;
-		const res = await fetch('?/open', { method: 'POST', body: new FormData(), headers: { 'x-sveltekit-action': 'true' } });
+		openedSource = source;
+		const body = new FormData();
+		body.set('source', source);
+		const res = await fetch('/?/open', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
 		const result = deserialize(await res.text());
 		opening = false;
 		if (result.type === 'success' && result.data?.opened) {
@@ -86,6 +116,29 @@
 	{/if}
 	<h1 class="large-title mb-4">Bonjour, {me.username}</h1>
 
+	{#if R}
+	<!-- Ce que tu peux faire maintenant -->
+	<section class="now group mb-4" data-testid="now">
+		<h2 class="headline px-4 pt-4 pb-1">Maintenant</h2>
+		{#each todo as t (t.key)}
+			{#if t.action === 'open'}
+				<button class="cell w-full text-left bg-transparent border-0 cursor-pointer" onclick={() => openPack()} disabled={opening}>
+					<span class="dot-ic"><Icon name={t.icon} size={18} /></span><span class="flex-1 font-semibold">{t.text}</span><span class="btn btn-sm">Ouvrir</span>
+				</button>
+			{:else}
+				<a class="cell text-inherit no-underline" href={t.href}>
+					<span class="dot-ic"><Icon name={t.icon} size={18} /></span><span class="flex-1 font-semibold">{t.text}</span><Icon name="chevron-right" size={16} class="text-label-3" />
+				</a>
+			{/if}
+		{:else}
+			<p class="cell text-label-2">Tout est fait pour l'instant, bravo !</p>
+		{/each}
+		<p class="footnote text-label-3 px-4 pb-3 pt-1">
+			{#if me.nextPackAt}Prochain paquet dans <Countdown target={me.nextPackAt} serverNow={me.serverNow} ondone={packReady} />.{/if}
+			Nouvelles quêtes dans {duration(R.nextMidnight - R.now)}.
+		</p>
+	</section>
+
 	<div class="dash">
 		<!-- Paquets -->
 		<section class="pack-card group">
@@ -99,7 +152,7 @@
 					<p class="text-label-2">{me.packs} / 10 en réserve</p>
 					{#if me.nextPackAt}
 						<p class="footnote text-label-2 flex items-center gap-1 flex-wrap">
-							<Icon name="clock" size={14} /> Prochain dans <Countdown target={me.nextPackAt} serverNow={me.serverNow} ondone={packReady} />
+							<Icon name="clock" size={14} /> Prochain dans <Countdown target={me.nextPackAt} serverNow={me.serverNow} />
 						</p>
 					{:else}
 						<p class="footnote text-warning">Réserve pleine : ouvre un paquet pour relancer la minuterie.</p>
@@ -107,31 +160,36 @@
 					<p class="footnote text-label-3 mt-1">Un paquet gratuit toutes les 10 minutes.</p>
 				</div>
 			</div>
-			<button class="btn btn-block" onclick={openPack} disabled={me.packs === 0 || opening} data-testid="open-pack">
+			<button class="btn btn-block" onclick={() => openPack()} disabled={me.packs === 0 || opening} data-testid="open-pack">
 				<Icon name="package" size={18} />{opening ? 'Ouverture…' : me.packs === 0 ? 'Aucun paquet pour le moment' : 'Ouvrir un paquet'}
 			</button>
-			{#if error}<p class="alert alert-error">{error}</p>{/if}
-			{#if notifPermission === 'default'}
-				<button class="btn btn-plain btn-sm self-center" onclick={enableNotifications}><Icon name="bell" size={16} />Me prévenir quand un paquet est prêt</button>
+			{#if boosterTotal}
+				<div id="boosters" class="boosters">
+					{#each BOOSTER_KINDS as k (k)}
+						{#if R.boosters[k]}
+							<button class="booster b-{k}" onclick={() => openPack(k)} disabled={opening} data-testid="open-{k}">
+								<span class="bname">{R.boosterNames[k]}</span><span class="bqty">x{R.boosters[k]}</span>
+							</button>
+						{/if}
+					{/each}
+				</div>
+				<p class="footnote text-label-3">Bronze : dernière carte Rare ou mieux. Argent : Super rare ou mieux. Or : Ultra rare ou mieux et une brillante garantie.</p>
 			{/if}
+			{#if error}<p class="alert alert-error">{error}</p>{/if}
+			<div class="self-center"><PushToggle /></div>
 		</section>
 
-		<!-- Récompense quotidienne -->
-		<section class="group p-4 flex items-center gap-4">
-			<div class="daily-icon"><Icon name="gift" size={26} /></div>
-			<div class="flex-1 min-w-0">
-				<h2 class="headline">Récompense du jour</h2>
-				<p class="footnote text-label-2">
-					{data.dailyAvailable ? `${data.dailyBase} kamas et 1 paquet` : 'Déjà récupérée, reviens demain'}{data.dailyStreak ? `, série de ${data.dailyStreak} jour${data.dailyStreak > 1 ? 's' : ''}` : ''}
-				</p>
-				{#if form?.daily}<p class="footnote text-success">+{form.daily.kamas} kamas et +1 paquet !</p>{/if}
+		<div id="streak"><StreakCalendar daily={R.daily} /></div>
+
+		<section>
+			<div class="flex items-center justify-between">
+				<h2 class="section-label">Quêtes du jour</h2>
+				<a class="btn btn-plain btn-sm" href="/quests">Toutes les quêtes</a>
 			</div>
-			{#if data.dailyAvailable}
-				<form method="POST" action="?/daily" use:enhance>
-					<button class="btn btn-sm">Récupérer</button>
-				</form>
-			{/if}
+			<QuestList quests={dailyQuests} />
 		</section>
+
+		<div id="chest"><ChestCard chest={R.chest} nextMonday={R.nextMonday} now={R.now} /></div>
 
 		<!-- Collection -->
 		<a href="/album" class="group p-4 block no-underline text-inherit">
@@ -139,7 +197,7 @@
 				<h2 class="headline">Collection</h2>
 				<Icon name="chevron-right" size={18} class="text-label-3" />
 			</div>
-			<p class="text-label-2 footnote mb-2">{fmt(data.owned ?? 0)} / {fmt(data.total ?? 0)} cartes différentes</p>
+			<p class="text-label-2 footnote mb-2">{fmt(data.owned ?? 0)} / {fmt(data.total ?? 0)} cartes différentes, {data.shinies ?? 0} brillante{(data.shinies ?? 0) > 1 ? 's' : ''}, {fmt(R.fragments)} fragments</p>
 			<div class="progress"><span style="width: {Math.max(1, ((data.owned ?? 0) / (data.total || 1)) * 100)}%"></span></div>
 			{#if data.lastCards?.length}
 				<div class="mini-grid mt-3">
@@ -174,6 +232,7 @@
 
 		<!-- Raccourcis -->
 		<section class="group">
+			<a class="cell no-underline text-inherit" href="/collections"><Icon name="album" class="text-accent" /><span class="flex-1">Collections par région, donjon et panoplie</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 			<a class="cell no-underline text-inherit" href="/leaderboard"><Icon name="trophy" class="text-warning" /><span class="flex-1">Classement de la semaine</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 			<a class="cell no-underline text-inherit" href="/achievements"><Icon name="award" class="text-accent" /><span class="flex-1">Succès</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 			<a class="cell no-underline text-inherit" href="/duels/new?vs=bot"><Icon name="bot" class="text-success" /><span class="flex-1">Entraînement contre l'ordinateur</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
@@ -189,7 +248,9 @@
 				opened = null;
 				openPack();
 			}}
+			source={openedSource}
 		/>
+	{/if}
 	{/if}
 {/if}
 
@@ -309,6 +370,57 @@
 		gap: 8px;
 	}
 
+	.dot-ic {
+		width: 32px;
+		height: 32px;
+		border-radius: 9px;
+		display: grid;
+		place-items: center;
+		background: var(--accent-soft);
+		color: var(--accent);
+		flex: none;
+	}
+	.boosters {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+	.booster {
+		flex: 1;
+		min-width: 96px;
+		border: 0;
+		border-radius: 14px;
+		padding: 10px 12px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
+		font-weight: 700;
+		color: white;
+		cursor: pointer;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+		transition: transform var(--dur-fast) var(--ease-ios);
+	}
+	.booster:active {
+		transform: scale(0.96);
+	}
+	.b-bronze {
+		background: linear-gradient(135deg, #e0a070, #9c5a28);
+	}
+	.b-silver {
+		background: linear-gradient(135deg, #d9dee5, #7d8794);
+		color: #1f2630;
+	}
+	.b-gold {
+		background: linear-gradient(135deg, #ffe680, #d99a00);
+		color: #3d2e00;
+	}
+	.bqty {
+		background: rgba(0, 0, 0, 0.18);
+		border-radius: 999px;
+		padding: 1px 8px;
+		font-size: 13px;
+	}
 	.unread {
 		width: 9px;
 		height: 9px;

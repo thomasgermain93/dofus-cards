@@ -35,9 +35,12 @@
 	}
 	// ---- Vente de tous les doublons ----
 	let maxRarity = $state(2);
+	let dupMode = $state<'sell' | 'recycle'>('sell');
+	const values = $derived(dupMode === 'sell' ? data.sellValues : data.recycleValues);
 	const dupPreview = $derived(
-		data.dupByRarity.filter((d) => d.rarity <= maxRarity).reduce((acc, d) => ({ n: acc.n + d.n, kamas: acc.kamas + d.n * data.sellValues[d.rarity] }), { n: 0, kamas: 0 })
+		data.dupByRarity.filter((d) => d.rarity <= maxRarity).reduce((acc, d) => ({ n: acc.n + d.n, kamas: acc.kamas + d.n * values[d.rarity] }), { n: 0, kamas: 0 })
 	);
+	const unit = $derived(dupMode === 'sell' ? 'kamas' : 'fragments');
 	let toast = $state<string | null>(null);
 	let sellError = $state<string | null>(null);
 	let busy = $state(false);
@@ -49,10 +52,15 @@
 		if (busy) return;
 		busy = true;
 		sellError = null;
-		const r = await sell({ duplicates: true, maxRarity });
+		const r = await sell({ duplicates: true, maxRarity, mode: dupMode });
 		busy = false;
 		if (r.error) sellError = r.error;
-		else flash(r.cards ? `${r.cards} doublon${r.cards > 1 ? 's' : ''} vendu${r.cards > 1 ? 's' : ''} : +${fmt(r.gain)} kamas` : 'Aucun doublon à vendre.');
+		else
+			flash(
+				r.cards
+					? `${r.cards} doublon${r.cards > 1 ? 's' : ''} ${dupMode === 'sell' ? 'vendu' : 'recyclé'}${r.cards > 1 ? 's' : ''} : +${fmt(r.gain)} ${unit}`
+					: 'Aucun doublon.'
+			);
 	}
 
 	// ---- Mode sélection ----
@@ -125,8 +133,9 @@
 	{/if}
 </div>
 <p class="text-label-2 mb-3">
-	{fmt(comp.owned)} / {fmt(comp.total)} cartes, {comp.total ? ((comp.owned / comp.total) * 100).toFixed(1).replace('.', ',') : 0} % complété
+	{fmt(comp.owned)} / {fmt(comp.total)} cartes, {comp.total ? ((comp.owned / comp.total) * 100).toFixed(1).replace('.', ',') : 0} % complété, {data.shinies} brillante{data.shinies > 1 ? 's' : ''}, {fmt(data.fragments)} fragments
 </p>
+<a class="coll-link group" href="/collections"><Icon name="album" size={18} class="text-accent" /><span class="flex-1">Collections par région, donjon et panoplie</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 <div class="progress mb-4"><span style="width:{comp.total ? Math.max(0.5, (comp.owned / comp.total) * 100) : 0}%"></span></div>
 
 {#if sellError}<p class="alert alert-error mb-3">{sellError}</p>{/if}
@@ -136,9 +145,13 @@
 		<div class="flex items-center gap-3">
 			<span class="coin"><Icon name="coins" size={22} /></span>
 			<div class="flex-1 min-w-0">
-				<p class="headline">Vendre tous les doublons</p>
-				<p class="footnote text-label-2">Garde 1 exemplaire de chaque carte, vend le reste au jeu.</p>
+				<p class="headline">{dupMode === 'sell' ? 'Vendre' : 'Recycler'} tous les doublons</p>
+				<p class="footnote text-label-2">Garde 1 exemplaire de chaque carte, {dupMode === 'sell' ? 'vend le reste au jeu contre des kamas' : 'recycle le reste en fragments pour fabriquer des cartes'}.</p>
 			</div>
+		</div>
+		<div class="segmented mt-3" role="group" aria-label="Vendre ou recycler">
+			<button type="button" aria-pressed={dupMode === 'sell'} onclick={() => (dupMode = 'sell')}>Vendre (kamas)</button>
+			<button type="button" aria-pressed={dupMode === 'recycle'} onclick={() => (dupMode = 'recycle')} data-testid="mode-recycle">Recycler (fragments)</button>
 		</div>
 		<label class="flex items-center gap-2 mt-3">
 			<span class="footnote text-label-2 flex-none">Jusqu'à</span>
@@ -147,11 +160,12 @@
 			</select>
 		</label>
 		<button class="btn btn-block mt-3" disabled={busy || !dupPreview.n} onclick={sellDupes} data-testid="sell-dupes">
-			{dupPreview.n ? `Vendre ${dupPreview.n} doublon${dupPreview.n > 1 ? 's' : ''} +${fmt(dupPreview.kamas)} kamas` : 'Aucun doublon jusqu’à cette rareté'}
+			{dupPreview.n ? `${dupMode === 'sell' ? 'Vendre' : 'Recycler'} ${dupPreview.n} doublon${dupPreview.n > 1 ? 's' : ''} +${fmt(dupPreview.kamas)} ${unit}` : 'Aucun doublon jusqu’à cette rareté'}
 		</button>
 		<p class="bareme footnote text-label-3 mt-2">
 			Barème par exemplaire :
-			{#each RARITY as r, i}<span><span class="dot" style="background: var({r.var})"></span>{r.code} {data.sellValues[i]}</span>{/each}
+			{#each RARITY as r, i}<span><span class="dot" style="background: var({r.var})"></span>{r.code} {values[i]}</span>{/each}
+			<span>(brillante x5)</span>
 		</p>
 	</section>
 {/if}
@@ -179,7 +193,7 @@
 </div>
 
 <div class="chips mb-2">
-	{#each [['all', 'Toutes'], ['owned', 'Possédées'], ['missing', 'Manquantes'], ['dupes', 'Doublons'], ['fav', 'Favoris']] as [k, label]}
+	{#each [['all', 'Toutes'], ['owned', 'Possédées'], ['missing', 'Manquantes'], ['dupes', 'Doublons'], ['shiny', 'Brillantes'], ['fav', 'Favoris']] as [k, label]}
 		<a class="chip" href={link({ own: k })} aria-current={f.own === k ? 'page' : undefined} data-sveltekit-noscroll>{label}</a>
 	{/each}
 </div>
@@ -197,7 +211,7 @@
 	{#each data.cards as c (c.id)}
 		{#if selecting}
 			<button type="button" class="card-link pick" class:on={(picked[c.id] ?? 0) > 0} class:off={!c.cnt || !c.sellable} onclick={() => toggle(c)} aria-label={c.cnt ? c.name : 'Carte manquante'} data-testid="album-pick">
-				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} />
+				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} foil={c.shiny > 0} />
 				{#if picked[c.id]}<span class="pickbadge">{picked[c.id]}</span>{/if}
 			</button>
 		{:else}
@@ -211,7 +225,7 @@
 				oncontextmenu={(e) => c.cnt && e.preventDefault()}
 				onclick={(e) => longPressed && e.preventDefault()}
 			>
-				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} />
+				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} foil={c.shiny > 0} />
 			</a>
 		{/if}
 	{:else}
@@ -251,6 +265,21 @@
 {#if toast}<div class="toast" role="status" data-testid="toast">{toast}</div>{/if}
 
 <style>
+	.coll-link {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 12px 14px;
+		margin-bottom: 16px;
+		color: inherit;
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.sell-dupes .segmented button {
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+	}
 	.sell-dupes .coin {
 		width: 44px;
 		height: 44px;

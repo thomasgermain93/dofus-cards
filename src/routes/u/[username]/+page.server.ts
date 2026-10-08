@@ -13,8 +13,8 @@ export const load: PageServerLoad = ({ locals, params }) => {
 	const found = findUserByName(db, params.username);
 	if (!found) error(404, 'Joueur introuvable');
 	const u = db
-		.prepare('SELECT u.id, u.username, u.xp, u.bio, u.created_at, u.banned, u.role, g.id guild_id, g.name guild, g.tag FROM users u LEFT JOIN guilds g ON g.id = u.guild_id WHERE u.id = ?')
-		.get(found.id) as { id: number; username: string; xp: number; bio: string | null; created_at: number; banned: number; role: string; guild_id: number | null; guild: string | null; tag: string | null };
+		.prepare('SELECT u.id, u.username, u.xp, u.bio, u.title, u.daily_streak, u.streak_best, u.created_at, u.banned, u.role, g.id guild_id, g.name guild, g.tag FROM users u LEFT JOIN guilds g ON g.id = u.guild_id WHERE u.id = ?')
+		.get(found.id) as { id: number; username: string; xp: number; bio: string | null; title: string | null; daily_streak: number; streak_best: number; created_at: number; banned: number; role: string; guild_id: number | null; guild: string | null; tag: string | null };
 	const showcase = db
 		.prepare(`SELECT ${CARD_COLS} FROM favorites f JOIN cards c ON c.id = f.card_id WHERE f.user_id = ? ORDER BY c.rarity DESC LIMIT 6`)
 		.all(u.id) as CardView[];
