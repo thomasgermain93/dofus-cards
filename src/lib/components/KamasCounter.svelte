@@ -1,0 +1,84 @@
+<script lang="ts">
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
+	import { fmt } from '#lib/format';
+	import Icon from './Icon.svelte';
+
+	/** Compteur de kamas du header : les gains s'ajoutent en douceur avec un « +X » qui monte. */
+	let { value }: { value: number } = $props();
+	const shown = new Tween(0, { duration: 700, easing: cubicOut });
+	let prev: number | null = null;
+	let gains = $state<{ id: number; amount: number }[]>([]);
+	let pulse = $state(false);
+	let seq = 0;
+
+	$effect(() => {
+		const v = value;
+		if (prev === null) shown.set(v, { duration: 0 });
+		else if (v !== prev) {
+			shown.set(v);
+			if (v > prev) {
+				const id = ++seq;
+				gains = [...gains, { id, amount: v - prev }];
+				pulse = true;
+				setTimeout(() => (pulse = false), 450);
+				setTimeout(() => (gains = gains.filter((g) => g.id !== id)), 1300);
+			}
+		}
+		prev = v;
+	});
+</script>
+
+<span class="k" class:pulse data-testid="kamas-counter" data-value={value}>
+	<Icon name="coins" size={13} />{fmt(Math.round(shown.current))}<span class="sr-only"> kamas</span>
+	{#each gains as g (g.id)}<span class="gain">+{fmt(g.amount)}</span>{/each}
+</span>
+
+<style>
+	.k {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-weight: 700;
+		font-size: 13px;
+		font-variant-numeric: tabular-nums;
+		color: var(--kamas);
+		transition: transform 0.45s var(--ease-ios);
+	}
+	.pulse {
+		transform: scale(1.15);
+	}
+	.gain {
+		position: absolute;
+		right: -6px;
+		top: calc(100% + 8px);
+		font-size: 12px;
+		font-weight: 800;
+		color: var(--success);
+		background: var(--surface);
+		border-radius: 999px;
+		padding: 1px 7px;
+		box-shadow: var(--shadow-card);
+		white-space: nowrap;
+		pointer-events: none;
+		animation: rise 1.3s var(--ease-ios) forwards;
+	}
+	@keyframes rise {
+		0% {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		20% {
+			opacity: 1;
+			transform: translateY(2px);
+		}
+		75% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(-14px);
+		}
+	}
+</style>

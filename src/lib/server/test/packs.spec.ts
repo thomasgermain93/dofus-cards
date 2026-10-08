@@ -3,9 +3,11 @@ import { computePacks, drawRarity, openPack, givePacks, getPackState } from '../
 import { PACK_INTERVAL_MS as P, PACK_MAX, PACK_ODDS, PACK_SIZE } from '../game/constants';
 import { seededRng } from '../game/rng';
 import { testDb, addUser } from './fixtures';
-import { discardDuplicates, claimDaily } from '../game/collection';
+import { sellCards, sellAllDuplicates, claimDaily } from '../game/collection';
+import { createAuction } from '../game/auctions';
+import { createTrade } from '../game/trades';
 import { kamas, give, copies } from './fixtures';
-import { DISCARD_VALUES } from '../game/constants';
+import { SELL_VALUES } from '../game/constants';
 
 describe('minuterie des paquets', () => {
 	it('gagne 1 paquet toutes les 10 minutes', () => {
@@ -77,16 +79,73 @@ describe('tirages', () => {
 	});
 });
 
-describe('défausse et récompense quotidienne', () => {
-	it('défausser un doublon rapporte des kamas selon la rareté et garde 1 exemplaire', () => {
+describe('vente rapide et récompense quotidienne', () => {
+	const pickCard = (db: ReturnType<typeof testDb>, rarity: number) =>
+		db.prepare('SELECT id FROM cards WHERE rarity = ? LIMIT 1').get(rarity) as { id: number };
+
+	it('vendre rapporte le barème de la rareté, y compris le dernier exemplaire', () => {
 		const db = testDb();
 		const u = addUser(db, 'e', 0);
-		const card = db.prepare('SELECT id, rarity FROM cards WHERE rarity = 3 LIMIT 1').get() as { id: number; rarity: number };
+		const card = pickCard(db, 3);
 		give(db, u, card.id, 3);
-		expect(discardDuplicates(db, u, card.id, 2).gain).toBe(2 * DISCARD_VALUES[3]);
-		expect(kamas(db, u)).toBe(2 * DISCARD_VALUES[3]);
+		expect(sellCards(db, u, [{ cardId: card.id, count: 2 }]).gain).toBe(2 * SELL_VALUES[3]);
 		expect(copies(db, u, card.id)).toBe(1);
-		expect(() => discardDuplicates(db, u, card.id, 1)).toThrow(/doublons/);
+		expect(sellCards(db, u, [{ cardId: card.id, count: 1 }]).gain).toBe(SELL_VALUES[3]);
+		expect(copies(db, u, card.id)).toBe(0);
+		expect(kamas(db, u)).toBe(3 * SELL_VALUES[3]);
+		expect(() => sellCards(db, u, [{ cardId: card.id, count: 1 }])).toThrow(/que 0 exemplaire/);
+	});
+	it('une carte en enchère ou proposée en échange n’est pas vendable', () => {
+		const db = testDb();
+		const u = addUser(db, 'f', 100);
+		const v = addUser(db, 'g', 0);
+		const a = pickCard(db, 0).id;
+		const b = pickCard(db, 1).id;
+		give(db, u, a, 1);
+		give(db, u, b, 2);
+		give(db, v, 3, 1);
+		createAuction(db, u, a, 10, 1, 0);
+		expect(() => sellCards(db, u, [{ cardId: a, count: 1 }])).toThrow(/bloquées/);
+		createTrade(db, u, v, [b], 0, [3], null, 0);
+		expect(() => sellCards(db, u, [{ cardId: b, count: 2 }])).toThrow(/que 1 exemplaire/);
+		expect(sellCards(db, u, [{ cardId: b, count: 1 }]).cards).toBe(1);
+	});
+	it('quantité invalide refusée, et rien n’est vendu si un lot échoue (tout ou rien)', () => {
+		const db = testDb();
+		const u = addUser(db, 'h', 0);
+		const a = pickCard(db, 0).id;
+		const b = pickCard(db, 2).id;
+		give(db, u, a, 2);
+		give(db, u, b, 1);
+		for (const count of [0, -1, 1.5, NaN]) expect(() => sellCards(db, u, [{ cardId: a, count }])).toThrow(/Quantité invalide/);
+		expect(() => sellCards(db, u, [])).toThrow(/Aucune carte/);
+		expect(() => sellCards(db, u, [{ cardId: a, count: 1 }, { cardId: b, count: 2 }])).toThrow();
+		expect(copies(db, u, a)).toBe(2);
+		expect(kamas(db, u)).toBe(0);
+	});
+	it('double clic : le même identifiant de vente ne vend qu’une fois', () => {
+		const db = testDb();
+		const u = addUser(db, 'i', 0);
+		const a = pickCard(db, 2).id;
+		give(db, u, a, 5);
+		const first = sellCards(db, u, [{ cardId: a, count: 1 }], 'nonce-1234');
+		const second = sellCards(db, u, [{ cardId: a, count: 1 }], 'nonce-1234');
+		expect(second.duplicate).toBe(true);
+		expect(second.gain).toBe(first.gain);
+		expect(copies(db, u, a)).toBe(4);
+		expect(kamas(db, u)).toBe(SELL_VALUES[2]);
+	});
+	it('vendre tous les doublons garde un exemplaire et respecte la rareté maximale', () => {
+		const db = testDb();
+		const u = addUser(db, 'j', 0);
+		const c = pickCard(db, 0).id;
+		const r = pickCard(db, 4).id;
+		give(db, u, c, 3);
+		give(db, u, r, 2);
+		const res = sellAllDuplicates(db, u, 2);
+		expect(res.cards).toBe(2);
+		expect(copies(db, u, c)).toBe(1);
+		expect(copies(db, u, r)).toBe(2);
 	});
 	it('récompense quotidienne une fois par jour, série incrémentée', () => {
 		const db = testDb();

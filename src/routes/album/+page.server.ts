@@ -1,7 +1,8 @@
 import { getDb } from '#lib/server/db';
-import { discardAllDuplicates } from '#lib/server/game/collection';
-import { CARD_COLS, int, limit, run } from '#lib/server/web';
-import type { Actions, PageServerLoad } from './$types';
+import { sellableCounts } from '#lib/server/game/collection';
+import { SELL_VALUES } from '#lib/server/game/constants';
+import { CARD_COLS, int } from '#lib/server/web';
+import type { PageServerLoad } from './$types';
 import type { CardView } from '#lib/types';
 
 const PER_PAGE = 60;
@@ -53,16 +54,14 @@ export const load: PageServerLoad = ({ locals, url }) => {
 		.prepare('SELECT COUNT(*) n FROM (SELECT card_id, COUNT(*) k FROM user_cards WHERE user_id = ? GROUP BY card_id HAVING k > 1)')
 		.get(uid) as { n: number };
 
-	return { cards, total, pages: Math.max(1, Math.ceil(total / PER_PAGE)), pageNo, filters: { cat, own, rarity, q, sort }, completion, dupes: dupes.n };
+	const dupByRarity = db
+		.prepare(
+			`SELECT c.rarity, SUM(k - 1) n FROM (SELECT card_id, COUNT(*) k FROM user_cards WHERE user_id = ? AND locked IS NULL GROUP BY card_id HAVING k > 1) x
+			 JOIN cards c ON c.id = x.card_id GROUP BY c.rarity`
+		)
+		.all(uid) as { rarity: number; n: number }[];
+	const sellable = sellableCounts(db, uid, cards.filter((c) => c.cnt > 0).map((c) => c.id));
+	const withSell = cards.map((c) => ({ ...c, sellable: sellable.get(c.id) ?? 0 }));
+	return { cards: withSell, total, pages: Math.max(1, Math.ceil(total / PER_PAGE)), pageNo, filters: { cat, own, rarity, q, sort }, completion, dupes: dupes.n, dupByRarity, sellValues: SELL_VALUES };
 };
 
-export const actions: Actions = {
-	discardAll: async ({ locals, request }) => {
-		const f = await request.formData();
-		const max = Math.min(5, Math.max(0, int(f.get('max'), 2)));
-		return run(locals, (uid) => {
-			limit(`discard:${uid}`, 10, 60_000);
-			return { discarded: discardAllDuplicates(getDb(), uid, max) };
-		});
-	}
-};

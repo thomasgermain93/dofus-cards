@@ -8,8 +8,12 @@ export const STARTING_KAMAS = 100;
 /** Probabilité de chaque rareté pour une carte de paquet (somme = 1). */
 export const PACK_ODDS = [0.5, 0.27, 0.13, 0.065, 0.028, 0.007];
 
-/** Kamas reçus en défaussant un doublon, par rareté. */
-export const DISCARD_VALUES = [1, 3, 10, 30, 100, 400];
+/**
+ * Vente rapide au jeu : kamas reçus par exemplaire, selon la rareté.
+ * Volontairement bas (environ 45 kamas par paquet en moyenne) pour que les
+ * enchères entre joueurs restent plus intéressantes pour les cartes recherchées.
+ */
+export const SELL_VALUES = [1, 3, 10, 30, 100, 400];
 
 /** Points de collection par rareté (classement). */
 export const COLLECTION_POINTS = [1, 2, 5, 15, 40, 100];

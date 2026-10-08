@@ -5,11 +5,36 @@
 	import Kamas from '#lib/components/Kamas.svelte';
 	import { RARITY, rarityColor } from '#lib/rarity';
 	import { duration, fmt } from '#lib/format';
+	import ConfirmSheet from '#lib/components/ConfirmSheet.svelte';
+	import { sell } from '#lib/sell';
 
 	let { data, form } = $props();
 	const c = $derived(data.card);
-	const dupes = $derived(Math.max(0, Math.min(data.free, data.owned - 1)));
-	let discardCount = $state(1);
+	let qty = $state(1);
+	$effect(() => {
+		if (qty > data.sellable) qty = Math.max(1, data.sellable);
+	});
+	let confirmOpen = $state(false);
+	let selling = $state(false);
+	let sold = $state<{ gain: number; cards: number } | null>(null);
+	let sellError = $state<string | null>(null);
+	const isLast = $derived(qty >= data.owned);
+	const needsConfirm = $derived(isLast || data.fav || c.rarity === 5);
+	const confirmMsg = $derived(
+		[isLast ? 'C’est ton dernier exemplaire : la carte quittera ton album.' : '', data.fav ? 'Cette carte est dans tes favoris.' : '', c.rarity === 5 ? 'C’est une carte Légendaire.' : '']
+			.filter(Boolean)
+			.join(' ')
+	);
+	async function doSell() {
+		confirmOpen = false;
+		if (selling) return;
+		selling = true;
+		sellError = null;
+		const r = await sell({ items: [{ cardId: c.id, count: qty }] });
+		selling = false;
+		if (r.error) sellError = r.error;
+		else sold = { gain: r.gain, cards: r.cards };
+	}
 	let showSell = $state(false);
 
 	const FACT_LABELS: Record<string, string> = {
@@ -39,7 +64,8 @@
 		</div>
 
 		{#if form?.error}<p class="alert alert-error">{form.error}</p>{/if}
-		{#if form?.discarded}<p class="alert alert-ok">Défaussé : +{fmt(form.discarded.gain)} kamas.</p>{/if}
+		{#if sold}<p class="alert alert-ok" data-testid="sold">Vendu : +{fmt(sold.gain)} kamas.</p>{/if}
+		{#if sellError}<p class="alert alert-error">{sellError}</p>{/if}
 		{#if form?.auctionId}<p class="alert alert-ok">Carte mise en vente. <a class="underline" href="/market/{form.auctionId}">Voir l'enchère</a></p>{/if}
 
 		<div class="group">
@@ -65,7 +91,7 @@
 				<form method="POST" action="?/sell" use:enhance class="group p-4 flex flex-col gap-3">
 					<p class="headline">Mettre en vente</p>
 					<label class="flex flex-col gap-1"><span class="footnote text-label-2">Prix de départ (kamas)</span>
-						<input class="field" type="number" name="price" min="1" value={Math.max(1, data.lastSale ?? data.discardValue * 3)} required />
+						<input class="field" type="number" name="price" min="1" value={Math.max(1, data.lastSale ?? data.sellValue * 3)} required />
 					</label>
 					<label class="flex flex-col gap-1"><span class="footnote text-label-2">Durée</span>
 						<select class="field" name="duration">
@@ -76,15 +102,32 @@
 				</form>
 			{/if}
 
-			{#if dupes > 0}
-				<form method="POST" action="?/discard" use:enhance class="group p-4 flex items-center gap-3 flex-wrap">
-					<div class="flex-1 min-w-[180px]">
-						<p class="headline">Défausser des doublons</p>
-						<p class="footnote text-label-2">{data.discardValue} kamas par exemplaire, {dupes} doublon{dupes > 1 ? 's' : ''} disponible{dupes > 1 ? 's' : ''}</p>
+			{#if data.sellable > 0}
+				<section class="group p-4 flex flex-col gap-3" data-testid="sell-box">
+					<div class="flex items-center gap-3">
+						<div class="flex-1 min-w-0">
+							<p class="headline">Vendre au jeu</p>
+							<p class="footnote text-label-2">{data.sellValue} kamas par exemplaire, vente immédiate</p>
+						</div>
+						<div class="stepper" aria-label="Quantité">
+							<button type="button" onclick={() => (qty = Math.max(1, qty - 1))} disabled={qty <= 1} aria-label="Moins">−</button>
+							<span class="tabular-nums" data-testid="sell-qty">{qty}</span>
+							<button type="button" onclick={() => (qty = Math.min(data.sellable, qty + 1))} disabled={qty >= data.sellable} aria-label="Plus">+</button>
+						</div>
 					</div>
-					<input class="field w-20" type="number" name="count" min="1" max={dupes} bind:value={discardCount} aria-label="Nombre" />
-					<button class="btn btn-danger btn-sm">+{fmt(discardCount * data.discardValue)} kamas</button>
-				</form>
+					{#if data.sellable > 1}
+						<div class="flex gap-2 flex-wrap">
+							{#if data.owned > 1 && data.sellable >= data.owned - 1}<button type="button" class="chip" onclick={() => (qty = data.owned - 1)}>Doublons ({data.owned - 1})</button>{/if}
+							<button type="button" class="chip" onclick={() => (qty = data.sellable)}>Tout ({data.sellable})</button>
+						</div>
+					{/if}
+					<button class="btn btn-block" disabled={selling} data-testid="sell" onclick={() => (needsConfirm ? (confirmOpen = true) : doSell())}>
+						<Icon name="coins" size={18} />Vendre {qty > 1 ? `${qty} exemplaires ` : ''}+{fmt(qty * data.sellValue)} kamas
+					</button>
+					{#if data.owned - data.sellable > 0}<p class="footnote text-label-3">{data.owned - data.sellable} exemplaire{data.owned - data.sellable > 1 ? 's' : ''} bloqué{data.owned - data.sellable > 1 ? 's' : ''} (en vente aux enchères ou proposé en échange).</p>{/if}
+				</section>
+			{:else}
+				<p class="footnote text-label-2">Tous tes exemplaires sont engagés (enchère ou échange en cours) : la vente au jeu est indisponible.</p>
 			{/if}
 		{:else}
 			<p class="alert" style="background: var(--surface-3)">Tu n'as pas encore cette carte. Ouvre des paquets, guette les enchères ou propose un échange.</p>
@@ -119,7 +162,42 @@
 	</div>
 </div>
 
+{#if confirmOpen}
+	<ConfirmSheet
+		title="Vendre {qty} x {c.name} pour {fmt(qty * data.sellValue)} kamas ?"
+		message={confirmMsg}
+		confirmLabel="Vendre"
+		destructive
+		onconfirm={doSell}
+		oncancel={() => (confirmOpen = false)}
+	/>
+{/if}
+
 <style>
+	.stepper {
+		display: inline-flex;
+		align-items: center;
+		background: var(--surface-3);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.stepper button {
+		width: 40px;
+		height: 34px;
+		border: 0;
+		background: transparent;
+		font-size: 20px;
+		color: var(--accent);
+		cursor: pointer;
+	}
+	.stepper button:disabled {
+		color: var(--label-3);
+	}
+	.stepper span {
+		min-width: 28px;
+		text-align: center;
+		font-weight: 700;
+	}
 	.back {
 		display: inline-flex;
 		align-items: center;

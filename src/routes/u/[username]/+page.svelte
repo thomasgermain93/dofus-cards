@@ -2,7 +2,13 @@
 	import { enhance } from '$app/forms';
 	import Card from '#lib/components/Card.svelte';
 	import Icon from '#lib/components/Icon.svelte';
-	import { fmt } from '#lib/format';
+	import { ago, fmt } from '#lib/format';
+
+	const REASONS: [string, string][] = [
+		['sell:', 'Vente au jeu'], ['discard:', 'Vente au jeu'], ['sale:', 'Carte vendue aux enchères'], ['bid:', 'Enchère placée'],
+		['refund:', 'Enchère remboursée'], ['trade:', 'Échange'], ['daily', 'Récompense du jour'], ['achievement:', 'Succès']
+	];
+	const reasonLabel = (r: string) => REASONS.find(([k]) => r.startsWith(k))?.[1] ?? 'Autre';
 
 	let { data, form } = $props();
 	const p = $derived(data.profile);
@@ -64,6 +70,18 @@
 <div class="showcase mb-5">
 	{#each data.cards as c (c.id)}<a href="/card/{c.id}"><Card card={c} size="sm" /></a>{:else}<p class="text-label-2">Aucune carte pour l'instant.</p>{/each}
 </div>
+
+{#if data.isMe && data.ledger.length}
+	<h2 class="section-label">Mouvements de kamas{data.soldTotal ? `, ${fmt(data.soldTotal)} gagnés en ventes au jeu` : ''}</h2>
+	<div class="group mb-5" data-testid="ledger">
+		{#each data.ledger as l, i (i)}
+			<div class="cell">
+				<span class="flex-1 min-w-0">{reasonLabel(l.reason)}<span class="block footnote text-label-2">{ago(l.created_at)}</span></span>
+				<span class="font-semibold tabular-nums {l.delta > 0 ? 'text-success' : 'text-danger'}">{l.delta > 0 ? '+' : ''}{fmt(l.delta)}</span>
+			</div>
+		{/each}
+	</div>
+{/if}
 
 {#if data.isMe}
 	<div class="group">

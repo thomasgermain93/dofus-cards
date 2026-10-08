@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { getDb } from '#lib/server/db';
-import { discardDuplicates } from '#lib/server/game/collection';
+import { sellableCounts } from '#lib/server/game/collection';
 import { createAuction } from '#lib/server/game/auctions';
-import { AUCTION_DURATIONS_H, DISCARD_VALUES } from '#lib/server/game/constants';
+import { AUCTION_DURATIONS_H, SELL_VALUES } from '#lib/server/game/constants';
 import { CARD_COLS, int, limit, run } from '#lib/server/web';
 import type { Actions, PageServerLoad } from './$types';
 import type { CardView } from '#lib/types';
@@ -38,7 +38,9 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		auctions,
 		owners,
 		lastSale: lastSale?.current_bid ?? null,
-		discardValue: DISCARD_VALUES[card.rarity],
+		sellValue: SELL_VALUES[card.rarity],
+		sellable: sellableCounts(db, uid, [id]).get(id) ?? 0,
+		inTrade: Math.max(0, (copies.free ?? 0) - (sellableCounts(db, uid, [id]).get(id) ?? 0)),
 		durations: AUCTION_DURATIONS_H
 	};
 };
@@ -52,13 +54,6 @@ export const actions: Actions = {
 			if (!del.changes) db.prepare('INSERT INTO favorites (user_id, card_id) VALUES (?, ?)').run(uid, id);
 			return { fav: !del.changes };
 		}),
-	discard: async ({ locals, params, request }) => {
-		const f = await request.formData();
-		return run(locals, (uid) => {
-			limit(`discard:${uid}`, 30, 60_000);
-			return { discarded: discardDuplicates(getDb(), uid, int(params.id), int(f.get('count'), 1)) };
-		});
-	},
 	sell: async ({ locals, params, request }) => {
 		const f = await request.formData();
 		return run(locals, (uid) => {

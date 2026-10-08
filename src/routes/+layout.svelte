@@ -4,7 +4,7 @@
 	import { GAME_NAME } from '#lib/config';
 	import Icon from '#lib/components/Icon.svelte';
 	import Logo from '#lib/components/Logo.svelte';
-	import Kamas from '#lib/components/Kamas.svelte';
+	import KamasCounter from '#lib/components/KamasCounter.svelte';
 	import Disclaimer from '#lib/components/Disclaimer.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -79,7 +79,7 @@
 				<a href="/" class="topbar-brand" aria-label="Accueil"><Logo size={26} compact /></a>
 				<div class="topbar-right">
 					<a href="/" class="pill" title="Paquets disponibles"><Icon name="package" size={16} />{me.packs}</a>
-					<span class="pill"><Kamas value={me.kamas} size="sm" /></span>
+					<span class="pill"><KamasCounter value={me.kamas} /></span>
 					<a href="/notifications" class="icon-btn" aria-label="Notifications">
 						<Icon name="bell" size={21} />
 						{#if me.unreadNotifs}<span class="badge dot">{me.unreadNotifs}</span>{/if}

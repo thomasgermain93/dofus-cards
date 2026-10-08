@@ -25,6 +25,7 @@ npm run dev
 
 - `npm run import:dofusdb -- --refresh` : re-télécharge les données (sinon le cache `data/raw` est réutilisé). Relançable : les cartes sont mises à jour par clé (`monster:58`…), les collections des joueurs restent valides, les cartes disparues sont désactivées (jamais supprimées).
 - `npm test` : tests unitaires (tirages, minuterie, enchères, échanges, duels, quiz, modération, succès…).
+- `node tests/e2e/sell.mjs` : parcours de vente rapide (paquet, fiche, album, double clic), 390 et 1440 px.
 - `node tests/e2e/run.mjs` : parcours Playwright à deux joueurs, 390 px et 1440 px (voir l'en-tête du fichier pour les variables).
 
 Variables d'environnement : `DATA_DIR` (base + images, défaut `./data`), `ORIGIN` (URL publique, requis en production), `ADDRESS_HEADER=cf-connecting-ip` derrière Cloudflare, `NOINDEX=0` pour autoriser l'indexation.
@@ -80,7 +81,7 @@ Normalisation : `stat = 1 000 + 6 000 x percentile(log(brut)) dans la catégorie
 
 ### Économie
 
-- Défausse d'un doublon : 1 / 3 / 10 / 30 / 100 / 400 kamas selon la rareté (on garde toujours 1 exemplaire)
+- **Vente au jeu** (vente rapide, équivalent des wikibidous) : 1 / 3 / 10 / 30 / 100 / 400 kamas par exemplaire selon la rareté (`SELL_VALUES`). Barème volontairement bas (environ 45 kamas par paquet en moyenne) pour que les enchères restent plus intéressantes pour les cartes recherchées. Disponible depuis la fiche (quantité au choix, dernier exemplaire compris, confirmation si dernier exemplaire, favori ou Légendaire), à l'ouverture d'un paquet (Vendre / Garder par carte, « Vendre les doublons de ce paquet ») et dans l'album (mode sélection par bouton ou appui long, « Vendre tous les doublons » avec rareté maximale). Les exemplaires en enchère ou proposés dans un échange en attente ne sont pas vendables. API `POST /api/sell`, transaction tout ou rien, idempotente par `nonce` (anti double clic). Historique des mouvements de kamas sur son profil.
 - Départ : 100 kamas et 3 paquets. Récompense quotidienne : 50 kamas (+10 par jour de série, plafonné à 7 jours) + 1 paquet
 - Enchères : 1 h / 6 h / 24 h / 72 h, surenchère minimale +5 %, kamas réservés à l'enchère et rendus automatiquement au battu, prolongation de 2 min si enchère dans les 2 dernières minutes, clôture par tâche planifiée (15 s)
 - Échanges : jusqu'à 6 cartes de chaque côté + kamas, transfert atomique (transaction SQLite)

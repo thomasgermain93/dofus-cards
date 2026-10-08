@@ -78,7 +78,7 @@ export const MIGRATIONS: string[] = [
 	CREATE TABLE auctions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		seller_id INTEGER NOT NULL REFERENCES users(id),
-		user_card_id INTEGER NOT NULL,          -- exemplaire bloqué (pas de FK : il peut être défaussé après la vente)
+		user_card_id INTEGER NOT NULL,          -- exemplaire bloqué (pas de FK : il peut être revendu après la vente)
 		card_id INTEGER NOT NULL REFERENCES cards(id),
 		start_price INTEGER NOT NULL,
 		current_bid INTEGER,

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import ConfirmSheet from '#lib/components/ConfirmSheet.svelte';
+	import { sell } from '#lib/sell';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '#lib/components/Card.svelte';
@@ -32,15 +33,95 @@
 		clearTimeout(timer);
 		timer = setTimeout(() => goto(link({ q }), { reset: false, replace: true }), 300);
 	}
-	let showDiscard = $state(false);
+	// ---- Vente de tous les doublons ----
+	let maxRarity = $state(2);
+	const dupPreview = $derived(
+		data.dupByRarity.filter((d) => d.rarity <= maxRarity).reduce((acc, d) => ({ n: acc.n + d.n, kamas: acc.kamas + d.n * data.sellValues[d.rarity] }), { n: 0, kamas: 0 })
+	);
+	let toast = $state<string | null>(null);
+	let sellError = $state<string | null>(null);
+	let busy = $state(false);
+	function flash(msg: string) {
+		toast = msg;
+		setTimeout(() => (toast = null), 2600);
+	}
+	async function sellDupes() {
+		if (busy) return;
+		busy = true;
+		sellError = null;
+		const r = await sell({ duplicates: true, maxRarity });
+		busy = false;
+		if (r.error) sellError = r.error;
+		else flash(r.cards ? `${r.cards} doublon${r.cards > 1 ? 's' : ''} vendu${r.cards > 1 ? 's' : ''} : +${fmt(r.gain)} kamas` : 'Aucun doublon à vendre.');
+	}
+
+	// ---- Mode sélection ----
+	let selecting = $state(false);
+	let picked = $state<Record<number, number>>({});
+	let confirmOpen = $state(false);
+	const pickedList = $derived(
+		Object.entries(picked)
+			.map(([id, n]) => ({ card: data.cards.find((c) => c.id === Number(id))!, n }))
+			.filter((p) => p.card && p.n > 0)
+	);
+	const pickedCount = $derived(pickedList.reduce((s, p) => s + p.n, 0));
+	const pickedKamas = $derived(pickedList.reduce((s, p) => s + p.n * data.sellValues[p.card.rarity], 0));
+	const warnings = $derived(
+		[
+			pickedList.some((p) => p.n >= p.card.cnt) ? 'Certaines cartes quitteront ton album (dernier exemplaire).' : '',
+			pickedList.some((p) => p.card.fav) ? 'La sélection contient des favoris.' : '',
+			pickedList.some((p) => p.card.rarity === 5) ? 'La sélection contient des Légendaires.' : ''
+		]
+			.filter(Boolean)
+			.join(' ')
+	);
+	function toggle(c: (typeof data.cards)[number]) {
+		if (!c.cnt || !c.sellable) return;
+		const n = picked[c.id] ?? 0;
+		// Chaque appui ajoute un exemplaire (doublons d'abord), puis revient à zéro
+		picked = { ...picked, [c.id]: n >= c.sellable ? 0 : n + 1 };
+	}
+	function stopSelecting() {
+		selecting = false;
+		picked = {};
+	}
+	async function sellPicked() {
+		confirmOpen = false;
+		if (busy || !pickedList.length) return;
+		busy = true;
+		sellError = null;
+		const r = await sell({ items: pickedList.map((p) => ({ cardId: p.card.id, count: p.n })) });
+		busy = false;
+		if (r.error) sellError = r.error;
+		else {
+			flash(`${r.cards} carte${r.cards > 1 ? 's' : ''} vendue${r.cards > 1 ? 's' : ''} : +${fmt(r.gain)} kamas`);
+			stopSelecting();
+		}
+	}
+	// Appui long sur une carte : passe en mode sélection
+	let pressTimer: ReturnType<typeof setTimeout> | undefined;
+	let longPressed = false;
+	function pressStart(c: (typeof data.cards)[number]) {
+		longPressed = false;
+		if (selecting || !c.cnt) return;
+		pressTimer = setTimeout(() => {
+			longPressed = true;
+			selecting = true;
+			toggle(c);
+			navigator.vibrate?.(10);
+		}, 480);
+	}
+	const pressEnd = () => clearTimeout(pressTimer);
 </script>
 
 <svelte:head><title>Album</title></svelte:head>
 
 <div class="flex items-end justify-between gap-3 mb-1">
 	<h1 class="large-title">Album</h1>
-	{#if data.dupes > 0}
-		<button class="btn btn-secondary btn-sm mb-1" onclick={() => (showDiscard = !showDiscard)}><Icon name="trash" size={16} />Doublons ({data.dupes})</button>
+	{#if selecting}
+		<button class="btn btn-secondary btn-sm mb-1" onclick={stopSelecting}>Terminé</button>
+	{:else}
+		<button class="btn btn-secondary btn-sm mb-1" onclick={() => (selecting = true)} data-testid="select-mode"><Icon name="check" size={16} />Sélectionner</button>
 	{/if}
 </div>
 <p class="text-label-2 mb-3">
@@ -48,23 +129,31 @@
 </p>
 <div class="progress mb-4"><span style="width:{comp.total ? Math.max(0.5, (comp.owned / comp.total) * 100) : 0}%"></span></div>
 
-{#if form?.discarded}
-	<p class="alert alert-ok mb-3">{form.discarded.cards} doublon{form.discarded.cards > 1 ? 's' : ''} défaussé{form.discarded.cards > 1 ? 's' : ''} : +{fmt(form.discarded.gain)} kamas.</p>
-{/if}
-{#if form?.error}<p class="alert alert-error mb-3">{form.error}</p>{/if}
+{#if sellError}<p class="alert alert-error mb-3">{sellError}</p>{/if}
 
-{#if showDiscard}
-	<form method="POST" action="?/discardAll" use:enhance={() => async ({ update }) => { showDiscard = false; await update(); }} class="group p-4 mb-4 flex flex-col gap-3">
-		<p class="headline">Défausser les doublons</p>
-		<p class="footnote text-label-2">Garde un exemplaire de chaque carte et transforme les autres en kamas (1 pour une Commune, jusqu'à 400 pour une Légendaire). Les cartes en vente ne sont pas touchées.</p>
-		<label class="flex items-center gap-3">
-			<span class="footnote">Jusqu'à la rareté</span>
-			<select name="max" class="field flex-1">
-				{#each RARITY as r, i}<option value={i} selected={i === 2}>{r.name}</option>{/each}
+{#if data.dupes > 0 && !selecting}
+	<section class="sell-dupes group p-4 mb-4" data-testid="sell-dupes-box">
+		<div class="flex items-center gap-3">
+			<span class="coin"><Icon name="coins" size={22} /></span>
+			<div class="flex-1 min-w-0">
+				<p class="headline">Vendre tous les doublons</p>
+				<p class="footnote text-label-2">Garde 1 exemplaire de chaque carte, vend le reste au jeu.</p>
+			</div>
+		</div>
+		<label class="flex items-center gap-2 mt-3">
+			<span class="footnote text-label-2 flex-none">Jusqu'à</span>
+			<select class="field search flex-1" bind:value={maxRarity} aria-label="Rareté maximale">
+				{#each RARITY as r, i}<option value={i}>{r.name}</option>{/each}
 			</select>
 		</label>
-		<button class="btn">Défausser</button>
-	</form>
+		<button class="btn btn-block mt-3" disabled={busy || !dupPreview.n} onclick={sellDupes} data-testid="sell-dupes">
+			{dupPreview.n ? `Vendre ${dupPreview.n} doublon${dupPreview.n > 1 ? 's' : ''} +${fmt(dupPreview.kamas)} kamas` : 'Aucun doublon jusqu’à cette rareté'}
+		</button>
+		<p class="bareme footnote text-label-3 mt-2">
+			Barème par exemplaire :
+			{#each RARITY as r, i}<span><span class="dot" style="background: var({r.var})"></span>{r.code} {data.sellValues[i]}</span>{/each}
+		</p>
+	</section>
 {/if}
 
 <nav class="segmented mb-3" aria-label="Type de carte">
@@ -106,9 +195,25 @@
 <p class="footnote text-label-2 mb-2">{fmt(data.total)} carte{data.total > 1 ? 's' : ''}</p>
 <div class="grid-cards">
 	{#each data.cards as c (c.id)}
-		<a href="/card/{c.id}" class="card-link" aria-label={c.cnt ? c.name : 'Carte manquante'}>
-			<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} />
-		</a>
+		{#if selecting}
+			<button type="button" class="card-link pick" class:on={(picked[c.id] ?? 0) > 0} class:off={!c.cnt || !c.sellable} onclick={() => toggle(c)} aria-label={c.cnt ? c.name : 'Carte manquante'} data-testid="album-pick">
+				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} />
+				{#if picked[c.id]}<span class="pickbadge">{picked[c.id]}</span>{/if}
+			</button>
+		{:else}
+			<a
+				href="/card/{c.id}"
+				class="card-link"
+				aria-label={c.cnt ? c.name : 'Carte manquante'}
+				onpointerdown={() => pressStart(c)}
+				onpointerup={pressEnd}
+				onpointerleave={pressEnd}
+				oncontextmenu={(e) => c.cnt && e.preventDefault()}
+				onclick={(e) => longPressed && e.preventDefault()}
+			>
+				<Card card={c} size="sm" missing={!c.cnt} count={c.cnt} favorite={!!c.fav} />
+			</a>
+		{/if}
 	{:else}
 		<p class="text-label-2 col-span-full py-10 text-center">Aucune carte ne correspond à ces filtres.</p>
 	{/each}
@@ -122,7 +227,130 @@
 	</nav>
 {/if}
 
+{#if selecting}
+	<div class="selbar material" data-testid="selection-bar">
+		<div class="flex-1 min-w-0">
+			<p class="font-semibold">{pickedCount ? `${pickedCount} exemplaire${pickedCount > 1 ? 's' : ''}` : 'Touche les cartes à vendre'}</p>
+			<p class="footnote text-label-2">{pickedCount ? `Total : +${fmt(pickedKamas)} kamas` : 'Un appui ajoute un exemplaire'}</p>
+		</div>
+		<button class="btn" disabled={!pickedCount || busy} onclick={() => (confirmOpen = true)} data-testid="sell-selection">Vendre +{fmt(pickedKamas)}</button>
+	</div>
+{/if}
+
+{#if confirmOpen}
+	<ConfirmSheet
+		title="Vendre {pickedCount} exemplaire{pickedCount > 1 ? 's' : ''} pour {fmt(pickedKamas)} kamas ?"
+		message={warnings}
+		confirmLabel="Vendre"
+		destructive
+		onconfirm={sellPicked}
+		oncancel={() => (confirmOpen = false)}
+	/>
+{/if}
+
+{#if toast}<div class="toast" role="status" data-testid="toast">{toast}</div>{/if}
+
 <style>
+	.sell-dupes .coin {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		display: grid;
+		place-items: center;
+		color: white;
+		background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+		flex: none;
+	}
+	.bareme {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 10px;
+		align-items: center;
+	}
+	.bareme > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.pick {
+		position: relative;
+		border: 0;
+		background: none;
+		padding: 0;
+		cursor: pointer;
+		border-radius: 14px;
+	}
+	.pick.on {
+		outline: 3px solid var(--accent);
+		outline-offset: 1px;
+		transform: scale(0.95);
+	}
+	.pick.off {
+		opacity: 0.35;
+		cursor: default;
+	}
+	.pickbadge {
+		position: absolute;
+		top: -6px;
+		right: -6px;
+		min-width: 24px;
+		height: 24px;
+		border-radius: 999px;
+		background: var(--accent);
+		color: white;
+		font-weight: 800;
+		font-size: 13px;
+		display: grid;
+		place-items: center;
+		box-shadow: 0 0 0 2px var(--bg);
+	}
+	.selbar {
+		position: fixed;
+		z-index: 45;
+		left: 0;
+		right: 0;
+		bottom: calc(57px + env(safe-area-inset-bottom));
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 16px;
+		border-top: 0.5px solid var(--separator);
+		animation: slide var(--dur) var(--ease-ios);
+	}
+	@media (min-width: 1024px) {
+		.selbar {
+			left: 248px;
+			bottom: 0;
+			padding: 12px 32px;
+		}
+	}
+	.toast {
+		position: fixed;
+		z-index: 150;
+		left: 50%;
+		top: calc(env(safe-area-inset-top) + 64px);
+		transform: translateX(-50%);
+		background: var(--label);
+		color: var(--bg);
+		padding: 10px 18px;
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 15px;
+		box-shadow: var(--shadow-float);
+		animation: drop 0.35s var(--ease-ios);
+		white-space: nowrap;
+	}
+	@keyframes slide {
+		from {
+			transform: translateY(100%);
+		}
+	}
+	@keyframes drop {
+		from {
+			transform: translate(-50%, -16px);
+			opacity: 0;
+		}
+	}
 	.progress {
 		height: 6px;
 		border-radius: 999px;

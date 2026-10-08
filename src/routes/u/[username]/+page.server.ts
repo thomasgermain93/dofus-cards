@@ -23,7 +23,16 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		: (db.prepare(`SELECT DISTINCT ${CARD_COLS} FROM user_cards uc JOIN cards c ON c.id = uc.card_id WHERE uc.user_id = ? ORDER BY c.rarity DESC, c.attack DESC LIMIT 6`).all(u.id) as CardView[]);
 	const s = playerStats(db, u.id);
 	const unlocked = (db.prepare('SELECT COUNT(*) n FROM achievements_unlocked WHERE user_id = ?').get(u.id) as { n: number }).n;
+	const isMe = u.id === locals.user!.id;
+	const ledger = isMe
+		? (db.prepare('SELECT delta, reason, created_at FROM ledger WHERE user_id = ? ORDER BY id DESC LIMIT 15').all(u.id) as { delta: number; reason: string; created_at: number }[])
+		: [];
+	const soldTotal = isMe
+		? ((db.prepare("SELECT COALESCE(SUM(delta), 0) n FROM ledger WHERE user_id = ? AND reason LIKE 'sell:%'").get(u.id) as { n: number }).n)
+		: 0;
 	return {
+		ledger,
+		soldTotal,
 		profile: { ...u, level: levelFromXp(u.xp) },
 		isMe: u.id === locals.user!.id,
 		relation: friendshipStatus(db, locals.user!.id, u.id),
