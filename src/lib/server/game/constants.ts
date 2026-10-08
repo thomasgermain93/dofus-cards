@@ -37,7 +37,7 @@ export const BOOSTERS: Record<BoosterKind, { name: string; minLast: number; boos
 export const EVENT = {
 	key: 'semaine-dofus-2026',
 	name: 'Semaine des Dofus',
-	description: 'Toute la semaine, chaque paquet a 1 chance sur 6 de remplacer sa dernière carte par un Dofus ou une Prysmaradite.',
+	description: 'Jusqu’au 18 octobre, chaque paquet a 1 chance sur 6 de remplacer sa dernière carte par un Dofus ou une Prysmaradite.',
 	start: Date.UTC(2026, 9, 8, 22), // 9 octobre 00:00 à Bruxelles
 	end: Date.UTC(2026, 9, 18, 22), // 19 octobre 00:00 à Bruxelles
 	chance: 1 / 6,

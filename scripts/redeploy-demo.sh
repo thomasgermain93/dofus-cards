@@ -27,5 +27,6 @@ for i in $(seq 1 60); do
 done
 [ "$(docker inspect -f '{{.State.Health.Status}}' "$NEW")" = healthy ] || { echo "Nouveau conteneur pas sain, l'ancien reste en place"; docker rm -f "$NEW"; exit 1; }
 sleep 10 # laisse Traefik enregistrer le nouveau serveur
-for c in $OLD; do docker rm -f "$c" >/dev/null && echo "Ancien conteneur $c retiré"; done
+# SIGTERM d'abord : les requêtes en cours se terminent avant le retrait
+for c in $OLD; do docker stop -t 15 "$c" >/dev/null; docker rm "$c" >/dev/null && echo "Ancien conteneur $c retiré"; done
 echo "Déployé : $TAG ($NEW)"

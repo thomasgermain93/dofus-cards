@@ -133,6 +133,16 @@ Points de la semaine (lundi 00:00 UTC) : nouvelle carte obtenue en paquet = 1 / 
 
 `niveau = floor(sqrt(XP / 50)) + 1`. XP : paquet 5, nouvelle carte 2, duel gagné 30 / nul 15 / perdu 10, échange 10, vente 10, succès 25.
 
+## Premières minutes, motion et performance
+
+- **Tutoriel** guidé et sautable (`src/lib/server/game/onboarding.ts`) : booster de bienvenue garanti Rare ou mieux, vendre une carte, finir une quête, visiter l'album, composer une vitrine. Récompense de fin : 200 kamas et 60 fragments. Puis 3 objectifs des premiers jours (10 paquets, 1 duel gagné, 25 cartes différentes). Les comptes créés avant la migration 6 sont considérés comme ayant fini le tutoriel.
+- **Chasse aux cartes** : chaque jour une carte mystère se cache sur une page du jeu (tirée par joueur et par jour), la trouver rapporte 30 kamas et 25 fragments.
+- **Événement** « Semaine des Dofus » (`EVENT` dans `constants.ts`) : du 9 au 18 octobre 2026, chaque paquet a 1 chance sur 6 de remplacer sa dernière carte par un Dofus ou une Prysmaradite.
+- **Motion** : transitions de page (View Transitions API, uniquement sur les liens et le retour), kamas qui volent vers le compteur, quêtes qui se cochent, toasts de succès, montée de niveau célébrée (après l'ouverture du paquet), micro-interactions des boutons. Tout est coupé avec `prefers-reduced-motion`.
+- **Images** : `npm run images:webp` convertit le cache en WebP 320 px (fait au démarrage du conteneur), `/img/...png` sert la version WebP quand elle existe. Album, fiches, collections et profils restent consultables hors ligne (service worker, réseau d'abord).
+- Lighthouse mobile en production (9 octobre 2026), performance / accessibilité / bonnes pratiques : accueil 93 / 100 / 100, album 95 / 100 / 96, fiche 96 / 100 / 100.
+- `node tests/e2e/b5-onboarding.mjs` : inscription, tutoriel complet, récompense, événement, carte mystère, transition.
+
 ## Modération
 
 Rôle admin (`/admin`) : bannir / débannir (sessions coupées), masquer un message privé. Filtre d'insultes sur pseudos, noms de guilde et messages (`src/lib/server/moderation.ts`), limite de débit sur les actions sensibles, messages privés réservés aux amis.
