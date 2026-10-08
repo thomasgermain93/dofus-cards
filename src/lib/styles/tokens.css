@@ -1,41 +1,106 @@
 /*
  * Design tokens : SEUL fichier à modifier pour intégrer le design Figma.
- * Les composants n'utilisent que ces variables (via les classes Tailwind
- * déclarées dans routes/layout.css, ex. bg-surface, text-label-2, rounded-card).
+ * Les composants n'utilisent que ces variables (directement, ou via les classes
+ * Tailwind déclarées dans routes/layout.css : bg-surface, text-label-2, rounded-card...).
+ *
+ * Règles appliquées (boucle 4) :
+ * - contrastes WCAG AA (4,5:1 pour le texte courant) vérifiés avec axe-core, en clair et en sombre ;
+ * - échelle typographique à 8 crans (--text-*) et grille d'espacement de 4 px (--space-*) ;
+ * - zones tactiles de 44 px minimum (--tap), 40 px pour les petits boutons (--tap-sm) ;
+ * - anneau de focus clavier unique (--focus-ring).
  */
 :root {
 	color-scheme: light;
 
-	/* Typographie : police système Apple, repli propre ailleurs */
+	/* ---------- Typographie ---------- */
 	--font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', Roboto, Arial,
 		sans-serif;
 	--font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+	--text-2xs: 11px; /* légendes de la barre d'onglets, pastilles */
+	--text-xs: 12px;
+	--text-sm: 13px; /* footnote */
+	--text-md: 15px; /* sous-titres, petits boutons */
+	--text-base: 17px; /* corps (iOS body) */
+	--text-lg: 20px;
+	--text-xl: 22px; /* title-2 */
+	--text-2xl: 28px;
+	--text-3xl: 34px; /* large title */
+	--leading-tight: 1.2;
+	--leading: 1.4;
 
-	/* Fonds et surfaces (inspirés des couleurs système iOS) */
+	/* ---------- Espacements (grille de 4 px) ---------- */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--gutter: 16px; /* marge latérale mobile */
+	--reading: 680px; /* largeur de lecture des textes longs */
+	--content-max: 1080px;
+
+	/* ---------- Tailles ---------- */
+	--tap: 44px;
+	--tap-sm: 40px;
+	--tabbar-h: 58px;
+	--sidebar-w: 248px;
+
+	/* ---------- Fonds et surfaces (couleurs système iOS) ---------- */
 	--bg: #f2f2f7;
 	--surface: #ffffff;
 	--surface-2: #f7f7fa;
 	--surface-3: #e9e9ef;
-	--material: rgba(255, 255, 255, 0.72); /* barres en verre dépoli */
-	--separator: rgba(60, 60, 67, 0.14);
+	--material: rgba(255, 255, 255, 0.78); /* barres en verre dépoli */
+	--separator: rgba(60, 60, 67, 0.16);
+	--scrim: rgba(0, 0, 0, 0.35);
 
-	/* Texte */
+	/* ---------- Texte (contrastes AA sur --bg et --surface) ---------- */
 	--label: #111114;
-	--label-2: rgba(60, 60, 67, 0.72);
-	--label-3: rgba(60, 60, 67, 0.45);
+	--label-2: #5c5c63;
+	--label-3: #6b6b72;
 
-	/* Accent et états */
-	--accent: #0a7aff;
+	/* ---------- Accent et états ---------- */
+	--accent: #0062d6; /* texte, liens */
+	--accent-fill: #0062d6; /* fond des boutons principaux */
 	--accent-contrast: #ffffff;
-	--accent-soft: rgba(10, 122, 255, 0.12);
-	--success: #248a3d;
-	--success-soft: rgba(52, 199, 89, 0.15);
+	--accent-soft: #dde9fa;
+	--success: #1d7a34;
+	--success-soft: rgba(52, 199, 89, 0.16);
 	--danger: #d70015;
 	--danger-soft: rgba(255, 59, 48, 0.12);
-	--warning: #b25000;
-	--kamas: #b8860b;
+	--warning: #a34900;
+	--kamas: #8a6100;
+	--focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent);
 
-	/* Raretés */
+	/* ---------- Couleurs d'illustration (icônes, dégradés, médailles) ---------- */
+	--gold: #ffd60a;
+	--orange: #ff9f0a;
+	--pink: #ff375f;
+	--green: #30d158;
+	--blue: #0a84ff;
+	--indigo: #5e5ce6;
+	--purple: #bf5af2;
+	--teal: #64d2ff;
+	--grad-accent: linear-gradient(135deg, var(--indigo), var(--purple));
+	--grad-warm: linear-gradient(135deg, var(--orange), var(--pink));
+	--grad-fresh: linear-gradient(135deg, var(--green), var(--blue));
+	--grad-gold: linear-gradient(135deg, var(--gold), var(--orange));
+	--grad-progress: linear-gradient(90deg, var(--accent), var(--indigo));
+	--medal-1: #ffd60a;
+	--medal-1-ink: #5c4300;
+	--medal-2: #d1d1d6;
+	--medal-2-ink: #3a3a3c;
+	--medal-3: #e3a76f;
+	--medal-3-ink: #4a2600;
+	--title-bg: linear-gradient(90deg, #fff1b8, #ffd76a);
+	--title-ink: #7a4f00;
+	--showcase-bg: linear-gradient(180deg, #221a32, #120e1c);
+	--bronze: #c77d3a;
+	--silver: #9aa3ad;
+
+	/* ---------- Raretés ---------- */
 	--r-common: #8e8e93;
 	--r-uncommon: #30b350;
 	--r-rare: #0a84ff;
@@ -44,19 +109,56 @@
 	--r-legendary: #e0a800;
 	--r-legendary-2: #ff5e3a;
 
-	/* Formes */
+	/* ---------- Cartes (cadre parchemin façon TCG 2005) ---------- */
+	--card-ink: #2a1f14;
+	--card-ink-2: #7a5a30;
+	--card-parch: #f3e8cc;
+	--card-parch-2: #fbf5e3;
+	--card-edge: #1c1916;
+	--card-heart: #c9302c;
+	--card-token-atk: radial-gradient(circle at 40% 30%, #fff3a6, #f2c230 60%, #b88a10);
+	--card-token-lvl: radial-gradient(circle at 40% 30%, #d6f7c4, #6cc24a 60%, #3d7d22);
+	--card-back: radial-gradient(circle at 50% 45%, #6d28d9, #1e3a8a 70%, #151236);
+	--card-back-line: #c9a45c;
+
+	--foil-line: #e0b400;
+	--foil-light: #f5d36b;
+	--foil-pale: #fff7d1;
+	--foil-ink: #8a6100;
+	--legendary-ring: conic-gradient(from var(--angle, 0deg), #6b4a10, #e0a800, #fff1a8, #ff7a3a, #6b4a10);
+
+	/* ---------- Ouverture de paquet (scène sombre) ---------- */
+	--glow-gold: #ffe680;
+	--on-gold: #3d2e00;
+	--on-green: #00330f;
+	--shiny-tag: linear-gradient(90deg, #ffe680, #ff9ad5, #9ad5ff);
+	--stage-bg: radial-gradient(circle at 50% 40%, rgba(46, 32, 92, 0.94), rgba(6, 4, 14, 0.97));
+	--pack-free: linear-gradient(160deg, #1e3a8a 0%, #6d28d9 45%, #db2777 100%);
+	--pack-bronze: linear-gradient(160deg, #6b3a12 0%, #c77d3a 50%, #8a4a1c 100%);
+	--pack-silver: linear-gradient(160deg, #3b4450 0%, #aab4c0 50%, #5c6672 100%);
+	--pack-gold: linear-gradient(160deg, #7a5200 0%, #f5c842 50%, #b07800 100%);
+
+	/* ---------- Formes ---------- */
 	--radius-card: 20px;
 	--radius-lg: 16px;
 	--radius-md: 12px;
 	--radius-sm: 8px;
+	--radius-pill: 999px;
 
 	--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.06);
 	--shadow-float: 0 12px 40px rgba(0, 0, 0, 0.18);
 
-	/* Animations type iOS */
+	/* ---------- Animations type iOS ---------- */
 	--ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
 	--dur-fast: 180ms;
 	--dur: 320ms;
+
+	/* ---------- Plans ---------- */
+	--z-topbar: 30;
+	--z-tabbar: 40;
+	--z-bar: 45;
+	--z-overlay: 100;
+	--z-sheet: 200;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -66,19 +168,22 @@
 		--surface: #1c1c1e;
 		--surface-2: #232326;
 		--surface-3: #2c2c2e;
-		--material: rgba(28, 28, 30, 0.72);
-		--separator: rgba(84, 84, 88, 0.5);
+		--material: rgba(28, 28, 30, 0.8);
+		--separator: rgba(84, 84, 88, 0.55);
+		--scrim: rgba(0, 0, 0, 0.55);
 		--label: #f5f5f7;
-		--label-2: rgba(235, 235, 245, 0.65);
-		--label-3: rgba(235, 235, 245, 0.35);
-		--accent: #0a84ff;
-		--accent-soft: rgba(10, 132, 255, 0.2);
+		--label-2: #b5b5bb;
+		--label-3: #98989e;
+		--accent: #4da3ff;
+		--accent-fill: #0a6ce0;
+		--accent-soft: #16304d;
 		--success: #30d158;
 		--success-soft: rgba(48, 209, 88, 0.18);
-		--danger: #ff453a;
-		--danger-soft: rgba(255, 69, 58, 0.18);
+		--danger: #ff6961;
+		--danger-soft: rgba(255, 69, 58, 0.2);
 		--warning: #ff9f0a;
 		--kamas: #ffd60a;
+		--title-ink: #7a4f00;
 		--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
 		--shadow-float: 0 12px 40px rgba(0, 0, 0, 0.6);
 	}

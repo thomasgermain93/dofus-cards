@@ -23,6 +23,7 @@
 		"@types/better-sqlite3": "^9.6.0",
 		"@types/node": "^24",
 		"@types/web-push": "^3.6.4",
+		"axe-core": "^4.14.0",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",

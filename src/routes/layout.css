@@ -14,6 +14,7 @@
 	--color-label-2: var(--label-2);
 	--color-label-3: var(--label-3);
 	--color-accent: var(--accent);
+	--color-accent-fill: var(--accent-fill);
 	--color-accent-soft: var(--accent-soft);
 	--color-success: var(--success);
 	--color-success-soft: var(--success-soft);
@@ -33,6 +34,8 @@ html {
 	background: var(--bg);
 	color: var(--label);
 	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: var(--leading);
 	-webkit-font-smoothing: antialiased;
 	-webkit-tap-highlight-color: transparent;
 	text-size-adjust: 100%;
@@ -64,32 +67,73 @@ body {
 @layer components {
 	/* Grand titre façon iOS */
 	.large-title {
-		font-size: 34px;
-		line-height: 41px;
+		font-size: var(--text-3xl);
+		line-height: var(--leading-tight);
 		font-weight: 700;
 		letter-spacing: 0.01em;
+		overflow-wrap: anywhere;
+	}
+	@media (max-width: 374px) {
+		.large-title {
+			font-size: var(--text-2xl);
+		}
 	}
 	.title-2 {
-		font-size: 22px;
-		line-height: 28px;
+		font-size: var(--text-xl);
+		line-height: var(--leading-tight);
 		font-weight: 700;
 	}
 	.headline {
-		font-size: 17px;
-		line-height: 22px;
+		font-size: var(--text-base);
+		line-height: var(--leading-tight);
 		font-weight: 600;
 	}
 	.footnote {
-		font-size: 13px;
+		font-size: var(--text-sm);
 		line-height: 18px;
 	}
 	.section-label {
-		font-size: 13px;
+		font-size: var(--text-sm);
 		line-height: 18px;
 		text-transform: uppercase;
 		letter-spacing: 0.02em;
 		color: var(--label-2);
-		padding: 0 16px 6px;
+		padding: 0 var(--space-4) var(--space-2);
+		margin: 0;
+	}
+	/* En-tête de page commun : lien retour + grand titre + sous-titre */
+	.back-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--tap);
+		margin: 0 0 var(--space-1) calc(-1 * var(--space-2));
+		padding: 0 var(--space-2) 0 var(--space-1);
+		color: var(--accent);
+		font-size: var(--text-base);
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+	}
+	.page-sub {
+		color: var(--label-2);
+		margin: var(--space-1) 0 var(--space-4);
+		max-width: var(--reading);
+	}
+	/* État vide commun */
+	.empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-8) var(--space-4);
+		text-align: center;
+		color: var(--label-2);
+	}
+	/* Squelette de chargement (pas de spinner) */
+	.skeleton {
+		border-radius: var(--radius-md);
+		background: linear-gradient(90deg, var(--surface-3) 25%, var(--surface-2) 37%, var(--surface-3) 63%);
+		background-size: 400% 100%;
+		animation: shimmer 1.3s ease infinite;
 	}
 
 	/* Groupe de cellules (liste iOS « inset grouped ») */
@@ -101,9 +145,9 @@ body {
 	.cell {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: var(--space-3);
 		min-height: 48px;
-		padding: 10px 16px;
+		padding: 10px var(--space-4);
 		position: relative;
 	}
 	.cell + .cell::before {
@@ -124,12 +168,14 @@ body {
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		min-height: 44px;
+		min-height: var(--tap);
 		padding: 0 18px;
-		border-radius: 999px;
+		border-radius: var(--radius-pill);
 		font-weight: 600;
 		font-size: 16px;
-		background: var(--accent);
+		line-height: 1.2;
+		text-align: center;
+		background: var(--accent-fill);
 		color: var(--accent-contrast);
 		transition:
 			transform var(--dur-fast) var(--ease-ios),
@@ -154,16 +200,17 @@ body {
 	.btn-plain {
 		background: transparent;
 		color: var(--accent);
-		padding: 0 8px;
+		padding: 0 var(--space-2);
 	}
 	.btn-danger {
 		background: var(--danger-soft);
 		color: var(--danger);
 	}
+	/* Petit bouton : même zone tactile (44 px), typo plus petite */
 	.btn-sm {
-		min-height: 34px;
+		min-height: var(--tap);
 		padding: 0 14px;
-		font-size: 15px;
+		font-size: var(--text-md);
 	}
 	.btn-block {
 		width: 100%;
@@ -171,7 +218,7 @@ body {
 
 	.field {
 		width: 100%;
-		min-height: 44px;
+		min-height: var(--tap);
 		padding: 10px 14px;
 		border-radius: var(--radius-md);
 		background: var(--surface);
@@ -182,12 +229,12 @@ body {
 	}
 	.field:focus {
 		border-color: var(--accent);
-		box-shadow: 0 0 0 3px var(--accent-soft);
+		box-shadow: var(--focus-ring);
 	}
 	.search {
 		background: var(--surface-3);
 		border: 0;
-		min-height: 36px;
+		min-height: var(--tap);
 		border-radius: 10px;
 		font-size: 16px;
 		padding: 6px 12px;
@@ -203,10 +250,17 @@ body {
 	}
 	.segmented > * {
 		flex: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: var(--tap-sm);
 		text-align: center;
-		font-size: 13px;
+		font-size: var(--text-sm);
 		font-weight: 600;
 		padding: 6px 8px;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
 		border-radius: 7px;
 		color: var(--label);
 		white-space: nowrap;
@@ -222,8 +276,9 @@ body {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 5px 12px;
-		border-radius: 999px;
+		min-height: var(--tap-sm);
+		padding: 5px 14px;
+		border-radius: var(--radius-pill);
 		font-size: 14px;
 		font-weight: 500;
 		background: var(--surface);
@@ -271,6 +326,21 @@ body {
 	.alert-ok {
 		background: var(--success-soft);
 		color: var(--success);
+	}
+}
+
+/* Focus clavier visible partout, jamais pour la souris */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+	border-radius: var(--radius-sm);
+}
+@keyframes shimmer {
+	0% {
+		background-position: 100% 0;
+	}
+	100% {
+		background-position: 0 0;
 	}
 }
 

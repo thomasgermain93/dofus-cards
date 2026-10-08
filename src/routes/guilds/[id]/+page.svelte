@@ -16,7 +16,7 @@
 
 <svelte:head><title>{g.name}</title></svelte:head>
 
-<a href="/guilds?all" class="back"><Icon name="chevron-left" size={20} />Guildes</a>
+<a href="/guilds?all" class="back-link"><Icon name="chevron-left" size={20} />Guildes</a>
 
 <div class="flex items-center gap-3 mb-1">
 	<span class="tag">{g.tag}</span>
@@ -75,14 +75,6 @@
 </div>
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.tag {
 		font-size: 14px;
 		font-weight: 800;

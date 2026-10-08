@@ -23,7 +23,8 @@
 		count = 0,
 		favorite = false,
 		holo = true,
-		foil = false
+		foil = false,
+		quiz = false
 	}: {
 		card: CardView;
 		size?: 'sm' | 'md' | 'lg';
@@ -34,12 +35,16 @@
 		holo?: boolean;
 		/** version brillante (rare) : reflet renforcé et liseré doré, quelle que soit la rareté */
 		foil?: boolean;
+		/** pendant un quiz : niveau et infos masqués (la réponse ne doit pas se lire sur la carte) */
+		quiz?: boolean;
 	} = $props();
 
 	const r = $derived(RARITY[card.rarity]);
 	const src = $derived(imgUrl(card.image));
 	const shiny = $derived(!missing && (foil || (holo && card.rarity >= 2)));
 	const subtitle = $derived(card.category === 'class' ? card.info1 : card.subtype);
+	// Les descriptions DofusDB sont parfois déjà entre guillemets : on évite « "…" »
+	const flavor = $derived(card.flavor?.replace(/^[\s"«“]+|[\s"»”]+$/g, '') || null);
 </script>
 
 <article
@@ -56,7 +61,7 @@
 		<header>
 			<div class="titles">
 				<span class="type">{typeLabel(card)}</span>
-				<h3>{missing ? '???' : card.name}</h3>
+				<h3 title={missing ? undefined : card.name}>{missing ? '???' : card.name}</h3>
 			</div>
 			{#if foil && !missing}<span class="foil-tag" title="Carte brillante"><Icon name="sparkles" size={12} fill /></span>{/if}
 			<span class="gem" title={r.name}><span>{r.code}</span></span>
@@ -80,18 +85,20 @@
 		<div class="quote">
 			{#if missing}
 				<p>Carte encore inconnue.</p>
-			{:else if card.flavor}
-				<p>« {card.flavor} »</p>
+			{:else if quiz}
+				<p>Réponds vite !</p>
+			{:else if flavor}
+				<p>« {flavor} »</p>
 			{:else}
 				<p>{subtitle}</p>
 			{/if}
 		</div>
-		<p class="sub">{subtitle}{card.category !== 'class' ? `, niv. ${card.level}` : ''}</p>
+		<p class="sub">{quiz ? typeLabel(card).toLowerCase() : `${subtitle}${card.category !== 'class' ? `, niv. ${card.level}` : ''}`}</p>
 	</div>
 
 	<footer>
 		<span class="token atk" title="Attaque"><Icon name="sword" size={10} stroke={2.6} /><b class="full">{missing ? '?' : nf.format(card.attack)}</b><b class="short">{missing ? '?' : compact(card.attack)}</b></span>
-		<span class="token lvl" title="Niveau"><small>NIV</small><b>{card.category === 'class' ? '?' : card.level}</b></span>
+		<span class="token lvl" title="Niveau"><small>NIV</small><b>{card.category === 'class' || quiz ? '?' : card.level}</b></span>
 		<span class="token rar" title={r.name}><b>{r.code}</b></span>
 	</footer>
 	</div>
@@ -100,10 +107,10 @@
 <style>
 	/* Toutes les tailles sont relatives à la largeur de la carte (cqw) : même rendu en petit et en grand. */
 	.card {
-		--ink: #2a1f14;
-		--parch: #f3e8cc;
-		--parch-2: #fbf5e3;
-		--edge: #1c1916;
+		--ink: var(--card-ink);
+		--parch: var(--card-parch);
+		--parch-2: var(--card-parch-2);
+		--edge: var(--card-edge);
 		container-type: inline-size;
 		position: relative;
 		width: 100%;
@@ -162,7 +169,7 @@
 		line-height: 1.1;
 		font-weight: 800;
 		letter-spacing: 0.04em;
-		color: #7a5a30;
+		color: var(--card-ink-2);
 	}
 	h3 {
 		margin: 0;
@@ -227,12 +234,12 @@
 		border-radius: 999px;
 		background: white;
 		box-shadow:
-			0 0 0 0.7cqw #c9302c,
+			0 0 0 0.7cqw var(--card-heart),
 			0 1cqw 2cqw rgba(0, 0, 0, 0.18);
 		display: inline-flex;
 		align-items: center;
 		gap: 0.8cqw;
-		color: #c9302c;
+		color: var(--card-heart);
 		font-weight: 900;
 		font-size: 5.2cqw;
 		font-variant-numeric: tabular-nums;
@@ -240,13 +247,13 @@
 	.heart svg {
 		width: 5.4cqw;
 		height: 5.4cqw;
-		fill: #e0322c;
+		fill: var(--card-heart);
 	}
 	.fav {
 		position: absolute;
 		left: 2cqw;
 		top: 2cqw;
-		color: #e0a800;
+		color: var(--r-legendary);
 		filter: drop-shadow(0 0.4cqw 0.6cqw rgba(0, 0, 0, 0.3));
 	}
 	.count {
@@ -276,7 +283,7 @@
 		line-height: 1.3;
 		font-style: italic;
 		text-align: center;
-		color: #3a2c1c;
+		color: var(--card-ink);
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
 		line-clamp: 3;
@@ -287,7 +294,7 @@
 		margin: 0;
 		font-size: 3.6cqw;
 		text-align: center;
-		color: #7a6040;
+		color: var(--card-ink-2);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -311,7 +318,7 @@
 		gap: 0.8cqw;
 		font-size: 4.4cqw;
 		font-variant-numeric: tabular-nums;
-		color: #2a1f14;
+		color: var(--card-ink);
 		box-shadow:
 			inset 0 0 0 0.7cqw rgba(0, 0, 0, 0.25),
 			inset 0 1.2cqw 1.6cqw rgba(255, 255, 255, 0.55);
@@ -326,10 +333,10 @@
 		opacity: 0.75;
 	}
 	.atk {
-		background: radial-gradient(circle at 40% 30%, #fff3a6, #f2c230 60%, #b88a10);
+		background: var(--card-token-atk);
 	}
 	.lvl {
-		background: radial-gradient(circle at 40% 30%, #d6f7c4, #6cc24a 60%, #3d7d22);
+		background: var(--card-token-lvl);
 	}
 	.rar {
 		color: white;
@@ -340,6 +347,16 @@
 		display: none;
 	}
 
+	/* Grandes cartes : le nom peut tenir sur 2 lignes */
+	@container (min-width: 260px) {
+		h3 {
+			white-space: normal;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+			-webkit-box-orient: vertical;
+		}
+	}
 	/* Petites cartes (grille de l'album) : on simplifie */
 	@container (max-width: 170px) {
 		.quote,
@@ -428,7 +445,7 @@
 		--edge: #241b10;
 	}
 	.legendary .shell {
-		background: conic-gradient(from var(--angle, 0deg), #6b4a10, #e0a800, #fff1a8, #ff7a3a, #6b4a10);
+		background: var(--legendary-ring);
 		animation: spin 7s linear infinite;
 		box-shadow:
 			0 0 0 1px rgba(224, 168, 0, 0.5),
@@ -441,13 +458,13 @@
 	}
 	.foil .frame {
 		box-shadow:
-			inset 0 0 0 0.9cqw #e0b400,
+			inset 0 0 0 0.9cqw var(--foil-line),
 			inset 0 0 0 1.6cqw rgba(255, 245, 200, 0.8),
 			inset 0 0 6cqw rgba(224, 180, 0, 0.35);
 	}
 	.foil .shell {
 		box-shadow:
-			0 0 0 0.5cqw #f5d36b,
+			0 0 0 0.5cqw var(--foil-light),
 			0 6px 22px rgba(224, 180, 0, 0.35);
 	}
 	.foil-tag {
@@ -458,8 +475,8 @@
 		border-radius: 999px;
 		display: grid;
 		place-items: center;
-		color: #b8860b;
-		background: radial-gradient(circle, #fff7d1, #f5d36b);
+		color: var(--foil-ink);
+		background: radial-gradient(circle, var(--foil-pale), var(--foil-light));
 	}
 	.foil-tag :global(svg) {
 		width: 5cqw;

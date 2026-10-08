@@ -113,6 +113,14 @@ Toutes les valeurs sont dans `src/lib/server/game/constants.ts` et `quests.ts`. 
 - **Bataille de groupe** : salon par code de 6 caractères, 3 à 50 joueurs, 3 cartes chacun, jusqu'à 12 questions de 15 s (+4 s de révélation), 10 points par bonne réponse, 20 si moins de la moitié des joueurs l'ont trouvée, 30 si moins de 10 %, pas de points sur sa propre carte. Podium 150 / 100 / 60 kamas, 20 pour les autres. Le déroulé est calculé à partir de l'heure du serveur (sondage toutes les 0,8 s), ce qui rend la reconnexion transparente ; un joueur qui quitte ne bloque pas la partie ; l'hôte qui quitte le salon passe la main.
 - **Classement hebdomadaire** : bascule le lundi à minuit heure de Bruxelles, comme les quêtes.
 
+### Interface (boucle 4)
+
+- Tout le visuel passe par `src/lib/styles/tokens.css` : couleurs (clair et sombre), échelle typographique (`--text-*`), grille de 4 px (`--space-*`), zones tactiles (`--tap` 44 px, `--tap-sm` 40 px pour les onglets segmentés et pastilles), rayons, ombres, animations, dégradés des paquets et palette des cartes.
+- Contrastes WCAG AA vérifiés par axe-core en clair et en sombre ; focus clavier visible (`--focus-ring`) ; squelettes pendant les navigations lentes ; page d'erreur ; noms de cartes en infobulle (2 lignes sur les grandes cartes) ; fin de page jamais masquée par la barre d'onglets (safe-area iOS).
+- Audit mesuré reproductible : `node tests/e2e/ui-audit.mjs` (21 écrans, 360 / 390 / 768 / 1440 px, clair et sombre) : 2 827 problèmes avant, 0 après.
+- Étiquettes libres sur les cartes (30 max, filtre dans l'album, badges sur le profil) et sélection multiple (étiqueter, favoris, vendre).
+- Quiz : la réponse ne se lit jamais sur la carte (niveau masqué pendant la question, aucune réponse partageant un mot du nom), choix jamais quasi identiques, un fait par question, comparaisons sur d'autres cartes en complément ; vérifié sur 1 000 questions (`src/lib/server/test/quiz.spec.ts`).
+
 ### Duel quiz
 
 Chaque joueur choisit 3 cartes ; PV = somme des DEF. Chacun répond (à son rythme) à 3 questions sur chaque carte adverse, générées automatiquement depuis les données (niveau, zone, famille, donjon gardé, archimonstre de, panoplie, type, monstre qui laisse tomber l'objet, famille de monture, rôle et sorts de classe, questions inversées « lequel de ces monstres vit à… »). Dégâts d'une carte = `ATK x mauvaises réponses / 3`. Vainqueur = meilleur ratio PV restants / PV max. Entraînement contre l'ordinateur (deck de même rareté, 55 % de bonnes réponses).

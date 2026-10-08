@@ -72,7 +72,7 @@
 		padding: 12px 14px;
 	}
 	.coll.done {
-		opacity: 0.6;
+		background: var(--surface-2);
 	}
 	.bar {
 		display: block;
@@ -85,11 +85,11 @@
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent);
+		background: var(--accent-fill);
 		border-radius: inherit;
 	}
 	.bar span.full {
-		background: linear-gradient(90deg, #30d158, #ffd60a);
+		background: linear-gradient(90deg, var(--green), var(--gold));
 	}
 	.no-underline {
 		text-decoration: none;

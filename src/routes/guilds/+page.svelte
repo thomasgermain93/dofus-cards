@@ -87,16 +87,16 @@
 		flex: none;
 	}
 	.rank.r0 {
-		background: #ffd60a;
-		color: #5c4300;
+		background: var(--gold);
+		color: var(--medal-1-ink);
 	}
 	.rank.r1 {
-		background: #d1d1d6;
-		color: #3a3a3c;
+		background: var(--medal-2);
+		color: var(--medal-2-ink);
 	}
 	.rank.r2 {
-		background: #e3a76f;
-		color: #4a2600;
+		background: var(--medal-3);
+		color: var(--medal-3-ink);
 	}
 	.no-underline {
 		text-decoration: none;

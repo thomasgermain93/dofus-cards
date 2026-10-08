@@ -53,7 +53,7 @@
 		{#each friends as f (f.id)}
 			<div class="cell">
 				<Avatar name={f.username} image={f.brief?.avatar} x={f.brief?.avatarX} y={f.brief?.avatarY} size={40} />
-				<a class="flex-1 min-w-0 text-inherit no-underline" href="/u/{f.username}">
+				<a class="flex-1 min-w-0 text-inherit no-underline friend-link" href="/u/{f.username}">
 					<span class="block font-semibold truncate">{f.username}</span>
 					<span class="footnote text-label-2 truncate block">{f.brief?.title ?? `Niveau ${levelOf(f.xp)}`}</span>
 				</a>
@@ -104,12 +104,18 @@
 		place-items: center;
 		font-weight: 700;
 		color: white;
-		background: linear-gradient(135deg, #64d2ff, #5e5ce6);
+		background: linear-gradient(135deg, var(--teal), var(--indigo));
 		flex: none;
 	}
+	.friend-link {
+		min-height: var(--tap);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
 	.icon-act {
-		width: 36px;
-		height: 36px;
+		width: var(--tap);
+		height: var(--tap);
 		display: grid;
 		place-items: center;
 		color: var(--accent);

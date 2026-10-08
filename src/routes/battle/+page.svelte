@@ -57,10 +57,10 @@
 		display: grid;
 		place-items: center;
 		color: white;
-		background: linear-gradient(135deg, #5e5ce6, #bf5af2);
+		background: linear-gradient(135deg, var(--indigo), var(--purple));
 	}
 	.ic.b {
-		background: linear-gradient(135deg, #ff375f, #ff9f0a);
+		background: linear-gradient(135deg, var(--pink), var(--orange));
 	}
 	.code {
 		text-transform: uppercase;

@@ -8,6 +8,18 @@
 	import ConfirmSheet from '#lib/components/ConfirmSheet.svelte';
 	import { sell } from '#lib/sell';
 	import { tilt } from '#lib/holo';
+	import { invalidateAll } from '$app/navigation';
+	let newTag = $state('');
+	let tagError = $state<string | null>(null);
+	async function tagAction(action: 'tag' | 'untag', tag: string) {
+		tagError = null;
+		const res = await fetch('/api/cards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, cardIds: [c.id], tag }) });
+		if (!res.ok) tagError = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? 'Erreur.';
+		else {
+			newTag = '';
+			await invalidateAll();
+		}
+	}
 
 	let { data, form } = $props();
 	const c = $derived(data.card);
@@ -53,7 +65,7 @@
 
 <svelte:head><title>{data.owned ? c.name : 'Carte manquante'}</title></svelte:head>
 
-<a href="/album" class="back"><Icon name="chevron-left" size={20} />Album</a>
+<a href="/album" class="back-link"><Icon name="chevron-left" size={20} />Album</a>
 
 <div class="layout">
 	<div class="card-col">
@@ -62,7 +74,7 @@
 
 	<div class="flex flex-col gap-4 min-w-0">
 		<div>
-			<p class="footnote font-bold" style="color: {rarityColor(c.rarity)}">{RARITY[c.rarity].name}</p>
+			<p class="footnote font-bold" style="color: color-mix(in srgb, {rarityColor(c.rarity)} 60%, var(--label))">{RARITY[c.rarity].name}</p>
 			<h1 class="large-title">{data.owned ? c.name : 'Carte manquante'}</h1>
 			<p class="text-label-2">{c.subtype}{c.category !== 'class' ? `, niveau ${c.level}` : ''}</p>
 		</div>
@@ -155,6 +167,27 @@
 			</form>
 		{/if}
 
+		{#if data.owned}
+			<div>
+				<h2 class="section-label">Étiquettes</h2>
+				<div class="group p-4 flex flex-col gap-3" data-testid="tags">
+					{#if data.tags.length}
+						<div class="flex flex-wrap gap-2">
+							{#each data.tags as t (t)}
+								<span class="chip">{t}<button class="tag-x" aria-label="Retirer {t}" onclick={() => tagAction('untag', t)}><Icon name="x" size={14} /></button></span>
+							{/each}
+						</div>
+					{/if}
+					<form class="flex gap-2" onsubmit={(e) => { e.preventDefault(); if (newTag.trim().length >= 2) tagAction('tag', newTag.trim()); }}>
+						<input class="field flex-1" bind:value={newTag} maxlength="24" placeholder="Ajouter une étiquette" list="my-tags" aria-label="Nouvelle étiquette" />
+						<datalist id="my-tags">{#each data.myTags as t (t)}<option value={t}></option>{/each}</datalist>
+						<button class="btn btn-secondary" disabled={newTag.trim().length < 2} data-testid="add-tag">Ajouter</button>
+					</form>
+					{#if tagError}<p class="footnote text-danger">{tagError}</p>{/if}
+				</div>
+			</div>
+		{/if}
+
 		{#if data.owned && (facts.length || spells.length)}
 			<div>
 				<h2 class="section-label">Fiche</h2>
@@ -231,6 +264,18 @@
 {/if}
 
 <style>
+	.tag-x {
+		display: inline-grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		margin-right: -8px;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: inherit;
+		cursor: pointer;
+	}
 	.spark {
 		width: 100%;
 		height: 80px;
@@ -245,7 +290,7 @@
 	.bar span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, #5e5ce6, #bf5af2);
+		background: linear-gradient(90deg, var(--indigo), var(--purple));
 	}
 	.segmented button {
 		border: 0;
@@ -260,8 +305,8 @@
 		overflow: hidden;
 	}
 	.stepper button {
-		width: 40px;
-		height: 34px;
+		width: var(--tap);
+		height: var(--tap);
 		border: 0;
 		background: transparent;
 		font-size: 20px;
@@ -275,14 +320,6 @@
 		min-width: 28px;
 		text-align: center;
 		font-weight: 700;
-	}
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
 	}
 	.layout {
 		display: grid;

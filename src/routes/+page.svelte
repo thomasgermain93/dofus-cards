@@ -141,7 +141,7 @@
 
 	<div class="dash">
 		<!-- Paquets -->
-		<section class="pack-card group">
+		<section class="pack-card group" id="paquets">
 			<div class="pack-row">
 				<div class="pack-visual">
 					<PackArt width={104} />
@@ -349,7 +349,7 @@
 		display: grid;
 		place-items: center;
 		color: white;
-		background: linear-gradient(135deg, #ff9f0a, #ff375f);
+		background: linear-gradient(135deg, var(--orange), var(--pink));
 		flex: none;
 	}
 	.progress {
@@ -362,7 +362,7 @@
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--accent), #5e5ce6);
+		background: linear-gradient(90deg, var(--accent), var(--indigo));
 	}
 	.mini-grid {
 		display: grid;
@@ -388,15 +388,19 @@
 	.booster {
 		flex: 1;
 		min-width: 96px;
+		min-height: var(--tap);
 		border: 0;
 		border-radius: 14px;
-		padding: 10px 12px;
+		padding: 10px 12px 10px 18px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 6px;
 		font-weight: 700;
-		color: white;
+		color: var(--label);
+		background: var(--surface-2) !important;
+		position: relative;
+		overflow: hidden;
 		cursor: pointer;
 		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 		transition: transform var(--dur-fast) var(--ease-ios);
@@ -404,19 +408,23 @@
 	.booster:active {
 		transform: scale(0.96);
 	}
-	.b-bronze {
-		background: linear-gradient(135deg, #e0a070, #9c5a28);
+	.booster::before {
+		content: '';
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: 8px;
 	}
-	.b-silver {
-		background: linear-gradient(135deg, #d9dee5, #7d8794);
-		color: #1f2630;
+	.b-bronze::before {
+		background: var(--pack-bronze);
 	}
-	.b-gold {
-		background: linear-gradient(135deg, #ffe680, #d99a00);
-		color: #3d2e00;
+	.b-silver::before {
+		background: var(--pack-silver);
+	}
+	.b-gold::before {
+		background: var(--pack-gold);
 	}
 	.bqty {
-		background: rgba(0, 0, 0, 0.18);
+		background: var(--surface-3);
 		border-radius: 999px;
 		padding: 1px 8px;
 		font-size: 13px;
@@ -425,7 +433,7 @@
 		width: 9px;
 		height: 9px;
 		border-radius: 999px;
-		background: var(--accent);
+		background: var(--accent-fill);
 		flex: none;
 	}
 	.no-underline {

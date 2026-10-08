@@ -32,7 +32,7 @@
 
 <svelte:head><title>Personnaliser mon profil</title></svelte:head>
 
-<a href="/u/{me?.username}" class="back"><Icon name="chevron-left" size={20} />Mon profil</a>
+<a href="/u/{me?.username}" class="back-link"><Icon name="chevron-left" size={20} />Mon profil</a>
 <h1 class="large-title mb-4">Personnaliser</h1>
 {#if form?.error}<p class="alert alert-error mb-3">{form.error}</p>{/if}
 {#if form?.saved}<p class="alert alert-ok mb-3">Enregistré.</p>{/if}
@@ -95,20 +95,12 @@
 </section>
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.main {
 		margin-left: 8px;
 		font-size: 11px;
 		font-weight: 700;
-		color: #8a5a00;
-		background: #fff1b8;
+		color: var(--title-ink);
+		background: var(--title-bg);
 		border-radius: 999px;
 		padding: 1px 8px;
 	}

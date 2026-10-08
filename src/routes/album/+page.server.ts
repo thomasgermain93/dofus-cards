@@ -1,5 +1,6 @@
 import { getDb } from '#lib/server/db';
 import { sellableCounts } from '#lib/server/game/collection';
+import { userTags } from '#lib/server/game/profile';
 import { RECYCLE_VALUES, SELL_VALUES } from '#lib/server/game/constants';
 import { CARD_COLS, int } from '#lib/server/web';
 import type { PageServerLoad } from './$types';
@@ -23,6 +24,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	const own = ['owned', 'missing', 'dupes', 'fav', 'shiny'].includes(p.get('own') ?? '') ? p.get('own')! : 'all';
 	const rarity = int(p.get('r'), -1);
 	const q = (p.get('q') ?? '').trim().slice(0, 60);
+	const tag = (p.get('tag') ?? '').trim().slice(0, 24);
 	const sort = SORTS[p.get('sort') ?? ''] ? p.get('sort')! : 'rarity';
 	const pageNo = Math.max(1, int(p.get('page'), 1));
 
@@ -31,6 +33,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	if (cat !== 'all') (where.push('c.category = ?'), args.push(cat));
 	if (rarity >= 0 && rarity <= 5) (where.push('c.rarity = ?'), args.push(rarity));
 	if (q) (where.push("norm(c.name) LIKE '%' || norm(?) || '%'"), args.push(q));
+	if (tag) (where.push('EXISTS (SELECT 1 FROM card_tags t WHERE t.user_id = ? AND t.card_id = c.id AND t.tag = ?)'), args.push(uid, tag));
 	const having = { all: '', owned: 'HAVING cnt > 0', missing: 'HAVING cnt = 0', dupes: 'HAVING cnt > 1', fav: 'HAVING fav = 1', shiny: 'HAVING shiny > 0' }[own];
 
 	const base = `SELECT ${CARD_COLS}, COUNT(uc.id) cnt, COALESCE(SUM(uc.shiny), 0) shiny, MAX(uc.obtained_at) last_obtained, (f.card_id IS NOT NULL) fav
@@ -63,7 +66,7 @@ export const load: PageServerLoad = ({ locals, url }) => {
 		.all(uid) as { rarity: number; n: number }[];
 	const sellable = sellableCounts(db, uid, cards.filter((c) => c.cnt > 0).map((c) => c.id));
 	const withSell = cards.map((c) => ({ ...c, sellable: sellable.get(c.id) ?? 0 }));
-	return { cards: withSell, total, pages: Math.max(1, Math.ceil(total / PER_PAGE)), pageNo, filters: { cat, own, rarity, q, sort }, completion, dupes: dupes.n, dupByRarity, sellValues: SELL_VALUES, recycleValues: RECYCLE_VALUES,
+	return { cards: withSell, total, pages: Math.max(1, Math.ceil(total / PER_PAGE)), pageNo, filters: { cat, own, rarity, q, sort, tag }, tags: userTags(db, uid), completion, dupes: dupes.n, dupByRarity, sellValues: SELL_VALUES, recycleValues: RECYCLE_VALUES,
 		shinies: (db.prepare('SELECT COUNT(*) n FROM user_cards WHERE user_id = ? AND shiny = 1').get(uid) as { n: number }).n,
 		fragments: (db.prepare('SELECT fragments n FROM users WHERE id = ?').get(uid) as { n: number }).n };
 };

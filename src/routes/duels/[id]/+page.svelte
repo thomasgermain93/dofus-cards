@@ -75,7 +75,7 @@
 
 <svelte:head><title>Duel contre {data.other.name}</title></svelte:head>
 
-<a href="/duels" class="back"><Icon name="chevron-left" size={20} />Duels</a>
+<a href="/duels" class="back-link"><Icon name="chevron-left" size={20} />Duels</a>
 
 <div class="versus">
 	<div class="side-p">
@@ -127,7 +127,7 @@
 			<div class="dots">{#each Array(q.total) as _, i}<span class:done={i < q.position} class:now={i === q.position}></span>{/each}</div>
 		</div>
 		<div class="attacker">
-			<div class="w-28 flex-none"><Card card={data.attacker as CardView} size="sm" /></div>
+			<div class="w-28 flex-none"><Card card={data.attacker as CardView} size="sm" quiz /></div>
 			<div class="min-w-0">
 				<p class="footnote text-label-2">Carte de {data.other.name}</p>
 				<p class="headline">{data.attacker?.name}</p>
@@ -208,14 +208,6 @@
 {/if}
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.versus {
 		display: flex;
 		align-items: flex-start;
@@ -239,7 +231,7 @@
 		font-weight: 900;
 		font-size: 13px;
 		color: white;
-		background: linear-gradient(135deg, #ff375f, #ff9f0a);
+		background: linear-gradient(135deg, var(--pink), var(--orange));
 		border-radius: 8px;
 		padding: 2px 8px;
 	}
@@ -262,8 +254,8 @@
 	.ttl {
 		font-size: 11px;
 		font-weight: 700;
-		color: #8a5a00;
-		background: #fff1b8;
+		color: var(--title-ink);
+		background: var(--title-bg);
 		border-radius: 999px;
 		padding: 1px 8px;
 		max-width: 100%;
@@ -281,7 +273,7 @@
 	.qtimer span {
 		display: block;
 		height: 100%;
-		background: var(--accent);
+		background: var(--accent-fill);
 		transition: width 0.2s linear;
 	}
 	.qtimer span.hurry {
@@ -301,7 +293,7 @@
 		transform: translateX(-50%);
 		font-weight: 900;
 		font-size: 15px;
-		color: #ff453a;
+		color: var(--danger);
 		text-shadow: 0 1px 0 white, 0 2px 6px rgba(0, 0, 0, 0.25);
 		white-space: nowrap;
 		opacity: 0;
@@ -379,7 +371,7 @@
 		background: var(--surface-3);
 	}
 	.dots .done {
-		background: var(--accent);
+		background: var(--accent-fill);
 	}
 	.dots .now {
 		background: color-mix(in srgb, var(--accent) 45%, var(--surface-3));
@@ -457,13 +449,13 @@
 		animation: pop 0.5s var(--ease-ios);
 	}
 	.banner.win {
-		background: linear-gradient(135deg, #30d158, #0a84ff);
+		background: linear-gradient(135deg, var(--green), var(--blue));
 	}
 	.banner.loss {
-		background: linear-gradient(135deg, #8e8e93, #48484a);
+		background: linear-gradient(135deg, var(--r-common), #48484a);
 	}
 	.banner.draw {
-		background: linear-gradient(135deg, #ff9f0a, #bf5af2);
+		background: linear-gradient(135deg, var(--orange), var(--purple));
 	}
 	.sides {
 		display: grid;
@@ -484,11 +476,11 @@
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, #30d158, #34c759);
+		background: linear-gradient(90deg, var(--green), var(--green));
 		transition: width 1.2s var(--ease-ios);
 	}
 	.hpbar span.low {
-		background: linear-gradient(90deg, #ff453a, #ff9f0a);
+		background: linear-gradient(90deg, var(--danger), var(--orange));
 	}
 	@keyframes shake {
 		25% {

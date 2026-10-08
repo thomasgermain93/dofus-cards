@@ -15,7 +15,7 @@
 
 <svelte:head><title>Échange</title></svelte:head>
 
-<a href="/trades" class="back"><Icon name="chevron-left" size={20} />Échanges</a>
+<a href="/trades" class="back-link"><Icon name="chevron-left" size={20} />Échanges</a>
 <h1 class="large-title">Échange</h1>
 <p class="text-label-2 mb-4">{incoming ? `Proposé par ${t.from_name}` : `Proposé à ${t.to_name}`}, {ago(t.created_at)}. Statut : <strong>{STATUS[t.status]}</strong></p>
 
@@ -48,14 +48,6 @@
 {/if}
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.sides {
 		display: grid;
 		gap: 12px;

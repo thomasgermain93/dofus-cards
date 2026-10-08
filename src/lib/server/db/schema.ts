@@ -366,6 +366,16 @@ export const MIGRATIONS: string[] = [
 		answered_at INTEGER NOT NULL,
 		PRIMARY KEY (question_id, user_id)
 	);
+	`,
+	/* 5 : étiquettes libres sur les cartes */ `
+	CREATE TABLE card_tags (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		card_id INTEGER NOT NULL REFERENCES cards(id),
+		tag TEXT NOT NULL,
+		created_at INTEGER NOT NULL,
+		PRIMARY KEY (user_id, card_id, tag)
+	);
+	CREATE INDEX card_tags_tag ON card_tags(user_id, tag);
 	`
 ];
 export function migrate(db: Database.Database) {

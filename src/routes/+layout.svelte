@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './layout.css';
-	import { page } from '$app/state';
+	import { page, navigating } from '$app/state';
 	import { onMount } from 'svelte';
 	import { initHolo } from '#lib/holo';
 	import { GAME_NAME } from '#lib/config';
@@ -19,7 +19,7 @@
 		{ href: '/', label: 'Accueil', icon: 'home', badge: me?.homeTodo ?? 0 },
 		{ href: '/album', label: 'Album', icon: 'album', badge: 0 },
 		{ href: '/market', label: 'Marché', icon: 'gavel', badge: me?.tradesPending ?? 0 },
-		{ href: '/duels', label: 'Duels', icon: 'swords', badge: me?.duelsToPlay ?? 0 },
+		{ href: '/duels', label: 'Jouer', icon: 'swords', badge: me?.duelsToPlay ?? 0 },
 		{ href: '/social', label: 'Social', icon: 'users', badge: (me?.unreadMessages ?? 0) + (me?.friendRequests ?? 0) }
 	]);
 	const extra = $derived([
@@ -32,6 +32,15 @@
 		...(me?.role === 'admin' ? [{ href: '/admin', label: 'Modération', icon: 'shield' }] : [])
 	]);
 
+	// Squelette pendant les navigations lentes (> 300 ms) : pas de spinner
+	let slow = $state(false);
+	let slowTimer: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => {
+		const to = navigating.to;
+		clearTimeout(slowTimer);
+		if (to && to.url.pathname !== page.url.pathname) slowTimer = setTimeout(() => (slow = true), 300);
+		else slow = false;
+	});
 	const active = (href: string) => (href === '/' ? page.url.pathname === '/' : page.url.pathname.startsWith(href));
 	const bare = $derived(!me || ['/login', '/register'].includes(page.url.pathname));
 	// Pas de barre d'onglets pendant un duel ou une ouverture de paquet en plein écran
@@ -86,8 +95,8 @@
 			<header class="topbar material">
 				<a href="/" class="topbar-brand" aria-label="Accueil"><Logo size={26} compact /></a>
 				<div class="topbar-right">
-					<a href="/" class="pill" title="Paquets disponibles"><Icon name="package" size={16} />{me.packs}</a>
-					<span class="pill"><KamasCounter value={me.kamas} /></span>
+					<a href="/#paquets" class="pill-hit" title="Paquets disponibles" aria-label="{me.packs} paquets disponibles"><span class="pill"><Icon name="package" size={16} />{me.packs}</span></a>
+					<span class="pill" title="Kamas"><KamasCounter value={me.kamas} /></span>
 					<a href="/notifications" class="icon-btn" aria-label="Notifications">
 						<Icon name="bell" size={21} />
 						{#if me.unreadNotifs}<span class="badge dot">{me.unreadNotifs}</span>{/if}
@@ -98,8 +107,16 @@
 				</div>
 			</header>
 
-			<main class="page">
-				{@render children()}
+			<main class="page" aria-busy={slow}>
+				{#if slow}
+					<div class="sk" aria-label="Chargement">
+						<div class="skeleton" style="height: 40px; width: 60%"></div>
+						<div class="skeleton" style="height: 18px; width: 40%"></div>
+						<div class="sk-grid">{#each Array(6) as _, i (i)}<div class="skeleton" style="aspect-ratio: 5 / 7"></div>{/each}</div>
+					</div>
+				{:else}
+					{@render children()}
+				{/if}
 				<Disclaimer />
 			</main>
 		</div>
@@ -147,6 +164,10 @@
 		border-bottom: 0.5px solid var(--separator);
 	}
 	.topbar-brand {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--tap);
+		min-width: var(--tap);
 		color: inherit;
 		text-decoration: none;
 	}
@@ -155,11 +176,29 @@
 		align-items: center;
 		gap: 6px;
 	}
+	.pill-hit {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--tap);
+		text-decoration: none;
+	}
+	.sk {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding-top: var(--space-2);
+	}
+	.sk-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+		gap: 10px;
+		margin-top: var(--space-2);
+	}
 	.pill {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		height: 30px;
+		height: 32px;
 		padding: 0 10px;
 		border-radius: 999px;
 		background: var(--surface);
@@ -171,8 +210,8 @@
 	}
 	.icon-btn {
 		position: relative;
-		width: 36px;
-		height: 36px;
+		width: var(--tap);
+		height: var(--tap);
 		display: grid;
 		place-items: center;
 		color: var(--accent);
@@ -185,9 +224,10 @@
 		box-shadow: 0 0 0 2px var(--bg);
 	}
 	.page {
-		max-width: 1080px;
+		max-width: var(--content-max);
 		margin: 0 auto;
-		padding: 8px 16px calc(96px + env(safe-area-inset-bottom));
+		/* la barre d'onglets ne masque jamais la fin de page (safe-area iOS comprise) */
+		padding: var(--space-2) var(--gutter) calc(var(--tabbar-h) + var(--space-8) + env(safe-area-inset-bottom));
 	}
 	.tabbar {
 		position: fixed;
@@ -218,7 +258,7 @@
 		display: grid;
 	}
 	.tab-label {
-		font-size: 10.5px;
+		font-size: var(--text-2xs);
 		font-weight: 600;
 	}
 
@@ -251,6 +291,7 @@
 			display: flex;
 			align-items: center;
 			gap: 12px;
+			min-height: var(--tap);
 			padding: 9px 12px;
 			border-radius: 10px;
 			color: var(--label);
@@ -261,7 +302,7 @@
 			background: var(--surface-3);
 		}
 		.side-link[aria-current='page'] {
-			background: var(--accent);
+			background: var(--accent-fill);
 			color: white;
 		}
 		.side-sep {

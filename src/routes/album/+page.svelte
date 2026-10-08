@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ConfirmSheet from '#lib/components/ConfirmSheet.svelte';
+	import TagSheet from '#lib/components/TagSheet.svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { sell } from '#lib/sell';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -92,6 +94,22 @@
 	function stopSelecting() {
 		selecting = false;
 		picked = {};
+	}
+	// Actions groupées : étiqueter, favoris
+	let tagOpen = $state(false);
+	const pickedIds = $derived(Object.entries(picked).filter(([, n]) => n > 0).map(([id]) => Number(id)));
+	async function bulk(action: 'tag' | 'fav' | 'unfav', tag?: string) {
+		if (!pickedIds.length || busy) return;
+		busy = true;
+		sellError = null;
+		const res = await fetch('/api/cards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, cardIds: pickedIds, tag }) });
+		const r = await res.json().catch(() => ({ error: 'Erreur réseau.' }));
+		busy = false;
+		tagOpen = false;
+		if (!res.ok) return (sellError = r.error ?? 'Erreur.');
+		await invalidateAll();
+		flash(action === 'tag' ? `« ${r.tag} » ajoutée à ${pickedIds.length} carte${pickedIds.length > 1 ? 's' : ''}` : action === 'fav' ? 'Ajoutées aux favoris' : 'Retirées des favoris');
+		stopSelecting();
 	}
 	async function sellPicked() {
 		confirmOpen = false;
@@ -206,7 +224,16 @@
 	{/each}
 </div>
 
-<p class="footnote text-label-2 mb-2">{fmt(data.total)} carte{data.total > 1 ? 's' : ''}</p>
+{#if data.tags.length}
+	<div class="chips mb-4" aria-label="Étiquettes">
+		<a class="chip" href={link({ tag: null })} aria-current={!f.tag ? 'page' : undefined} data-sveltekit-noscroll>Toutes les étiquettes</a>
+		{#each data.tags as t (t.tag)}
+			<a class="chip" href={link({ tag: t.tag })} aria-current={f.tag === t.tag ? 'page' : undefined} data-sveltekit-noscroll>{t.tag} <span class="text-label-2">{t.n}</span></a>
+		{/each}
+	</div>
+{/if}
+
+<p class="footnote text-label-2 mb-2">{fmt(data.total)} carte{data.total > 1 ? 's' : ''}{f.tag ? ` avec l'étiquette « ${f.tag} »` : ''}</p>
 <div class="grid-cards">
 	{#each data.cards as c (c.id)}
 		{#if selecting}
@@ -247,8 +274,16 @@
 			<p class="font-semibold">{pickedCount ? `${pickedCount} exemplaire${pickedCount > 1 ? 's' : ''}` : 'Touche les cartes à vendre'}</p>
 			<p class="footnote text-label-2">{pickedCount ? `Total : +${fmt(pickedKamas)} kamas` : 'Un appui ajoute un exemplaire'}</p>
 		</div>
-		<button class="btn" disabled={!pickedCount || busy} onclick={() => (confirmOpen = true)} data-testid="sell-selection">Vendre +{fmt(pickedKamas)}</button>
+		<div class="sel-actions">
+			<button class="btn btn-secondary btn-sm" disabled={!pickedCount || busy} onclick={() => (tagOpen = true)} data-testid="tag-selection">Étiqueter</button>
+			<button class="btn btn-secondary btn-sm" disabled={!pickedCount || busy} onclick={() => bulk('fav')} data-testid="fav-selection" aria-label="Ajouter aux favoris"><Icon name="star" size={16} /></button>
+			<button class="btn btn-sm" disabled={!pickedCount || busy} onclick={() => (confirmOpen = true)} data-testid="sell-selection">Vendre +{fmt(pickedKamas)}</button>
+		</div>
 	</div>
+{/if}
+
+{#if tagOpen}
+	<TagSheet existing={data.tags.map((t) => t.tag)} count={pickedIds.length} onsubmit={(t) => bulk('tag', t)} oncancel={() => (tagOpen = false)} />
 {/if}
 
 {#if confirmOpen}
@@ -287,7 +322,7 @@
 		display: grid;
 		place-items: center;
 		color: white;
-		background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+		background: linear-gradient(135deg, var(--gold), var(--orange));
 		flex: none;
 	}
 	.bareme {
@@ -325,13 +360,18 @@
 		min-width: 24px;
 		height: 24px;
 		border-radius: 999px;
-		background: var(--accent);
+		background: var(--accent-fill);
 		color: white;
 		font-weight: 800;
 		font-size: 13px;
 		display: grid;
 		place-items: center;
 		box-shadow: 0 0 0 2px var(--bg);
+	}
+	.sel-actions {
+		display: flex;
+		gap: var(--space-2);
+		flex: none;
 	}
 	.selbar {
 		position: fixed;
@@ -389,7 +429,7 @@
 	.progress span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, var(--accent), #5e5ce6);
+		background: linear-gradient(90deg, var(--accent), var(--indigo));
 		border-radius: inherit;
 	}
 	.segmented {

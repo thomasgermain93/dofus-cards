@@ -22,7 +22,7 @@
 
 <svelte:head><title>Enchère : {data.card.name}</title></svelte:head>
 
-<a href="/market" class="back"><Icon name="chevron-left" size={20} />Marché</a>
+<a href="/market" class="back-link"><Icon name="chevron-left" size={20} />Marché</a>
 
 <div class="layout">
 	<div class="flex justify-center"><div class="w-[min(280px,72vw)]"><Card card={data.card} size="lg" /></div></div>
@@ -80,14 +80,6 @@
 </div>
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.layout {
 		display: grid;
 		gap: 24px;

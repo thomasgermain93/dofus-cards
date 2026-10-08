@@ -27,7 +27,7 @@
 
 <svelte:head><title>Nouvel échange</title></svelte:head>
 
-<a href="/trades" class="back"><Icon name="chevron-left" size={20} />Échanges</a>
+<a href="/trades" class="back-link"><Icon name="chevron-left" size={20} />Échanges</a>
 <h1 class="large-title mb-4">{data.counter ? 'Contre-proposition' : 'Nouvel échange'}</h1>
 {#if data.counter}<p class="alert mb-4" style="background: var(--accent-soft)">Modifie la proposition reçue (cartes et kamas) puis renvoie-la : l'échange d'origine sera remplacé.</p>{/if}
 
@@ -84,14 +84,6 @@
 {/if}
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.no-underline {
 		text-decoration: none;
 	}

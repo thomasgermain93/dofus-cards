@@ -24,7 +24,7 @@
 		width: 9px;
 		height: 9px;
 		border-radius: 999px;
-		background: var(--accent);
+		background: var(--accent-fill);
 		flex: none;
 	}
 	.no-underline {

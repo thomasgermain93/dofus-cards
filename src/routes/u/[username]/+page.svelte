@@ -30,7 +30,7 @@
 <section class="hero">
 	<Avatar name={p.username} image={p.avatar} x={p.avatar_x} y={p.avatar_y} size={84} />
 	<div class="min-w-0 flex-1">
-		<h1 class="large-title truncate">{p.username}</h1>
+		<h1 class="large-title truncate" title={p.username}>{p.username}</h1>
 		{#if p.title}<p class="title-tag">{p.title}</p>{/if}
 		<p class="text-label-2 footnote mt-1">
 			Niveau {p.level}, depuis {since}{#if p.guild}, guilde <a class="text-accent" href="/guilds/{p.guild_id}">{p.guild} [{p.tag}]</a>{/if}{#if p.role === 'admin'}, modérateur{/if}
@@ -95,7 +95,7 @@
 	{#if data.badges.length}
 		<div class="badges mb-5" data-testid="badges">
 			{#each data.badges as b, i (i)}
-				<span class="badge-chip {b.kind}"><Icon name={b.kind === 'collection' ? 'album' : 'award'} size={13} />{b.label}</span>
+				<span class="badge-chip {b.kind}"><Icon name={b.kind === 'collection' ? 'album' : b.kind === 'tag' ? 'star' : 'award'} size={13} />{b.label}</span>
 			{/each}
 		</div>
 	{/if}
@@ -194,8 +194,8 @@
 		margin: 2px 0 0;
 		font-size: 13px;
 		font-weight: 700;
-		color: #8a5a00;
-		background: linear-gradient(90deg, #fff1b8, #ffd76a);
+		color: var(--title-ink);
+		background: var(--title-bg);
 		border-radius: 999px;
 		padding: 2px 10px;
 	}
@@ -216,17 +216,17 @@
 		border: 0.5px solid var(--separator);
 	}
 	.badge-chip.collection {
-		background: linear-gradient(90deg, color-mix(in srgb, #30d158 14%, var(--surface)), var(--surface));
+		background: linear-gradient(90deg, color-mix(in srgb, var(--green) 14%, var(--surface)), var(--surface));
 	}
 	.badge-chip.achievement {
-		background: linear-gradient(90deg, color-mix(in srgb, #ffd60a 18%, var(--surface)), var(--surface));
+		background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 18%, var(--surface)), var(--surface));
 	}
 	.vitrine {
 		border-radius: 24px;
 		padding: 18px;
 		background:
-			radial-gradient(ellipse at 50% 0%, color-mix(in srgb, #ffd60a 16%, transparent), transparent 60%),
-			linear-gradient(180deg, #221a32, #120e1c);
+			radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 60%),
+			var(--showcase-bg);
 		color: white;
 		box-shadow: var(--shadow-card);
 	}

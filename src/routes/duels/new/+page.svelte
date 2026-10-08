@@ -17,7 +17,7 @@
 
 <svelte:head><title>Nouveau duel</title></svelte:head>
 
-<a href="/duels" class="back"><Icon name="chevron-left" size={20} />Duels</a>
+<a href="/duels" class="back-link"><Icon name="chevron-left" size={20} />Duels</a>
 <h1 class="large-title mb-4">Nouveau duel</h1>
 
 <form method="POST" use:enhance class="flex flex-col gap-5">
@@ -57,14 +57,6 @@
 </form>
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	input[type='radio'] {
 		accent-color: var(--accent);
 		width: 18px;

@@ -82,7 +82,7 @@
 		display: grid;
 		place-items: center;
 		color: white;
-		background: linear-gradient(135deg, #ff9f0a, #ff375f);
+		background: linear-gradient(135deg, var(--orange), var(--pink));
 		flex: none;
 	}
 	.days {
@@ -105,7 +105,7 @@
 		border: 1.5px solid transparent;
 	}
 	.days li.big {
-		background: color-mix(in srgb, #ffd60a 16%, var(--surface-2));
+		background: color-mix(in srgb, var(--gold) 16%, var(--surface-2));
 	}
 	.days li.today {
 		border-color: var(--accent);
@@ -113,7 +113,7 @@
 		animation: glow 1.6s ease-in-out infinite alternate;
 	}
 	.days li.done {
-		opacity: 0.55;
+		background: var(--surface-3);
 	}
 	.d {
 		font-size: 10px;

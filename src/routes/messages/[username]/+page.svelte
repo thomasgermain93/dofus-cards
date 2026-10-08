@@ -22,7 +22,7 @@
 
 <svelte:head><title>Messages avec {data.other.username}</title></svelte:head>
 
-<a href="/social?tab=messages" class="back"><Icon name="chevron-left" size={20} />Messages</a>
+<a href="/social?tab=messages" class="back-link"><Icon name="chevron-left" size={20} />Messages</a>
 <h1 class="title-2 mb-3"><a class="text-inherit" href="/u/{data.other.username}">{data.other.username}</a></h1>
 
 <div class="chat" bind:this={list}>
@@ -47,14 +47,6 @@
 {/if}
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.text-inherit {
 		color: inherit;
 		text-decoration: none;
@@ -77,7 +69,7 @@
 	}
 	.bubble.mine {
 		align-self: flex-end;
-		background: var(--accent);
+		background: var(--accent-fill);
 		color: white;
 		border-radius: 18px 18px 6px 18px;
 	}

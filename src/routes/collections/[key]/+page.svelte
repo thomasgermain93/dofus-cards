@@ -9,7 +9,7 @@
 
 <svelte:head><title>{c.name}</title></svelte:head>
 
-<a href="/collections?kind={c.kind}" class="back"><Icon name="chevron-left" size={20} />Collections</a>
+<a href="/collections?kind={c.kind}" class="back-link"><Icon name="chevron-left" size={20} />Collections</a>
 <p class="footnote font-bold text-accent">{c.kindLabel}</p>
 <h1 class="large-title">{c.name}</h1>
 <p class="text-label-2 mb-2">{c.have} / {c.total} cartes. Récompense : {fmt(c.reward.kamas)} kamas, {c.reward.fragments} fragments, une carte brillante{c.reward.title ? ` et le titre « ${c.reward.title} »` : ''}.</p>
@@ -30,14 +30,6 @@
 </div>
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.bar {
 		height: 6px;
 		border-radius: 999px;
@@ -47,7 +39,7 @@
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent);
+		background: var(--accent-fill);
 	}
 	.grid-cards {
 		display: grid;

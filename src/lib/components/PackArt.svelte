@@ -21,7 +21,7 @@
 		position: relative;
 		aspect-ratio: 5 / 8;
 		border-radius: 14px;
-		background: linear-gradient(160deg, #1e3a8a 0%, #6d28d9 45%, #db2777 100%);
+		background: var(--pack-free);
 		box-shadow:
 			0 10px 30px rgba(76, 29, 149, 0.35),
 			inset 0 0 0 1px rgba(255, 255, 255, 0.18);
@@ -31,13 +31,13 @@
 		flex-direction: column;
 	}
 	.k-bronze {
-		background: linear-gradient(160deg, #6b3a12 0%, #c77d3a 50%, #8a4a1c 100%);
+		background: var(--pack-bronze);
 	}
 	.k-silver {
-		background: linear-gradient(160deg, #3b4450 0%, #aab4c0 50%, #5c6672 100%);
+		background: var(--pack-silver);
 	}
 	.k-gold {
-		background: linear-gradient(160deg, #7a5200 0%, #f5c842 50%, #b07800 100%);
+		background: var(--pack-gold);
 	}
 	.glow {
 		box-shadow:

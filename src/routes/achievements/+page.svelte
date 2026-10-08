@@ -38,10 +38,6 @@
 		background: var(--surface);
 		border-radius: var(--radius-lg);
 		padding: 14px;
-		opacity: 0.75;
-	}
-	.ach.done {
-		opacity: 1;
 	}
 	.medal {
 		width: 44px;
@@ -54,7 +50,7 @@
 		color: var(--label-3);
 	}
 	.done .medal {
-		background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+		background: linear-gradient(135deg, var(--gold), var(--orange));
 		color: white;
 	}
 	.bar {
@@ -66,7 +62,7 @@
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent);
+		background: var(--accent-fill);
 		border-radius: inherit;
 	}
 </style>

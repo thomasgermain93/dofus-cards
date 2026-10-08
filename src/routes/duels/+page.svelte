@@ -87,10 +87,10 @@
 		margin-bottom: 6px;
 	}
 	.bg-a {
-		background: linear-gradient(135deg, #ff375f, #ff9f0a);
+		background: linear-gradient(135deg, var(--pink), var(--orange));
 	}
 	.bg-b {
-		background: linear-gradient(135deg, #30d158, #0a84ff);
+		background: linear-gradient(135deg, var(--green), var(--blue));
 	}
 	.avatar {
 		width: 36px;

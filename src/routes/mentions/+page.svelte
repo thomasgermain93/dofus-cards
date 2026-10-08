@@ -47,6 +47,9 @@
 	.doc h2 {
 		margin-top: 14px;
 	}
+	.doc :global(a) {
+		text-decoration: underline;
+	}
 	.doc ul {
 		padding-left: 20px;
 		list-style: disc;

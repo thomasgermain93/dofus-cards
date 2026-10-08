@@ -176,3 +176,19 @@ describe('duels : chrono et revanche', () => {
 		expect(getDuel(db, again).rematch_of).toBe(id);
 	});
 });
+
+import { tagCards, untagCards, userTags, setFavorites } from '../game/profile';
+describe('étiquettes et sélection multiple', () => {
+	it('étiqueter, filtrer, retirer ; favoris en masse ; insultes refusées', () => {
+		const db = testDb();
+		const u = addUser(db, 'u');
+		[1, 2, 3].forEach((c) => give(db, u, c));
+		expect(tagCards(db, u, [1, 2, 99], '  Mes   boss ').added).toBe(2);
+		expect(userTags(db, u)).toEqual([{ tag: 'Mes boss', n: 2 }]);
+		expect(() => tagCards(db, u, [1], 'connard')).toThrow(/insulte/);
+		expect(() => tagCards(db, u, [1], 'a')).toThrow(/2 à 24/);
+		expect(untagCards(db, u, [1], 'Mes boss')).toBe(1);
+		expect(setFavorites(db, u, [1, 2, 3, 99], true)).toBe(3);
+		expect(setFavorites(db, u, [1, 2], false)).toBe(2);
+	});
+});

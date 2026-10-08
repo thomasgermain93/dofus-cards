@@ -366,7 +366,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 100;
-		background: radial-gradient(circle at 50% 40%, rgba(46, 32, 92, 0.94), rgba(6, 4, 14, 0.97));
+		background: var(--stage-bg);
 		-webkit-backdrop-filter: blur(12px);
 		backdrop-filter: blur(12px);
 		display: flex;
@@ -495,8 +495,8 @@
 		left: 0;
 		top: 14%;
 		height: 3px;
-		background: linear-gradient(90deg, #fff, #ffe680);
-		box-shadow: 0 0 12px #ffe680;
+		background: linear-gradient(90deg, #fff, var(--glow-gold));
+		box-shadow: 0 0 12px var(--glow-gold);
 		z-index: 3;
 		border-radius: 2px;
 	}
@@ -590,7 +590,7 @@
 	.teaser {
 		font-weight: 700;
 		font-size: 17px;
-		color: #ffe680;
+		color: var(--glow-gold);
 		animation: pulse 0.6s ease-in-out infinite alternate;
 	}
 	.rname {
@@ -599,16 +599,16 @@
 		filter: brightness(1.3);
 	}
 	.shiny-tag {
-		background: linear-gradient(90deg, #ffe680, #ff9ad5, #9ad5ff);
-		color: #3d2e00;
+		background: var(--shiny-tag);
+		color: var(--on-gold);
 		font-weight: 800;
 		font-size: 13px;
 		padding: 3px 10px;
 		border-radius: 999px;
 	}
 	.new {
-		background: #30d158;
-		color: #00330f;
+		background: var(--green);
+		color: var(--on-green);
 		font-weight: 700;
 		font-size: 13px;
 		padding: 3px 10px;
@@ -626,9 +626,9 @@
 		width: 24px;
 		height: 34px;
 		border-radius: 4px;
-		background: linear-gradient(160deg, #4c2a9a, #1e3a8a);
+		background: var(--pack-free);
 		box-shadow:
-			0 0 0 1.5px #c9a45c,
+			0 0 0 1.5px var(--card-back-line),
 			0 2px 6px rgba(0, 0, 0, 0.4);
 		transform: rotate(calc((var(--i) - 1.5) * 6deg));
 	}
@@ -680,7 +680,7 @@
 		font-weight: 700;
 	}
 	.dup {
-		background: #8e8e93;
+		background: var(--r-common);
 		color: white;
 	}
 	.sold-tag {
@@ -688,7 +688,7 @@
 		inset: auto 0 40% 0;
 		text-align: center;
 		font-weight: 800;
-		color: #30d158;
+		color: var(--green);
 		font-size: 15px;
 		text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 		animation: rise 0.4s var(--ease-ios);
@@ -716,7 +716,7 @@
 	}
 	.q.sell {
 		background: rgba(255, 214, 10, 0.2);
-		color: #ffd60a;
+		color: var(--gold);
 	}
 	.q.keep {
 		background: rgba(255, 255, 255, 0.14);
@@ -739,16 +739,16 @@
 		justify-content: center;
 	}
 	.btn-sell {
-		background: #ffd60a;
-		color: #3d2e00;
+		background: var(--gold);
+		color: var(--on-gold);
 	}
 	.err {
-		color: #ff6961;
+		color: var(--danger);
 		text-align: center;
 		margin: 0;
 	}
 	.total {
-		color: #ffd60a;
+		color: var(--gold);
 		text-align: center;
 		margin: 0;
 		font-weight: 700;

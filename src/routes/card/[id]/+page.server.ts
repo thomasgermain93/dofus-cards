@@ -4,7 +4,7 @@ import { sellableCounts } from '#lib/server/game/collection';
 import { createAuction } from '#lib/server/game/auctions';
 import { AUCTION_DURATIONS_H, CRAFT_COSTS, RECYCLE_VALUES, SELL_VALUES } from '#lib/server/game/constants';
 import { craftCard } from '#lib/server/game/collection';
-import { isWished, toggleWish } from '#lib/server/game/profile';
+import { isWished, toggleWish, userTags } from '#lib/server/game/profile';
 import { CARD_COLS, int, limit, run } from '#lib/server/web';
 import type { Actions, PageServerLoad } from './$types';
 import type { CardView } from '#lib/types';
@@ -56,6 +56,8 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		friendsOwning,
 		wishers,
 		wished: isWished(db, uid, id),
+		tags: (db.prepare('SELECT tag FROM card_tags WHERE user_id = ? AND card_id = ? ORDER BY tag').all(uid, id) as { tag: string }[]).map((t) => t.tag),
+		myTags: userTags(db, uid).map((t) => t.tag),
 		lastSale: lastSale?.current_bid ?? null,
 		sellValue: SELL_VALUES[card.rarity],
 		recycleValue: RECYCLE_VALUES[card.rarity],

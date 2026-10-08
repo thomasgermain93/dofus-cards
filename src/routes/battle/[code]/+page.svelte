@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import Card from '#lib/components/Card.svelte';
 	import CardPicker from '#lib/components/CardPicker.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
@@ -10,7 +10,7 @@
 	import type { CardView } from '#lib/types';
 
 	let { data, form } = $props();
-	let bs = $state(structuredClone(data.state));
+	let bs = $state(untrack(() => structuredClone(data.state)));
 	let clockOffset = $state(0);
 	let now = $state(Date.now());
 	$effect.pre(() => {
@@ -88,7 +88,7 @@
 
 <svelte:head><title>Bataille {bs.code}</title></svelte:head>
 
-<a href="/battle" class="back"><Icon name="chevron-left" size={20} />Batailles</a>
+<a href="/battle" class="back-link"><Icon name="chevron-left" size={20} />Batailles</a>
 {#if form?.error}<p class="alert alert-error mb-3">{form.error}</p>{/if}
 
 {#if ph.kind === 'lobby'}
@@ -147,7 +147,7 @@
 			</div>
 			<div class="timer"><span style="width: {ph.kind === 'question' ? (remaining / bs.rules.questionMs) * 100 : 0}%"></span></div>
 			<div class="subject">
-				<div class="w-28 flex-none"><Card card={q.card as CardView} size="sm" /></div>
+				<div class="w-28 flex-none"><Card card={q.card as CardView} size="sm" quiz={bs.phase.kind === 'question'} /></div>
 				<div class="min-w-0">
 					<p class="footnote text-label-2">{q.isMine ? 'Ta carte : pas de points pour toi sur celle-ci' : q.owner ? `Carte amenée par ${q.owner}` : ''}</p>
 					<h1 class="question" data-testid="battle-question">{q.prompt}</h1>
@@ -222,14 +222,6 @@
 {/if}
 
 <style>
-	.back {
-		display: inline-flex;
-		align-items: center;
-		color: var(--accent);
-		text-decoration: none;
-		margin: 0 0 8px -6px;
-		font-size: 17px;
-	}
 	.code-box {
 		text-align: center;
 		padding: 20px 16px;
@@ -282,7 +274,7 @@
 		font-weight: 900;
 		line-height: 1;
 		margin: 10px 0;
-		background: linear-gradient(135deg, #5e5ce6, #ff375f);
+		background: linear-gradient(135deg, var(--indigo), var(--pink));
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -316,7 +308,7 @@
 	.timer span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, #ff375f, #ff9f0a, #30d158);
+		background: linear-gradient(90deg, var(--pink), var(--orange), var(--green));
 		transition: width 0.2s linear;
 	}
 	.subject {
@@ -405,16 +397,16 @@
 		flex: none;
 	}
 	.rank.r0 {
-		background: #ffd60a;
-		color: #5c4300;
+		background: var(--gold);
+		color: var(--medal-1-ink);
 	}
 	.rank.r1 {
-		background: #d1d1d6;
-		color: #3a3a3c;
+		background: var(--medal-2);
+		color: var(--medal-2-ink);
 	}
 	.rank.r2 {
-		background: #e3a76f;
-		color: #4a2600;
+		background: var(--medal-3);
+		color: var(--medal-3-ink);
 	}
 	.podium {
 		display: grid;
@@ -443,15 +435,15 @@
 	}
 	.s0 .block-step {
 		height: 110px;
-		background: linear-gradient(180deg, #ffd60a, #e0a800);
+		background: linear-gradient(180deg, var(--gold), var(--r-legendary));
 	}
 	.s1 .block-step {
 		height: 80px;
-		background: linear-gradient(180deg, #d1d1d6, #8e8e93);
+		background: linear-gradient(180deg, var(--medal-2), var(--r-common));
 	}
 	.s2 .block-step {
 		height: 60px;
-		background: linear-gradient(180deg, #e3a76f, #b0703a);
+		background: linear-gradient(180deg, var(--medal-3), #b0703a);
 	}
 	.s0 {
 		animation-delay: 0.3s;

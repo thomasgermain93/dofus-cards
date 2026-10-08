@@ -166,3 +166,50 @@ export function awardWishGift(db: DB, giverId: number, receiverId: number, cardI
 	notify(db, giverId, 'guild', `+${pts} points de guilde : tu as offert une carte souhaitée par un membre !`, '/guilds', now);
 	return pts;
 }
+
+/* ------------------------------------------------------------------ */
+/* Étiquettes libres                                                    */
+/* ------------------------------------------------------------------ */
+
+export const MAX_TAGS = 30;
+
+export function cleanTag(tag: string) {
+	const t = censor(tag.replace(/\s+/g, ' ').trim().slice(0, 24));
+	assert(t.length >= 2 && !t.includes('*'), 'Étiquette : 2 à 24 caractères, sans insulte.');
+	return t;
+}
+
+export function tagCards(db: DB, userId: number, cardIds: number[], tag: string, now = Date.now()) {
+	return db.transaction(() => {
+		const t = cleanTag(tag);
+		const exists = db.prepare('SELECT 1 FROM card_tags WHERE user_id = ? AND tag = ? LIMIT 1').get(userId, t);
+		if (!exists) {
+			const n = (db.prepare('SELECT COUNT(DISTINCT tag) n FROM card_tags WHERE user_id = ?').get(userId) as { n: number }).n;
+			assert(n < MAX_TAGS, `${MAX_TAGS} étiquettes maximum.`);
+		}
+		assert(cardIds.length > 0 && cardIds.length <= 500, 'Sélection invalide.');
+		const ins = db.prepare('INSERT OR IGNORE INTO card_tags (user_id, card_id, tag, created_at) VALUES (?, ?, ?, ?)');
+		let n = 0;
+		for (const id of cardIds) if (ownsCard(db, userId, id)) n += ins.run(userId, id, t, now).changes;
+		return { tag: t, added: n };
+	})();
+}
+
+export function untagCards(db: DB, userId: number, cardIds: number[], tag: string) {
+	const del = db.prepare('DELETE FROM card_tags WHERE user_id = ? AND card_id = ? AND tag = ?');
+	let n = 0;
+	for (const id of cardIds) n += del.run(userId, id, tag).changes;
+	return n;
+}
+
+export function userTags(db: DB, userId: number) {
+	return db.prepare('SELECT tag, COUNT(*) n FROM card_tags WHERE user_id = ? GROUP BY tag ORDER BY n DESC, tag').all(userId) as { tag: string; n: number }[];
+}
+
+export function setFavorites(db: DB, userId: number, cardIds: number[], on: boolean) {
+	const ins = db.prepare('INSERT OR IGNORE INTO favorites (user_id, card_id) VALUES (?, ?)');
+	const del = db.prepare('DELETE FROM favorites WHERE user_id = ? AND card_id = ?');
+	let n = 0;
+	for (const id of cardIds) n += on ? (ownsCard(db, userId, id) ? ins.run(userId, id).changes : 0) : del.run(userId, id).changes;
+	return n;
+}

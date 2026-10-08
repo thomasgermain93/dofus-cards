@@ -3,7 +3,7 @@ import { getDb } from '#lib/server/db';
 import { findUserByName, friendshipStatus, sendFriendRequest } from '#lib/server/game/social';
 import { collectionScore, playerStats, ACHIEVEMENTS } from '#lib/server/game/progress';
 import { levelFromXp } from '#lib/server/game/constants';
-import { listShowcases, reportUser, setPrivate, toggleBlock, REPORT_REASONS } from '#lib/server/game/profile';
+import { listShowcases, reportUser, setPrivate, toggleBlock, userTags, REPORT_REASONS } from '#lib/server/game/profile';
 import { cardsByIds } from '#lib/server/queries';
 import { censor } from '#lib/server/moderation';
 import { CARD_COLS, limit, run, str } from '#lib/server/web';
@@ -49,6 +49,7 @@ export const load: PageServerLoad = ({ locals, params }) => {
 	const unlocked = db.prepare('SELECT code FROM achievements_unlocked WHERE user_id = ? ORDER BY unlocked_at DESC').all(u.id) as { code: string }[];
 	const collections = db.prepare('SELECT key FROM collections_claimed WHERE user_id = ? ORDER BY claimed_at DESC').all(u.id) as { key: string }[];
 	const badges = [
+		...userTags(db, u.id).slice(0, 4).map((t) => ({ kind: 'tag', label: `${t.tag} x${t.n}` })),
 		...collections.slice(0, 4).map((c) => ({ kind: 'collection', label: c.key.split(':').slice(1).join(':') })),
 		...unlocked.slice(0, 6).map((a) => ({ kind: 'achievement', label: ACHIEVEMENTS.find((x) => x.code === a.code)?.name ?? a.code }))
 	];

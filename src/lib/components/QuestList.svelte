@@ -55,8 +55,9 @@
 	.quest {
 		align-items: center;
 	}
-	.claimed {
-		opacity: 0.55;
+	.claimed .font-semibold {
+		color: var(--label-2);
+		text-decoration: line-through;
 	}
 	.ring {
 		width: 36px;
@@ -82,7 +83,7 @@
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent);
+		background: var(--accent-fill);
 		border-radius: inherit;
 		transition: width var(--dur) var(--ease-ios);
 	}

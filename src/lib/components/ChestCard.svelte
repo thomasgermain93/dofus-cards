@@ -18,7 +18,7 @@
 		now: number;
 	} = $props();
 	const max = $derived(chest.tiers[0].min);
-	const COLORS: Record<string, string> = { bronze: '#c77d3a', silver: '#9aa3ad', gold: '#e0a800' };
+	const COLORS: Record<string, string> = { bronze: 'var(--bronze)', silver: 'var(--silver)', gold: 'var(--r-legendary)' };
 	let opened = $state<string | null>(null);
 </script>
 
@@ -71,7 +71,7 @@
 		position: absolute;
 		inset: 0 auto 0 0;
 		border-radius: inherit;
-		background: linear-gradient(90deg, #c77d3a, #e0a800);
+		background: linear-gradient(90deg, var(--bronze), var(--r-legendary));
 	}
 	.mark {
 		position: absolute;
@@ -87,7 +87,7 @@
 		background: var(--c);
 	}
 	.open {
-		background: linear-gradient(135deg, #ffd60a, #ff9f0a);
-		color: #3d2e00;
+		background: linear-gradient(135deg, var(--gold), var(--orange));
+		color: var(--on-gold);
 	}
 </style>

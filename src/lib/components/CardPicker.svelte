@@ -96,7 +96,7 @@
 		min-width: 24px;
 		height: 24px;
 		border-radius: 999px;
-		background: var(--accent);
+		background: var(--accent-fill);
 		color: white;
 		display: grid;
 		place-items: center;
