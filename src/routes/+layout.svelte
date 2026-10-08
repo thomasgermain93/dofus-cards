@@ -1,6 +1,8 @@
 <script lang="ts">
 	import './layout.css';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { initHolo } from '#lib/holo';
 	import { GAME_NAME } from '#lib/config';
 	import Icon from '#lib/components/Icon.svelte';
 	import Logo from '#lib/components/Logo.svelte';
@@ -9,6 +11,7 @@
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
+	onMount(initHolo);
 	const me = $derived(data.me);
 
 	const tabs = $derived([

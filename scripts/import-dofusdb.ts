@@ -80,6 +80,25 @@ async function fetchAll(name: string, endpoint: string, params: [string, string]
 
 const fr = (o: any): string => (o && typeof o === 'object' ? (o.fr ?? '') : '').trim();
 
+/** Première(s) phrase(s) d'une description DofusDB, nettoyée et raccourcie (texte d'ambiance). */
+function shortText(raw: string, max = 150): string | null {
+	let t = raw
+		.replace(/<[^>]+>/g, ' ')
+		.replace(/\{[^}]*\}/g, '')
+		.replace(/\s+/g, ' ')
+		.replace(/\s+([,.!?;:])/g, (m, p) => (p === ',' || p === '.' ? p : ` ${p}`))
+		.trim();
+	if (!t || t.length < 8) return null;
+	if (t.length <= max) return t;
+	const cut = t.slice(0, max);
+	const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+	if (end > 50) return cut.slice(0, end + 1);
+	return cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '') + '…';
+}
+
+/** Choix déterministe d'un gabarit selon l'identifiant. */
+const pickT = <T,>(arr: T[], id: number) => arr[Math.abs(id * 2654435761) % arr.length];
+
 /* --- Catégories d'objets retenues (typeId DofusDB) --- */
 const EQUIPMENT_TYPES = [1, 9, 10, 11, 16, 17, 82]; // amulette, anneau, ceinture, bottes, chapeau, cape, bouclier
 const WEAPON_TYPES = [2, 3, 4, 5, 6, 7, 8, 19, 22, 271]; // arcs, baguettes, bâtons, dagues, épées, marteaux, pelles, haches, faux, lances
@@ -103,6 +122,7 @@ interface CardDraft {
 	rawAtk: number;
 	rawDef: number;
 	prestige: number;
+	flavor?: string | null;
 	rarity?: number;
 	attack?: number;
 	defense?: number;
@@ -121,7 +141,7 @@ async function main() {
 			]),
 			fetchAll('items', 'items', [
 				...typeParams,
-				...['id', 'name', 'typeId', 'iconId', 'level', 'itemSetId', 'effects', 'isLegendary', 'dropMonsterIds', 'img'].map(
+				...['id', 'name', 'description', 'typeId', 'iconId', 'level', 'itemSetId', 'effects', 'isLegendary', 'dropMonsterIds', 'img'].map(
 					(f) => ['$select[]', f] as [string, string]
 				)
 			]),
@@ -222,7 +242,27 @@ async function main() {
 			},
 			rawAtk: monsterRawAttack(g),
 			rawDef: monsterRawDefense(g),
-			prestige: 0
+			prestige: 0,
+			flavor: dungeonOfBoss.get(m.id)
+				? pickT([
+						`Maître des lieux dans ${fr(dungeonOfBoss.get(m.id).name)}. On ne vient pas le voir les mains vides.`,
+						`Il attend les aventuriers au fond de ${fr(dungeonOfBoss.get(m.id).name)}, et il n'est pas d'humeur.`,
+						`Gardien de ${fr(dungeonOfBoss.get(m.id).name)}. Prévoyez une clef, des potions et du courage.`
+					], m.id)
+				: base
+					? pickT([
+							`Version rare et coriace de ${fr(base.name)}. Les chasseurs d'âmes en rêvent.`,
+							`On dirait ${fr(base.name)}, en beaucoup plus teigneux.`
+						], m.id)
+					: zone
+						? pickT([
+								`Rôde dans la zone ${zone}, rarement seul.`,
+								`Aperçu dans la zone ${zone}. Méfiez-vous de son air innocent.`,
+								race ? `Famille des ${race}, repéré dans la zone ${zone}.` : `Habitant bien connu de la zone ${zone}.`
+							], m.id)
+						: race
+							? `Un représentant de la famille des ${race}.`
+							: null
 		});
 	}
 	// Prestige monstres (besoin du percentile de PV)
@@ -281,6 +321,7 @@ async function main() {
 				facts: { level: it.level, family },
 				rawAtk: atk,
 				rawDef: def,
+				flavor: shortText(fr(it.description)) ?? `Fidèle compagnon de route, de la famille ${family}.`,
 				prestige: mountPrestige({
 					level: it.level,
 					family,
@@ -316,7 +357,10 @@ async function main() {
 			},
 			rawAtk: atk,
 			rawDef: def,
-			prestige: 0
+			prestige: 0,
+			flavor:
+				shortText(fr(it.description)) ??
+				(set ? `Pièce de la ${fr(set.name)}.` : dropMonster ? `Arraché de haute lutte à ${fr(dropMonster.name)}.` : null)
 		});
 	}
 	{
@@ -357,7 +401,8 @@ async function main() {
 			facts: { role, spells: spellsFr, complexity: b.complexity },
 			rawAtk: 1 + roleOf(/d[ée]g[âa]ts|dommage/i) * 10 + (b.breedRoles?.length ?? 0),
 			rawDef: 1 + roleOf(/protect|tank|soin|r[ée]sist/i) * 10 + (b.complexity ?? 0),
-			prestige: CLASS_PRESTIGE
+			prestige: CLASS_PRESTIGE,
+			flavor: shortText(fr(b.description), 140)
 		});
 	}
 
@@ -380,15 +425,15 @@ async function main() {
 	migrate(db);
 	const now = Date.now();
 	const upsert = db.prepare(`
-		INSERT INTO cards (key, source_id, category, subtype, name, image, level, rarity, attack, defense, info1, info2, facts, prestige, active, updated_at)
-		VALUES (@key, @source_id, @category, @subtype, @name, @image, @level, @rarity, @attack, @defense, @info1, @info2, @facts, @prestige, 1, @now)
+		INSERT INTO cards (key, source_id, category, subtype, name, image, level, rarity, attack, defense, info1, info2, facts, prestige, flavor, active, updated_at)
+		VALUES (@key, @source_id, @category, @subtype, @name, @image, @level, @rarity, @attack, @defense, @info1, @info2, @facts, @prestige, @flavor, 1, @now)
 		ON CONFLICT(key) DO UPDATE SET source_id=excluded.source_id, category=excluded.category, subtype=excluded.subtype,
 			name=excluded.name, image=excluded.image, level=excluded.level, rarity=excluded.rarity, attack=excluded.attack,
 			defense=excluded.defense, info1=excluded.info1, info2=excluded.info2, facts=excluded.facts,
-			prestige=excluded.prestige, active=1, updated_at=excluded.updated_at`);
+			prestige=excluded.prestige, flavor=excluded.flavor, active=1, updated_at=excluded.updated_at`);
 	db.transaction(() => {
 		for (const d of drafts)
-			upsert.run({ ...d, facts: JSON.stringify(d.facts), now });
+			upsert.run({ ...d, flavor: d.flavor ?? null, facts: JSON.stringify(d.facts), now });
 		// Les cartes absentes du nouvel import sont désactivées (jamais supprimées)
 		db.prepare('UPDATE cards SET active = 0 WHERE updated_at <> ?').run(now);
 	})();

@@ -212,6 +212,9 @@ export const MIGRATIONS: string[] = [
 		reason TEXT NOT NULL,
 		created_at INTEGER NOT NULL
 	);
+	`,
+	/* 2 : texte d'ambiance des cartes */ `
+	ALTER TABLE cards ADD COLUMN flavor TEXT;
 	`
 ];
 

@@ -51,15 +51,13 @@ async function openPacks(page, prefix, n = 10) {
 		const btn = page.locator('[data-testid=open-pack]');
 		if (await btn.isDisabled()) break;
 		await btn.click();
-		await page.waitForSelector('.overlay');
+		await page.waitForSelector('[data-testid=pack]');
 		if (i === 0 && prefix) await shot(page, `${prefix}-paquet-1-ferme`);
-		await page.click('.stage');
-		await page.waitForTimeout(900);
+		await page.click('[data-testid=pack]', { force: true });
+		await page.waitForSelector('[data-testid=reveal-stage]');
+		await page.waitForTimeout(1500);
 		if (i === 0 && prefix) await shot(page, `${prefix}-paquet-2-carte`);
-		for (let k = 0; k < 5; k++) {
-			await page.click('.stage');
-			await page.waitForTimeout(250);
-		}
+		await page.click('[data-testid=skip]');
 		await page.waitForSelector('.summary');
 		await page.waitForTimeout(500);
 		if (i === 0 && prefix) await shot(page, `${prefix}-paquet-3-recap`);

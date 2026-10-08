@@ -7,6 +7,7 @@
 	import { duration, fmt } from '#lib/format';
 	import ConfirmSheet from '#lib/components/ConfirmSheet.svelte';
 	import { sell } from '#lib/sell';
+	import { tilt } from '#lib/holo';
 
 	let { data, form } = $props();
 	const c = $derived(data.card);
@@ -53,7 +54,7 @@
 
 <div class="layout">
 	<div class="card-col">
-		<div class="big"><Card card={c} size="lg" missing={!data.owned} favorite={data.fav} /></div>
+		<div class="big" use:tilt><Card card={c} size="lg" missing={!data.owned} favorite={data.fav} /></div>
 	</div>
 
 	<div class="flex flex-col gap-4 min-w-0">

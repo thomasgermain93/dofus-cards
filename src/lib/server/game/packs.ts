@@ -52,6 +52,8 @@ export function drawPack(db: DB, rng: Rng): CardRow[] {
 	const out: CardRow[] = [];
 	for (let i = 0; i < PACK_SIZE; i++) {
 		let r = drawRarity(rng, i === PACK_SIZE - 1 ? 1 : 0);
+		// Outil de démo hors production : forcer la rareté de la dernière carte (captures d'écran)
+		if (i === PACK_SIZE - 1 && process.env.NODE_ENV !== 'production' && process.env.DEV_PACK_LAST_RARITY) r = Number(process.env.DEV_PACK_LAST_RARITY);
 		while (r > 0 && !available.get(r)) r--; // rareté vide (dataset de test) : on descend
 		const n = available.get(r) ?? 0;
 		assert(n > 0, 'Aucune carte disponible.');

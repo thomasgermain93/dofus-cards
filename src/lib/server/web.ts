@@ -34,4 +34,4 @@ export const int = (v: FormDataEntryValue | string | null | undefined, fallback 
 export const str = (v: FormDataEntryValue | null | undefined) => (typeof v === 'string' ? v : '');
 
 /** Colonnes publiques d'une carte (pour l'affichage). */
-export const CARD_COLS = 'c.id, c.name, c.image, c.category, c.subtype, c.level, c.rarity, c.attack, c.defense, c.info1, c.info2';
+export const CARD_COLS = 'c.id, c.name, c.image, c.category, c.subtype, c.level, c.rarity, c.attack, c.defense, c.info1, c.info2, c.flavor';

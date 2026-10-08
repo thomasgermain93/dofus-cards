@@ -21,6 +21,7 @@ export interface CardRow {
 	defense: number;
 	info1: string | null;
 	info2: string | null;
+	flavor?: string | null;
 	facts: string;
 }
 

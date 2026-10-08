@@ -10,4 +10,5 @@ export interface CardView {
 	defense: number;
 	info1: string | null;
 	info2: string | null;
+	flavor?: string | null;
 }

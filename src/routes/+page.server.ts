@@ -46,7 +46,7 @@ export const actions: Actions = {
 					isNew: r.isNew,
 					card: {
 						id: r.card.id, name: r.card.name, image: r.card.image, category: r.card.category, subtype: r.card.subtype,
-						level: r.card.level, rarity: r.card.rarity, attack: r.card.attack, defense: r.card.defense, info1: r.card.info1, info2: r.card.info2
+						level: r.card.level, rarity: r.card.rarity, attack: r.card.attack, defense: r.card.defense, info1: r.card.info1, info2: r.card.info2, flavor: r.card.flavor
 					}
 				}))
 			};

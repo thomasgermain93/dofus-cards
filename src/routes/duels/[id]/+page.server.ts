@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const view = (c: ReturnType<typeof getCard>) => ({
 	id: c.id, name: c.name, image: c.image, category: c.category, subtype: c.subtype, level: c.level,
-	rarity: c.rarity, attack: c.attack, defense: c.defense, info1: c.info1, info2: c.info2
+	rarity: c.rarity, attack: c.attack, defense: c.defense, info1: c.info1, info2: c.info2, flavor: c.flavor
 });
 
 export const load: PageServerLoad = ({ locals, params }) => {

@@ -51,11 +51,9 @@ for (const [vp, tag] of [
 	const open = p.locator('[data-testid=open-pack]');
 	if (!(await open.isDisabled())) {
 		await open.click();
-		await p.waitForSelector('.overlay');
-		for (let k = 0; k < 6; k++) {
-			await p.click('.stage');
-			await p.waitForTimeout(k ? 200 : 700);
-		}
+		await p.click('[data-testid=pack]', { force: true });
+		await p.waitForSelector('[data-testid=reveal-stage]');
+		await p.click('[data-testid=skip]');
 		await p.waitForSelector('.summary');
 		await p.waitForTimeout(600);
 		const before = await kamas(p);
