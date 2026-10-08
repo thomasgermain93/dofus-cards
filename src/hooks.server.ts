@@ -3,6 +3,7 @@ import type { Handle } from '@sveltejs/kit/hooks';
 import { building } from '$app/env';
 import { SESSION_COOKIE, purgeSessions, sessionUser } from '#lib/server/auth';
 import { settleExpiredAuctions } from '#lib/server/game/auctions';
+import { finalizeDueBattles } from '#lib/server/game/battle';
 import { dataDir, getDb } from '#lib/server/db';
 import { initPush, notifyFullReserves } from '#lib/server/push';
 
@@ -15,6 +16,7 @@ if (!building && !g.__dcTimers && process.env.NODE_ENV !== 'test') {
 	setInterval(() => {
 		try {
 			settleExpiredAuctions(getDb());
+			finalizeDueBattles(getDb());
 		} catch (e) {
 			console.error('[enchères]', e);
 		}

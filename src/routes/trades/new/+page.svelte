@@ -13,13 +13,23 @@
 	$effect(() => {
 		if (data.give && data.mine.some((c) => c.id === data.give) && !offer.length) offer = [data.give];
 	});
+	let prefilled = false;
+	$effect(() => {
+		if (data.counter && !prefilled) {
+			prefilled = true;
+			offer = data.counter.offer.filter((id) => data.mine.some((c) => c.id === id));
+			request = data.counter.request.filter((id) => data.theirs.some((c) => c.id === id));
+		}
+	});
+	const gift = $derived(!request.length && offer.length > 0);
 	const me = $derived(page.data.me);
 </script>
 
 <svelte:head><title>Nouvel échange</title></svelte:head>
 
 <a href="/trades" class="back"><Icon name="chevron-left" size={20} />Échanges</a>
-<h1 class="large-title mb-4">Nouvel échange</h1>
+<h1 class="large-title mb-4">{data.counter ? 'Contre-proposition' : 'Nouvel échange'}</h1>
+{#if data.counter}<p class="alert mb-4" style="background: var(--accent-soft)">Modifie la proposition reçue (cartes et kamas) puis renvoie-la : l'échange d'origine sera remplacé.</p>{/if}
 
 {#if !data.partner}
 	<form method="GET" class="group p-4 flex flex-col gap-3 mb-4">
@@ -46,6 +56,7 @@
 		<input type="hidden" name="to" value={data.partner.username} />
 		<input type="hidden" name="offer" value={JSON.stringify(offer)} />
 		<input type="hidden" name="request" value={JSON.stringify(request)} />
+		{#if data.counter}<input type="hidden" name="parent" value={data.counter.id} />{/if}
 		<p class="text-label-2">Échange avec <a class="text-accent font-semibold" href="/u/{data.partner.username}">{data.partner.username}</a>. <a class="text-accent" href="/trades/new">Changer</a></p>
 		{#if form?.error}<p class="alert alert-error">{form.error}</p>{/if}
 
@@ -59,14 +70,14 @@
 		</section>
 
 		<section>
-			<h2 class="title-2 mb-2">Tu demandes</h2>
+			<h2 class="title-2 mb-2">Tu demandes <span class="footnote text-label-2 font-normal">(rien = cadeau)</span></h2>
 			<CardPicker cards={data.theirs} bind:selected={request} max={6} repeat empty="Ce joueur n'a aucune carte disponible." />
 		</section>
 
 		<input class="field" name="message" placeholder="Message (facultatif)" maxlength="200" />
 		<div class="sticky-bar material">
-			<button class="btn btn-block" disabled={!request.length || (!offer.length && !kamas)}>
-				<Icon name="send" size={18} />Proposer ({offer.length} carte{offer.length > 1 ? 's' : ''}{kamas ? ` + ${fmt(kamas)} kamas` : ''} contre {request.length})
+			<button class="btn btn-block" disabled={(!request.length && !offer.length) || (!offer.length && !kamas)}>
+				<Icon name={gift ? 'gift' : 'send'} size={18} />{gift ? `Offrir ${offer.length} carte${offer.length > 1 ? 's' : ''}` : `${data.counter ? 'Contre-proposer' : 'Proposer'} (${offer.length} carte${offer.length > 1 ? 's' : ''}${kamas ? ` + ${fmt(kamas)} kamas` : ''} contre ${request.length})`}
 			</button>
 		</div>
 	</form>

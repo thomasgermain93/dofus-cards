@@ -78,9 +78,14 @@
 			<div class="cell"><span class="flex-1 text-label-2">Attaque</span><span class="font-semibold tabular-nums">{data.owned ? fmt(c.attack) : '?'}</span></div>
 			<div class="cell"><span class="flex-1 text-label-2">Défense</span><span class="font-semibold tabular-nums">{data.owned ? fmt(c.defense) : '?'}</span></div>
 			<div class="cell"><span class="flex-1 text-label-2">Joueurs qui la possèdent</span><span class="font-semibold">{data.owners}</span></div>
+			<div class="cell"><span class="flex-1 text-label-2">Exemplaires en circulation</span><span class="font-semibold" data-testid="circulation">{fmt(data.circulation)}</span></div>
+			<div class="cell"><span class="flex-1 text-label-2">Dans les listes de souhaits</span><span class="font-semibold">{data.wishers}</span></div>
 			{#if data.lastSale}<div class="cell"><span class="flex-1 text-label-2">Dernière vente</span><Kamas value={data.lastSale} /></div>{/if}
 		</div>
 
+		<form method="POST" action="?/wish" use:enhance>
+			<button class="btn btn-sm {data.wished ? 'btn-secondary' : 'btn-plain'} px-2" data-testid="wish-toggle"><Icon name="star" size={16} fill={data.wished} />{data.wished ? 'Dans ta liste de souhaits' : 'Souhaiter cette carte'}</button>
+		</form>
 		{#if data.owned}
 			<div class="flex flex-wrap gap-2">
 				<form method="POST" action="?/fav" use:enhance>
@@ -162,6 +167,41 @@
 			</div>
 		{/if}
 
+		{#if data.sales.length}
+			{@const max = Math.max(...data.sales.map((x) => x.price))}
+			{@const min = Math.min(...data.sales.map((x) => x.price))}
+			<div>
+				<h2 class="section-label">Historique des prix ({data.sales.length} vente{data.sales.length > 1 ? 's' : ''})</h2>
+				<div class="group p-4">
+					<svg viewBox="0 0 300 80" class="spark" preserveAspectRatio="none" aria-label="Évolution des prix">
+						<polyline
+							fill="none"
+							stroke="var(--accent)"
+							stroke-width="2.5"
+							stroke-linejoin="round"
+							points={data.sales.map((x, i) => `${data.sales.length === 1 ? 150 : (i / (data.sales.length - 1)) * 300},${max === min ? 40 : 72 - ((x.price - min) / (max - min)) * 64}`).join(' ')}
+						/>
+						{#each data.sales as x, i}<circle cx={data.sales.length === 1 ? 150 : (i / (data.sales.length - 1)) * 300} cy={max === min ? 40 : 72 - ((x.price - min) / (max - min)) * 64} r="3.5" fill="var(--accent)" />{/each}
+					</svg>
+					<p class="footnote text-label-2 mt-2">Min {fmt(min)}, max {fmt(max)}, moyenne {fmt(Math.round(data.sales.reduce((a, b) => a + b.price, 0) / data.sales.length))} kamas</p>
+				</div>
+			</div>
+		{/if}
+
+		{#if data.friendsOwning.length}
+			<div>
+				<h2 class="section-label">Tes amis qui l'ont</h2>
+				<div class="group">
+					{#each data.friendsOwning as f (f.username)}
+						<a class="cell text-inherit no-underline" href="/u/{f.username}">
+							<span class="flex-1">{f.username}</span><span class="footnote text-label-2">{f.n} exemplaire{f.n > 1 ? 's' : ''}</span>
+							{#if !data.owned || f.n > 1}<span class="btn btn-plain btn-sm">Échanger</span>{/if}
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		{#if data.auctions.length}
 			<div>
 				<h2 class="section-label">En vente</h2>
@@ -191,6 +231,11 @@
 {/if}
 
 <style>
+	.spark {
+		width: 100%;
+		height: 80px;
+		overflow: visible;
+	}
 	.bar {
 		height: 6px;
 		border-radius: 999px;

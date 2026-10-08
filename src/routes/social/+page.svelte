@@ -4,6 +4,8 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import { ago } from '#lib/format';
 	import { levelOf } from '#lib/level';
+	import Avatar from '#lib/components/Avatar.svelte';
+	import ShowcaseStrip from '#lib/components/ShowcaseStrip.svelte';
 
 	let { data, form } = $props();
 	const me = $derived(page.data.me);
@@ -50,11 +52,12 @@
 	<div class="group mb-5">
 		{#each friends as f (f.id)}
 			<div class="cell">
-				<span class="avatar">{f.username.slice(0, 1).toUpperCase()}</span>
+				<Avatar name={f.username} image={f.brief?.avatar} x={f.brief?.avatarX} y={f.brief?.avatarY} size={40} />
 				<a class="flex-1 min-w-0 text-inherit no-underline" href="/u/{f.username}">
 					<span class="block font-semibold truncate">{f.username}</span>
-					<span class="footnote text-label-2">Niveau {levelOf(f.xp)}</span>
+					<span class="footnote text-label-2 truncate block">{f.brief?.title ?? `Niveau ${levelOf(f.xp)}`}</span>
 				</a>
+				<span class="hidden sm:inline-flex"><ShowcaseStrip cards={f.brief?.showcase ?? []} size={26} /></span>
 				<a class="icon-act" href="/messages/{f.username}" aria-label="Message"><Icon name="message" size={20} /></a>
 				<a class="icon-act" href="/duels/new?vs={encodeURIComponent(f.username)}" aria-label="Défier"><Icon name="swords" size={20} /></a>
 				<a class="icon-act" href="/trades/new?to={encodeURIComponent(f.username)}" aria-label="Échanger"><Icon name="repeat" size={20} /></a>

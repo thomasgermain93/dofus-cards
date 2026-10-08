@@ -1,9 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { getDb } from '#lib/server/db';
-import { acceptDuel, answerQuestion, BOT_NAME, computeDuel, declineDuel, getDuel, nextQuestion } from '#lib/server/game/duels';
+import { acceptDuel, answerQuestion, BOT_NAME, computeDuel, declineDuel, getDuel, nextQuestion, rematch, DUEL_ANSWER_MS } from '#lib/server/game/duels';
+import { redirect } from '@sveltejs/kit';
 import { getCard, parseIds } from '#lib/server/game/core';
 import { cryptoRng } from '#lib/server/game/rng';
-import { cardsByIds, ownedCards } from '#lib/server/queries';
+import { cardsByIds, ownedCards, userBriefs } from '#lib/server/queries';
 import { int, limit, run, str } from '#lib/server/web';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -24,10 +25,14 @@ export const load: PageServerLoad = ({ locals, params }) => {
 	if (d.challenger_id !== uid && d.opponent_id !== uid) error(404, 'Duel introuvable');
 	const name = (id: number | null) => (id == null ? BOT_NAME : (db.prepare('SELECT username FROM users WHERE id = ?').get(id) as { username: string }).username);
 	const iAmChallenger = d.challenger_id === uid;
+	const otherId = iAmChallenger ? d.opponent_id : d.challenger_id;
+	const briefs = userBriefs(db, [uid, ...(otherId ? [otherId] : [])]);
 	const base = {
 		duel: { id: d.id, status: d.status, vs_bot: !!d.vs_bot, result: d.result, winner_id: d.winner_id },
-		me: { name: name(uid), challenger: iAmChallenger },
-		other: { name: name(iAmChallenger ? d.opponent_id : d.challenger_id) }
+		me: { name: name(uid), challenger: iAmChallenger, brief: briefs.get(uid) ?? null },
+		other: { name: name(otherId), brief: otherId ? (briefs.get(otherId) ?? null) : null },
+		answerMs: DUEL_ANSWER_MS,
+		serverNow: Date.now()
 	};
 	const myCards = cardsByIds(db, parseIds(iAmChallenger ? d.challenger_cards : d.opponent_cards));
 	const theirCards = cardsByIds(db, parseIds(iAmChallenger ? d.opponent_cards : d.challenger_cards));
@@ -67,6 +72,11 @@ export const actions: Actions = {
 		return run(locals, (uid) => (acceptDuel(getDb(), int(params.id), uid, parseIds(str(f.get('cards'))), cryptoRng), { accepted: true }));
 	},
 	decline: ({ locals, params }) => run(locals, (uid) => (declineDuel(getDb(), int(params.id), uid), { declined: true })),
+	rematch: async ({ locals, params }) => {
+		const r = await run(locals, (uid) => rematch(getDb(), int(params.id), uid, cryptoRng));
+		if (typeof r === 'number') redirect(303, `/duels/${r}`);
+		return r;
+	},
 	answer: async ({ locals, params, request }) => {
 		const f = await request.formData();
 		return run(locals, (uid) => {

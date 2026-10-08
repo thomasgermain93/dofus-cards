@@ -7,7 +7,7 @@
 
 	let { data } = $props();
 	const me = $derived(page.data.me);
-	const STATUS: Record<string, string> = { pending: 'En attente', accepted: 'Accepté', declined: 'Refusé', cancelled: 'Annulé', failed: 'Échoué' };
+	const STATUS: Record<string, string> = { pending: 'En attente', accepted: 'Accepté', declined: 'Refusé', cancelled: 'Annulé', failed: 'Échoué', countered: 'Contre-proposé' };
 </script>
 
 <svelte:head><title>Échanges</title></svelte:head>

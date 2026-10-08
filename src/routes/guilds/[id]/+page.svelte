@@ -4,6 +4,8 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import { ago, fmt } from '#lib/format';
 	import { levelOf } from '#lib/level';
+	import Avatar from '#lib/components/Avatar.svelte';
+	import ShowcaseStrip from '#lib/components/ShowcaseStrip.svelte';
 
 	let { data, form } = $props();
 	const me = $derived(page.data.me);
@@ -55,7 +57,9 @@
 			{#each data.members as m (m.id)}
 				<div class="cell">
 					{#if m.id === g.leader_id}<Icon name="crown" size={18} class="text-warning" />{:else}<span class="w-[18px]"></span>{/if}
+					<Avatar name={m.username} image={m.brief?.avatar} x={m.brief?.avatarX} y={m.brief?.avatarY} size={30} />
 					<a class="flex-1 min-w-0 text-inherit no-underline" href="/u/{m.username}"><span class="font-semibold">{m.username}</span> <span class="footnote text-label-2">niv. {levelOf(m.xp)}</span></a>
+					<ShowcaseStrip cards={m.brief?.showcase ?? []} size={22} />
 					<span class="footnote font-semibold tabular-nums">{fmt(m.week)} pts</span>
 					{#if isLeader && m.id !== me?.id}
 						<form method="POST" action="?/promote" use:enhance><input type="hidden" name="id" value={m.id} /><button class="btn btn-plain btn-sm" title="Nommer chef"><Icon name="crown" size={16} /></button></form>

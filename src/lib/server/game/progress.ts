@@ -1,6 +1,7 @@
 import type { DB } from '../db';
 import { COLLECTION_POINTS } from './constants';
 import { addKamas, addXp, notify } from './core';
+import { addDays, brusselsWeek, nextBrusselsMidnight } from './time';
 
 interface Stats {
 	distinct: number;
@@ -108,11 +109,10 @@ export function checkAchievements(db: DB, userId: number, now = Date.now()): Ach
 	return unlocked;
 }
 
-/** Début de la semaine en cours (lundi 00:00 UTC). */
+/** Début de la semaine en cours : lundi 00:00 heure de Bruxelles (comme les quêtes). */
 export function weekStart(now = Date.now()) {
-	const d = new Date(now);
-	const day = (d.getUTCDay() + 6) % 7;
-	return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day);
+	const monday = brusselsWeek(now);
+	return nextBrusselsMidnight(Date.parse(`${addDays(monday, -1)}T12:00:00Z`));
 }
 
 export function weeklyLeaderboard(db: DB, now = Date.now(), limit = 50) {
@@ -140,12 +140,13 @@ export function weeklyLeaderboard(db: DB, now = Date.now(), limit = 50) {
 export function guildLeaderboard(db: DB, now = Date.now(), limit = 20) {
 	return db
 		.prepare(
-			`SELECT g.id, g.name, g.tag, COUNT(DISTINCT u.id) members, COALESCE(SUM(e.points), 0) score
-			 FROM guilds g JOIN users u ON u.guild_id = g.id
-			 LEFT JOIN score_events e ON e.user_id = u.id AND e.created_at >= ?
-			 GROUP BY g.id ORDER BY score DESC LIMIT ?`
+			`SELECT g.id, g.name, g.tag,
+				(SELECT COUNT(*) FROM users m WHERE m.guild_id = g.id) members,
+				COALESCE((SELECT SUM(e.points) FROM score_events e JOIN users u ON u.id = e.user_id WHERE u.guild_id = g.id AND e.created_at >= ?), 0)
+				+ COALESCE((SELECT SUM(p.points) FROM guild_points p WHERE p.guild_id = g.id AND p.created_at >= ?), 0) score
+			 FROM guilds g ORDER BY score DESC LIMIT ?`
 		)
-		.all(weekStart(now), limit) as { id: number; name: string; tag: string; members: number; score: number }[];
+		.all(weekStart(now), weekStart(now), limit) as { id: number; name: string; tag: string; members: number; score: number }[];
 }
 
 /** Score de collection total (cartes différentes possédées, pondérées par rareté). */

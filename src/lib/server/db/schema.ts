@@ -270,9 +270,104 @@ export const MIGRATIONS: string[] = [
 		keys TEXT NOT NULL,
 		created_at INTEGER NOT NULL
 	);
+	`,
+	/* 4 : social (vitrines, avatar, souhaits, blocage, signalement, contre-offre, bataille de groupe) */ `
+	ALTER TABLE users ADD COLUMN avatar_card_id INTEGER REFERENCES cards(id);
+	ALTER TABLE users ADD COLUMN avatar_x INTEGER NOT NULL DEFAULT 50;
+	ALTER TABLE users ADD COLUMN avatar_y INTEGER NOT NULL DEFAULT 40;
+	ALTER TABLE users ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE trades ADD COLUMN parent_id INTEGER REFERENCES trades(id);
+	ALTER TABLE duels ADD COLUMN rematch_of INTEGER REFERENCES duels(id);
+	ALTER TABLE duel_questions ADD COLUMN shown_at INTEGER;
+
+	CREATE TABLE showcases (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		name TEXT NOT NULL,
+		is_main INTEGER NOT NULL DEFAULT 0,
+		created_at INTEGER NOT NULL
+	);
+	CREATE INDEX showcases_user ON showcases(user_id);
+	CREATE TABLE showcase_cards (
+		showcase_id INTEGER NOT NULL REFERENCES showcases(id) ON DELETE CASCADE,
+		slot INTEGER NOT NULL,
+		card_id INTEGER NOT NULL REFERENCES cards(id),
+		PRIMARY KEY (showcase_id, slot)
+	);
+
+	CREATE TABLE wishlist (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		card_id INTEGER NOT NULL REFERENCES cards(id),
+		created_at INTEGER NOT NULL,
+		PRIMARY KEY (user_id, card_id)
+	);
+
+	CREATE TABLE blocks (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at INTEGER NOT NULL,
+		PRIMARY KEY (user_id, blocked_id)
+	);
+
+	CREATE TABLE reports (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		target_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		reason TEXT NOT NULL,
+		details TEXT,
+		status TEXT NOT NULL DEFAULT 'open',
+		created_at INTEGER NOT NULL
+	);
+
+	CREATE TABLE guild_points (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		guild_id INTEGER NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		points INTEGER NOT NULL,
+		reason TEXT NOT NULL,
+		created_at INTEGER NOT NULL
+	);
+
+	CREATE TABLE battles (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		code TEXT NOT NULL UNIQUE,
+		host_id INTEGER NOT NULL REFERENCES users(id),
+		status TEXT NOT NULL DEFAULT 'lobby',   -- lobby | running | done | cancelled
+		question_count INTEGER NOT NULL DEFAULT 0,
+		started_at INTEGER,                     -- début de la 1re question (après le compte à rebours)
+		finished_at INTEGER,
+		created_at INTEGER NOT NULL
+	);
+	CREATE TABLE battle_players (
+		battle_id INTEGER NOT NULL REFERENCES battles(id) ON DELETE CASCADE,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		cards TEXT NOT NULL DEFAULT '[]',
+		score INTEGER NOT NULL DEFAULT 0,
+		rank INTEGER,
+		joined_at INTEGER NOT NULL,
+		left_at INTEGER,
+		PRIMARY KEY (battle_id, user_id)
+	);
+	CREATE TABLE battle_questions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		battle_id INTEGER NOT NULL REFERENCES battles(id) ON DELETE CASCADE,
+		idx INTEGER NOT NULL,
+		card_id INTEGER NOT NULL REFERENCES cards(id),
+		owner_id INTEGER,
+		prompt TEXT NOT NULL,
+		choices TEXT NOT NULL,
+		correct INTEGER NOT NULL,
+		UNIQUE (battle_id, idx)
+	);
+	CREATE TABLE battle_answers (
+		question_id INTEGER NOT NULL REFERENCES battle_questions(id) ON DELETE CASCADE,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		choice INTEGER NOT NULL,
+		answered_at INTEGER NOT NULL,
+		PRIMARY KEY (question_id, user_id)
+	);
 	`
 ];
-
 export function migrate(db: Database.Database) {
 	db.pragma('journal_mode = WAL');
 	db.pragma('foreign_keys = ON');

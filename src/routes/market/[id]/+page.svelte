@@ -61,7 +61,7 @@
 						<input class="field" type="number" name="amount" min={data.minBid} bind:value={amount} required />
 					</label>
 					<button class="btn" data-testid="bid"><Icon name="gavel" size={18} />Enchérir {fmt(amount)} kamas</button>
-					<p class="footnote text-label-3">Si quelqu'un enchérit plus haut, tes kamas te sont rendus automatiquement. Une enchère dans les 2 dernières minutes prolonge la vente de 2 minutes.</p>
+					<p class="footnote text-label-3">Si quelqu'un enchérit plus haut, tes kamas te sont rendus automatiquement. Une enchère dans les 10 dernières secondes prolonge la vente de 60 secondes.</p>
 				</form>
 			{/if}
 		{/if}

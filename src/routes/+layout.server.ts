@@ -13,11 +13,15 @@ export const load: LayoutServerLoad = ({ locals }) => {
 	const packs = getPackState(db, u.id, now);
 	const n = (sql: string, ...a: unknown[]) => (db.prepare(sql).get(...a) as { n: number }).n;
 	const level = levelFromXp(u.xp);
+	const av = db.prepare('SELECT c.image, u.avatar_x x, u.avatar_y y FROM users u LEFT JOIN cards c ON c.id = u.avatar_card_id WHERE u.id = ?').get(u.id) as { image: string | null; x: number; y: number };
 	return {
 		me: {
 			id: u.id,
 			username: u.username,
 			role: u.role,
+			avatar: av.image,
+			avatarX: av.x,
+			avatarY: av.y,
 			kamas: u.kamas,
 			xp: u.xp,
 			level,

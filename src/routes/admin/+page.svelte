@@ -16,6 +16,20 @@
 	{/each}
 </div>
 
+<h2 class="section-label">Signalements</h2>
+<div class="group mb-6">
+	{#each data.reports as r (r.id)}
+		<div class="cell" class:opacity-50={r.status !== 'open'}>
+			<span class="flex-1 min-w-0">
+				<span class="font-semibold">{r.target}</span> <span class="footnote text-label-2">par {r.reporter}, {ago(r.created_at)}</span>
+				<span class="block footnote">{r.reason}{r.details ? ` : ${r.details}` : ''}</span>
+			</span>
+			<a class="btn btn-plain btn-sm" href="?q={encodeURIComponent(r.target)}">Voir</a>
+			{#if r.status === 'open'}<form method="POST" action="?/closeReport" use:enhance><input type="hidden" name="id" value={r.id} /><button class="btn btn-secondary btn-sm">Traité</button></form>{/if}
+		</div>
+	{:else}<p class="cell text-label-2">Aucun signalement.</p>{/each}
+</div>
+
 <form method="GET" class="flex gap-2 mb-3">
 	<input class="field flex-1" name="q" value={data.q} placeholder="Rechercher un joueur" />
 	<button class="btn">Chercher</button>

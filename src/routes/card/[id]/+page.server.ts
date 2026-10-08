@@ -4,6 +4,7 @@ import { sellableCounts } from '#lib/server/game/collection';
 import { createAuction } from '#lib/server/game/auctions';
 import { AUCTION_DURATIONS_H, CRAFT_COSTS, RECYCLE_VALUES, SELL_VALUES } from '#lib/server/game/constants';
 import { craftCard } from '#lib/server/game/collection';
+import { isWished, toggleWish } from '#lib/server/game/profile';
 import { CARD_COLS, int, limit, run } from '#lib/server/web';
 import type { Actions, PageServerLoad } from './$types';
 import type { CardView } from '#lib/types';
@@ -30,6 +31,18 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		| { current_bid: number }
 		| undefined;
 	const { facts, ...view } = card;
+	const circulation = (db.prepare('SELECT COUNT(*) n FROM user_cards WHERE card_id = ?').get(id) as { n: number }).n;
+	const sales = db
+		.prepare("SELECT current_bid price, ends_at at FROM auctions WHERE card_id = ? AND status = 'sold' ORDER BY ends_at DESC LIMIT 20")
+		.all(id) as { price: number; at: number }[];
+	const friendsOwning = db
+		.prepare(
+			`SELECT u.username, COUNT(uc.id) n FROM friendships f JOIN users u ON u.id = CASE WHEN f.user_id = ? THEN f.friend_id ELSE f.user_id END
+			 JOIN user_cards uc ON uc.user_id = u.id AND uc.card_id = ?
+			 WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'accepted' GROUP BY u.id ORDER BY n DESC LIMIT 10`
+		)
+		.all(uid, id, uid, uid) as { username: string; n: number }[];
+	const wishers = (db.prepare('SELECT COUNT(*) n FROM wishlist WHERE card_id = ?').get(id) as { n: number }).n;
 	return {
 		card: view,
 		facts: JSON.parse(facts || '{}') as Record<string, unknown>,
@@ -38,6 +51,11 @@ export const load: PageServerLoad = ({ locals, params }) => {
 		fav,
 		auctions,
 		owners,
+		circulation,
+		sales: sales.reverse(),
+		friendsOwning,
+		wishers,
+		wished: isWished(db, uid, id),
 		lastSale: lastSale?.current_bid ?? null,
 		sellValue: SELL_VALUES[card.rarity],
 		recycleValue: RECYCLE_VALUES[card.rarity],
@@ -51,6 +69,7 @@ export const load: PageServerLoad = ({ locals, params }) => {
 };
 
 export const actions: Actions = {
+	wish: ({ locals, params }) => run(locals, (uid) => ({ wished: toggleWish(getDb(), uid, int(params.id)) })),
 	craft: ({ locals, params }) =>
 		run(locals, (uid) => {
 			limit(`craft:${uid}`, 20, 60_000);

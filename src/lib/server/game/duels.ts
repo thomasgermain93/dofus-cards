@@ -10,6 +10,11 @@ import {
 import { addXp, assert, getCard, getUser, notify, ownsCard, parseIds, type CardRow } from './core';
 import { questionsForCard } from './quiz';
 import { track } from './quests';
+import { assertNotBlocked } from './profile';
+
+/** Temps pour répondre à une question de duel (au-delà, la réponse compte comme fausse). */
+export const DUEL_ANSWER_MS = 20_000;
+const GRACE_MS = 2_000;
 import type { Rng } from './rng';
 
 export const BOT_NAME = 'Ordinateur';
@@ -30,6 +35,7 @@ export interface DuelRow {
 	result: string | null;
 	created_at: number;
 	finished_at: number | null;
+	rematch_of?: number | null;
 }
 
 export function getDuel(db: DB, id: number): DuelRow {
@@ -117,6 +123,7 @@ export function createDuel(db: DB, challengerId: number, opponentId: number | nu
 		assert(opponentId !== challengerId, 'Tu ne peux pas te défier toi-même.');
 		const opp = getUser(db, opponentId);
 		assert(!opp.banned, 'Ce joueur ne peut pas être défié.');
+		assertNotBlocked(db, challengerId, opponentId);
 		assert(areFriends(db, challengerId, opponentId), 'Tu ne peux défier que tes amis.');
 		const r = db
 			.prepare('INSERT INTO duels (challenger_id, opponent_id, challenger_cards, created_at) VALUES (?, ?, ?, ?)')
@@ -154,16 +161,24 @@ export interface PublicQuestion {
 	total: number;
 	prompt: string;
 	choices: string[];
+	/** fin du temps de réponse (ms, heure du serveur) */
+	deadline: number;
 }
 
 /** Prochaine question sans réponse pour ce joueur (sans la bonne réponse !). */
-export function nextQuestion(db: DB, duelId: number, userId: number): PublicQuestion | null {
+export function nextQuestion(db: DB, duelId: number, userId: number, now = Date.now()): PublicQuestion | null {
 	const total = (db.prepare('SELECT COUNT(*) n FROM duel_questions WHERE duel_id = ? AND answerer_id = ?').get(duelId, userId) as { n: number }).n;
 	const q = db
-		.prepare('SELECT id, card_id, position, prompt, choices FROM duel_questions WHERE duel_id = ? AND answerer_id = ? AND answer IS NULL ORDER BY position LIMIT 1')
-		.get(duelId, userId) as { id: number; card_id: number; position: number; prompt: string; choices: string } | undefined;
+		.prepare('SELECT id, card_id, position, prompt, choices, shown_at FROM duel_questions WHERE duel_id = ? AND answerer_id = ? AND answer IS NULL ORDER BY position LIMIT 1')
+		.get(duelId, userId) as { id: number; card_id: number; position: number; prompt: string; choices: string; shown_at: number | null } | undefined;
 	if (!q) return null;
-	return { id: q.id, cardId: q.card_id, position: q.position, total, prompt: q.prompt, choices: JSON.parse(q.choices) };
+	// Le chrono démarre à la première fois que la question est affichée (rechargement = même chrono)
+	let shownAt = q.shown_at;
+	if (shownAt == null) {
+		shownAt = now;
+		db.prepare('UPDATE duel_questions SET shown_at = ? WHERE id = ?').run(now, q.id);
+	}
+	return { id: q.id, cardId: q.card_id, position: q.position, total, prompt: q.prompt, choices: JSON.parse(q.choices), deadline: shownAt + DUEL_ANSWER_MS };
 }
 
 /** Enregistre une réponse. Renvoie si elle était juste et la bonne réponse. */
@@ -172,11 +187,13 @@ export function answerQuestion(db: DB, duelId: number, userId: number, questionI
 		const d = getDuel(db, duelId);
 		assert(d.status === 'active', 'Ce duel n’est pas en cours.');
 		const q = db.prepare('SELECT * FROM duel_questions WHERE id = ? AND duel_id = ?').get(questionId, duelId) as
-			| { answerer_id: number | null; answer: number | null; correct: number }
+			| { answerer_id: number | null; answer: number | null; correct: number; shown_at: number | null }
 			| undefined;
 		assert(q && q.answerer_id === userId, 'Question introuvable.');
 		assert(q.answer == null, 'Tu as déjà répondu à cette question.');
-		assert(Number.isInteger(choice) && choice >= 0 && choice < 4, 'Réponse invalide.');
+		assert(Number.isInteger(choice) && choice >= -1 && choice < 4, 'Réponse invalide.');
+		// -1 = temps écoulé ; une réponse arrivée après le chrono compte comme fausse
+		if (q.shown_at != null && now > q.shown_at + DUEL_ANSWER_MS + GRACE_MS) choice = -1;
 		db.prepare('UPDATE duel_questions SET answer = ?, answered_at = ? WHERE id = ?').run(choice, now, questionId);
 		const remaining = (db.prepare('SELECT COUNT(*) n FROM duel_questions WHERE duel_id = ? AND answer IS NULL').get(duelId) as { n: number }).n;
 		let finished = false;
@@ -184,8 +201,20 @@ export function answerQuestion(db: DB, duelId: number, userId: number, questionI
 			finalizeDuel(db, duelId, now);
 			finished = true;
 		}
-		return { correct: choice === q.correct, correctIndex: q.correct, finished };
+		return { correct: choice === q.correct, correctIndex: q.correct, finished, timedOut: choice === -1 };
 	})();
+}
+
+/** Revanche en un clic : même adversaire, mêmes cartes (si on les a toujours). */
+export function rematch(db: DB, duelId: number, userId: number, rng: Rng, now = Date.now()) {
+	const d = getDuel(db, duelId);
+	assert(d.status === 'done', 'Le duel n’est pas terminé.');
+	assert(d.challenger_id === userId || d.opponent_id === userId, 'Duel introuvable.');
+	const myCards = parseIds(d.challenger_id === userId ? d.challenger_cards : d.opponent_cards);
+	const other = d.vs_bot ? null : d.challenger_id === userId ? d.opponent_id : d.challenger_id;
+	const id = createDuel(db, userId, other, myCards, rng, now);
+	db.prepare('UPDATE duels SET rematch_of = ? WHERE id = ?').run(duelId, id);
+	return id;
 }
 
 export interface CardDamage {

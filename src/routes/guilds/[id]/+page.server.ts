@@ -3,6 +3,7 @@ import { getDb } from '#lib/server/db';
 import { joinGuild, kickFromGuild, leaveGuild, postGuildMessage, transferLeadership } from '#lib/server/game/social';
 import { weekStart } from '#lib/server/game/progress';
 import { int, limit, run, str } from '#lib/server/web';
+import { userBriefs } from '#lib/server/queries';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals, params }) => {
@@ -25,7 +26,8 @@ export const load: PageServerLoad = ({ locals, params }) => {
 				.prepare('SELECT * FROM (SELECT m.id, m.body, m.created_at, u.username FROM guild_messages m JOIN users u ON u.id = m.user_id WHERE m.guild_id = ? ORDER BY m.id DESC LIMIT 60) ORDER BY id')
 				.all(id) as { id: number; body: string; created_at: number; username: string }[])
 		: [];
-	return { guild: g, members, isMember, canJoin: !myGuild, chat };
+	const briefs = userBriefs(db, members.map((m) => m.id));
+	return { guild: g, members: members.map((m) => ({ ...m, brief: briefs.get(m.id) ?? null })), isMember, canJoin: !myGuild, chat };
 };
 
 export const actions: Actions = {

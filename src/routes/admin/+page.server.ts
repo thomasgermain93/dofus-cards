@@ -19,8 +19,15 @@ export const load: PageServerLoad = ({ url }) => {
 			 JOIN users uf ON uf.id = m.from_id JOIN users ut ON ut.id = m.to_id ORDER BY m.id DESC LIMIT 20`
 		)
 		.all() as { id: number; body: string; created_at: number; sender: string; recipient: string }[];
+	const reports = db
+		.prepare(
+			`SELECT r.id, r.reason, r.details, r.status, r.created_at, a.username reporter, t.username target, t.id target_id
+			 FROM reports r JOIN users a ON a.id = r.reporter_id JOIN users t ON t.id = r.target_id ORDER BY (r.status = 'open') DESC, r.id DESC LIMIT 30`
+		)
+		.all() as { id: number; reason: string; details: string | null; status: string; created_at: number; reporter: string; target: string; target_id: number }[];
 	return {
 		q,
+		reports,
 		users,
 		messages,
 		stats: {
@@ -56,6 +63,13 @@ export const actions: Actions = {
 		return run(locals, () => {
 			getDb().prepare('UPDATE users SET banned = 0, ban_reason = NULL WHERE id = ?').run(int(f.get('id')));
 			return { done: 'unbanned' };
+		});
+	},
+	closeReport: async ({ locals, request }) => {
+		const f = await request.formData();
+		return run(locals, () => {
+			getDb().prepare("UPDATE reports SET status = 'closed' WHERE id = ?").run(int(f.get('id')));
+			return { done: 'closed' };
 		});
 	},
 	deleteMessage: async ({ locals, request }) => {

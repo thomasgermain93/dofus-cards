@@ -62,7 +62,8 @@ describe('progression et social', () => {
 		openPack(db, u, seededRng(1), now);
 		expect(weeklyLeaderboard(db, now)[0].username).toBe('a');
 		expect(weeklyLeaderboard(db, now + 7 * 86_400_000)).toHaveLength(0);
-		expect(new Date(weekStart(now)).getUTCDay()).toBe(1);
+		// lundi 5 octobre 2026, 00:00 à Bruxelles = dimanche 4 octobre 22:00 UTC (heure d'été)
+		expect(weekStart(now)).toBe(Date.UTC(2026, 9, 4, 22));
 	});
 	it('amis, messages et guildes', () => {
 		const db = testDb();

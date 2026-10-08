@@ -10,7 +10,7 @@
 	const t = $derived(data.trade);
 	const me = $derived(page.data.me);
 	const incoming = $derived(t.to_id === me?.id);
-	const STATUS: Record<string, string> = { pending: 'En attente', accepted: 'Accepté', declined: 'Refusé', cancelled: 'Annulé', failed: 'Échoué' };
+	const STATUS: Record<string, string> = { pending: 'En attente', accepted: 'Accepté', declined: 'Refusé', cancelled: 'Annulé', failed: 'Échoué', countered: 'Contre-proposition envoyée' };
 </script>
 
 <svelte:head><title>Échange</title></svelte:head>
@@ -36,9 +36,10 @@
 </div>
 
 {#if t.status === 'pending'}
-	<div class="flex gap-3 mt-5">
+	<div class="flex gap-3 mt-5 flex-wrap">
 		{#if incoming}
 			<form method="POST" action="?/accept" use:enhance class="flex-1"><button class="btn btn-block" data-testid="accept-trade"><Icon name="check" size={18} />Accepter</button></form>
+			<a class="btn btn-secondary flex-1" href="/trades/new?counter={t.id}" data-testid="counter-trade"><Icon name="repeat" size={18} />Contre-proposer</a>
 			<form method="POST" action="?/decline" use:enhance class="flex-1"><button class="btn btn-danger btn-block">Refuser</button></form>
 		{:else}
 			<form method="POST" action="?/cancel" use:enhance class="flex-1"><button class="btn btn-danger btn-block">Annuler la proposition</button></form>

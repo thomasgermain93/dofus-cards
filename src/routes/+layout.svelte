@@ -6,6 +6,7 @@
 	import { GAME_NAME } from '#lib/config';
 	import Icon from '#lib/components/Icon.svelte';
 	import Logo from '#lib/components/Logo.svelte';
+	import Avatar from '#lib/components/Avatar.svelte';
 	import KamasCounter from '#lib/components/KamasCounter.svelte';
 	import Disclaimer from '#lib/components/Disclaimer.svelte';
 	import type { LayoutProps } from './$types';
@@ -23,6 +24,8 @@
 	]);
 	const extra = $derived([
 		{ href: '/quests', label: 'Quêtes', icon: 'check' },
+		{ href: '/battle', label: 'Bataille de groupe', icon: 'users' },
+		{ href: '/wishlist', label: 'Souhaits', icon: 'star' },
 		{ href: '/collections', label: 'Collections', icon: 'album' },
 		{ href: '/leaderboard', label: 'Classement', icon: 'trophy' },
 		{ href: '/achievements', label: 'Succès', icon: 'award' },
@@ -71,7 +74,7 @@
 				{/each}
 			</nav>
 			<a href="/u/{me.username}" class="side-me">
-				<span class="avatar">{me.username.slice(0, 1).toUpperCase()}</span>
+				<Avatar name={me.username} image={me.avatar} x={me.avatarX} y={me.avatarY} size={36} />
 				<span class="min-w-0">
 					<span class="block truncate font-semibold">{me.username}</span>
 					<span class="block footnote text-label-2">Niveau {me.level}</span>
@@ -90,7 +93,7 @@
 						{#if me.unreadNotifs}<span class="badge dot">{me.unreadNotifs}</span>{/if}
 					</a>
 					<a href="/u/{me.username}" class="icon-btn mobile-only" aria-label="Mon profil">
-						<span class="avatar sm">{me.username.slice(0, 1).toUpperCase()}</span>
+						<Avatar name={me.username} image={me.avatar} x={me.avatarX} y={me.avatarY} size={30} />
 					</a>
 				</div>
 			</header>
@@ -180,22 +183,6 @@
 		top: -2px;
 		right: -4px;
 		box-shadow: 0 0 0 2px var(--bg);
-	}
-	.avatar {
-		width: 36px;
-		height: 36px;
-		flex: none;
-		border-radius: 999px;
-		display: grid;
-		place-items: center;
-		font-weight: 700;
-		color: white;
-		background: linear-gradient(135deg, #5ac8fa, #007aff);
-	}
-	.avatar.sm {
-		width: 30px;
-		height: 30px;
-		font-size: 14px;
 	}
 	.page {
 		max-width: 1080px;

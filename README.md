@@ -25,6 +25,7 @@ npm run dev
 
 - `npm run import:dofusdb -- --refresh` : re-télécharge les données (sinon le cache `data/raw` est réutilisé). Relançable : les cartes sont mises à jour par clé (`monster:58`…), les collections des joueurs restent valides, les cartes disparues sont désactivées (jamais supprimées).
 - `npm test` : tests unitaires (tirages, minuterie, enchères, échanges, duels, quiz, modération, succès…).
+- `node tests/e2e/b3-social.mjs` : vitrine, souhaits, bataille de groupe à 3 joueurs, duel, contre-proposition.
 - `node tests/e2e/sell.mjs` : parcours de vente rapide (paquet, fiche, album, double clic), 390 et 1440 px.
 - `node tests/e2e/run.mjs` : parcours Playwright à deux joueurs, 390 px et 1440 px (voir l'en-tête du fichier pour les variables).
 
@@ -98,6 +99,19 @@ Toutes les valeurs sont dans `src/lib/server/game/constants.ts` et `quests.ts`. 
 - **Fabrication** (fragments) : recycler 1 exemplaire rapporte 5 / 15 / 50 / 150 / 500 / 2 000 fragments selon la rareté ; fabriquer une carte précise coûte 30 / 80 / 250 / 800 / 2 400 / 8 000. En moyenne, un paquet entièrement recyclé donne environ 250 fragments (une Légendaire ciblée = environ 32 paquets recyclés), alors que vendu il rapporte environ 45 kamas : on choisit entre la monnaie d'échange (kamas, enchères) et la complétion (fragments).
 - **Collections** : régions (monstres, 5 cartes ou plus), donjons (monstres et boss, 3 ou plus) et panoplies (3 objets ou plus), calculées depuis les données. Récompense à la complétion : `15 x taille + 2 x valeur de vente des cartes` kamas (max 2 000), `10 x taille` fragments, une brillante de la collection, et le titre « Explorateur de… » (région) ou « Vainqueur de… » (donjon) affiché sur le profil.
 - **Notifications** : in-app (quête terminée, coffre, collection, duel, échange…) et **Web Push** si le joueur l'active (réserve de paquets pleine, défi, échange, ami, coffre). Clés VAPID créées au premier démarrage dans `DATA_DIR/vapid.json`. Sur iPhone, le push demande d'ajouter le jeu à l'écran d'accueil.
+
+### Social (boucle 3)
+
+- **Vitrines** : jusqu'à 5 vitrines nommées de 6 cartes, une principale (affichée en grand sur le profil, et en aperçu dans le classement, la liste d'amis, la guilde et les duels). Les brillantes y gardent leur effet.
+- **Avatar** = une carte de sa collection recadrée en cercle (point focal horizontal / vertical). **Titre** (collections) et **badges** (succès et collections complétées) sur le profil.
+- **Profil privé** (visible des amis et des modérateurs), **blocage** (plus de message, d'échange, de défi ni de demande d'ami, l'amitié est retirée) et **signalement** (motif + détails, visible dans `/admin`).
+- **Liste de souhaits** (200 cartes) : alerte quand une carte souhaitée est mise aux enchères, affichage des amis qui l'ont en double. **Points de guilde d'entraide** : offrir ou échanger une carte souhaitée par un membre de sa guilde rapporte 100 / 150 / 250 / 400 / 700 / 1 200 points selon la rareté, ajoutés au classement des guildes.
+- **Échanges** : contre-proposition (rôles inversés, l'original passe en « contre-proposé ») et cadeau (aucune carte demandée).
+- **Enchères** : une mise dans les 10 dernières secondes prolonge la vente de 60 secondes.
+- **Fiche carte** : exemplaires en circulation, nombre de souhaits, historique des prix des ventes (courbe, min, max, moyenne), amis qui la possèdent.
+- **Duels** : 20 secondes par question (au-delà la réponse compte comme fausse, le chrono survit au rechargement), dégâts animés sur les cartes, revanche en un clic, historique sur le profil.
+- **Bataille de groupe** : salon par code de 6 caractères, 3 à 50 joueurs, 3 cartes chacun, jusqu'à 12 questions de 15 s (+4 s de révélation), 10 points par bonne réponse, 20 si moins de la moitié des joueurs l'ont trouvée, 30 si moins de 10 %, pas de points sur sa propre carte. Podium 150 / 100 / 60 kamas, 20 pour les autres. Le déroulé est calculé à partir de l'heure du serveur (sondage toutes les 0,8 s), ce qui rend la reconnexion transparente ; un joueur qui quitte ne bloque pas la partie ; l'hôte qui quitte le salon passe la main.
+- **Classement hebdomadaire** : bascule le lundi à minuit heure de Bruxelles, comme les quêtes.
 
 ### Duel quiz
 

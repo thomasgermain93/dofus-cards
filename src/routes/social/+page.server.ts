@@ -1,6 +1,7 @@
 import { getDb } from '#lib/server/db';
 import { acceptFriend, inbox, listFriends, removeFriend, sendFriendRequest } from '#lib/server/game/social';
 import { int, limit, run, str } from '#lib/server/web';
+import { userBriefs } from '#lib/server/queries';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
@@ -9,7 +10,9 @@ export const load: PageServerLoad = ({ locals }) => {
 	const guild = db.prepare('SELECT g.id, g.name, g.tag FROM users u JOIN guilds g ON g.id = u.guild_id WHERE u.id = ?').get(uid) as
 		| { id: number; name: string; tag: string }
 		| undefined;
-	return { friends: listFriends(db, uid), inbox: inbox(db, uid), guild: guild ?? null };
+	const friends = listFriends(db, uid);
+	const briefs = userBriefs(db, friends.map((f) => f.id));
+	return { friends: friends.map((f) => ({ ...f, brief: briefs.get(f.id) ?? null })), inbox: inbox(db, uid), guild: guild ?? null };
 };
 
 export const actions: Actions = {

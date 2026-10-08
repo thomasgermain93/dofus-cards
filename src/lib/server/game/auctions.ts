@@ -2,6 +2,11 @@ import type { DB } from '../db';
 import { AUCTION_DURATIONS_H, AUCTION_MAX_OPEN, AUCTION_MIN_INCREMENT, XP } from './constants';
 import { addKamas, addXp, assert, freeCopies, getCard, moveCopy, notify } from './core';
 import { track } from './quests';
+import { notifyWishers } from './profile';
+
+/** Anti-sniping : une enchère dans les 10 dernières secondes prolonge la vente de 60 secondes. */
+export const SNIPE_WINDOW_MS = 10_000;
+export const SNIPE_EXTENSION_MS = 60_000;
 
 export interface AuctionRow {
 	id: number;
@@ -41,7 +46,9 @@ export function createAuction(db: DB, sellerId: number, cardId: number, startPri
 				'INSERT INTO auctions (seller_id, user_card_id, card_id, start_price, ends_at, created_at) VALUES (?, ?, ?, ?, ?, ?)'
 			)
 			.run(sellerId, copy, cardId, startPrice, now + durationH * 3_600_000, now);
-		return Number(r.lastInsertRowid);
+		const auctionId = Number(r.lastInsertRowid);
+		notifyWishers(db, cardId, getCard(db, cardId).name, sellerId, auctionId, now);
+		return auctionId;
 	})();
 }
 
@@ -65,8 +72,7 @@ export function placeBid(db: DB, auctionId: number, bidderId: number, amount: nu
 			const card = getCard(db, a.card_id);
 			notify(db, a.bidder_id, 'auction', `Ton enchère sur ${card.name} a été dépassée.`, `/market/${auctionId}`, now);
 		}
-		// Anti-sniping : une enchère dans les 2 dernières minutes prolonge de 2 minutes.
-		const endsAt = a.ends_at - now < 120_000 ? now + 120_000 : a.ends_at;
+		const endsAt = a.ends_at - now < SNIPE_WINDOW_MS ? a.ends_at + SNIPE_EXTENSION_MS : a.ends_at;
 		db.prepare('UPDATE auctions SET current_bid = ?, bidder_id = ?, bid_count = bid_count + 1, ends_at = ? WHERE id = ?').run(
 			amount,
 			bidderId,

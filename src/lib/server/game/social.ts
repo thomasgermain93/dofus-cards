@@ -1,6 +1,7 @@
 import type { DB } from '../db';
 import { censor, isOffensiveName } from '../moderation';
 import { assert, getUser, notify } from './core';
+import { assertNotBlocked } from './profile';
 
 /* ---------------- Amis ---------------- */
 
@@ -23,6 +24,7 @@ export function sendFriendRequest(db: DB, fromId: number, toName: string, now = 
 	const to = findUserByName(db, toName);
 	assert(to && !to.banned, 'Aucun joueur avec ce pseudo.');
 	assert(to.id !== fromId, 'Tu ne peux pas t’ajouter toi-même.');
+	assertNotBlocked(db, fromId, to.id);
 	const st = friendshipStatus(db, fromId, to.id);
 	assert(st !== 'friends', 'Vous êtes déjà amis.');
 	assert(st !== 'sent', 'Demande déjà envoyée.');
@@ -67,6 +69,7 @@ export function sendMessage(db: DB, fromId: number, toId: number, body: string, 
 	assert(text.length > 0, 'Message vide.');
 	const to = getUser(db, toId);
 	assert(!to.banned, 'Ce joueur ne peut pas recevoir de messages.');
+	assertNotBlocked(db, fromId, toId);
 	assert(friendshipStatus(db, fromId, toId) === 'friends', 'Tu ne peux écrire qu’à tes amis.');
 	db.prepare('INSERT INTO messages (from_id, to_id, body, created_at) VALUES (?, ?, ?, ?)').run(fromId, toId, censor(text), now);
 }

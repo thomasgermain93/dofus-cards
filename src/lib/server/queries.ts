@@ -55,3 +55,42 @@ export function retentionSummary(db: DB, userId: number, now = Date.now()) {
 		now
 	};
 }
+
+import { showcasePreviews } from './game/profile';
+
+export interface UserBrief {
+	id: number;
+	username: string;
+	title: string | null;
+	avatar: string | null;
+	avatarX: number;
+	avatarY: number;
+	showcase: CardView[];
+}
+
+/** Infos d'affichage d'un ou plusieurs joueurs : avatar-carte, titre, aperçu de la vitrine principale. */
+export function userBriefs(db: DB, ids: number[]): Map<number, UserBrief> {
+	const out = new Map<number, UserBrief>();
+	const uniq = [...new Set(ids.filter((x) => Number.isFinite(x)))];
+	if (!uniq.length) return out;
+	const rows = db
+		.prepare(
+			`SELECT u.id, u.username, u.title, c.image avatar, u.avatar_x, u.avatar_y FROM users u LEFT JOIN cards c ON c.id = u.avatar_card_id
+			 WHERE u.id IN (${uniq.map(() => '?').join(',')})`
+		)
+		.all(...uniq) as { id: number; username: string; title: string | null; avatar: string | null; avatar_x: number; avatar_y: number }[];
+	const previews = showcasePreviews(db, uniq);
+	const allCards = cardsByIds(db, [...new Set([...previews.values()].flat())]);
+	const byId = new Map(allCards.map((c) => [c.id, c]));
+	for (const r of rows)
+		out.set(r.id, {
+			id: r.id,
+			username: r.username,
+			title: r.title,
+			avatar: r.avatar,
+			avatarX: r.avatar_x,
+			avatarY: r.avatar_y,
+			showcase: (previews.get(r.id) ?? []).map((id) => byId.get(id)).filter((c): c is CardView => !!c)
+		});
+	return out;
+}

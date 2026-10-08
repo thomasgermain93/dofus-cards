@@ -47,7 +47,7 @@ describe('enchères', () => {
 		expect(() => placeBid(db, id, poor, 10, 1)).toThrow(/kamas/);
 		expect(() => createAuction(db, s, 7, 10, 1, 0)).toThrow(/possèdes/);
 	});
-	it('annulation possible seulement sans enchère ; anti-sniping', () => {
+	it('annulation possible seulement sans enchère ; anti-sniping (10 dernières secondes : +60 s)', () => {
 		const db = testDb();
 		const s = addUser(db, 's');
 		const b = addUser(db, 'b', 1000);
@@ -55,10 +55,13 @@ describe('enchères', () => {
 		const a1 = createAuction(db, s, 7, 10, 1, 0);
 		cancelAuction(db, a1, s);
 		const a2 = createAuction(db, s, 7, 10, 1, 0);
-		placeBid(db, a2, b, 10, H - 1000);
+		const endsOf = () => (db.prepare('SELECT ends_at FROM auctions WHERE id = ?').get(a2) as { ends_at: number }).ends_at;
+		placeBid(db, a2, b, 10, H - 30_000); // 30 s avant la fin : pas de prolongation
+		expect(endsOf()).toBe(H);
 		expect(() => cancelAuction(db, a2, s)).toThrow(/annuler/);
-		const ends = (db.prepare('SELECT ends_at FROM auctions WHERE id = ?').get(a2) as { ends_at: number }).ends_at;
-		expect(ends).toBe(H - 1000 + 120_000);
+		const c = addUser(db, 'c', 1000);
+		placeBid(db, a2, c, 11, H - 5_000); // 5 s avant la fin : +60 s
+		expect(endsOf()).toBe(H + 60_000);
 		expect(minNextBid({ current_bid: 10, start_price: 10 })).toBe(11);
 	});
 });

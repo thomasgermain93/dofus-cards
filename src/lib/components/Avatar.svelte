@@ -1,0 +1,41 @@
+<script lang="ts">
+	import { imgUrl } from '#lib/format';
+	/** Avatar = une carte de la collection recadrée en cercle (point focal réglable). */
+	let {
+		name,
+		image = null,
+		x = 50,
+		y = 40,
+		size = 36
+	}: { name: string; image?: string | null; x?: number; y?: number; size?: number } = $props();
+	const hue = $derived([...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7));
+</script>
+
+<span class="av" style="width:{size}px;height:{size}px;--h:{hue};font-size:{Math.round(size * 0.42)}px" aria-hidden="true">
+	{#if image}
+		<img src={imgUrl(image)} alt="" style="object-position:{x}% {y}%" loading="lazy" />
+	{:else}
+		{name.slice(0, 1).toUpperCase()}
+	{/if}
+</span>
+
+<style>
+	.av {
+		flex: none;
+		display: inline-grid;
+		place-items: center;
+		border-radius: 999px;
+		overflow: hidden;
+		font-weight: 800;
+		color: white;
+		background: linear-gradient(135deg, hsl(var(--h) 70% 62%), hsl(calc(var(--h) + 40) 70% 48%));
+		box-shadow: 0 0 0 2px var(--surface);
+	}
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transform: scale(1.6);
+		background: radial-gradient(circle, #fff, #f3ead6);
+	}
+</style>
