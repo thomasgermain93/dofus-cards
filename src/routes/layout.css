@@ -1,1 +1,266 @@
 @import 'tailwindcss';
+@import '../lib/styles/tokens.css';
+
+/* Les classes Tailwind pointent vers les tokens (bg-surface, text-label-2, rounded-card...) */
+@theme inline {
+	--font-sans: var(--font-sans);
+	--font-rounded: var(--font-rounded);
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-surface-3: var(--surface-3);
+	--color-separator: var(--separator);
+	--color-label: var(--label);
+	--color-label-2: var(--label-2);
+	--color-label-3: var(--label-3);
+	--color-accent: var(--accent);
+	--color-accent-soft: var(--accent-soft);
+	--color-success: var(--success);
+	--color-success-soft: var(--success-soft);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-warning: var(--warning);
+	--color-kamas: var(--kamas);
+	--radius-card: var(--radius-card);
+	--radius-lg: var(--radius-lg);
+	--radius-md: var(--radius-md);
+	--shadow-card: var(--shadow-card);
+	--shadow-float: var(--shadow-float);
+	--ease-ios: var(--ease-ios);
+}
+
+html {
+	background: var(--bg);
+	color: var(--label);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
+	text-size-adjust: 100%;
+}
+body {
+	margin: 0;
+	background: var(--bg);
+	min-height: 100dvh;
+}
+
+@layer components {
+	/* Grand titre façon iOS */
+	.large-title {
+		font-size: 34px;
+		line-height: 41px;
+		font-weight: 700;
+		letter-spacing: 0.01em;
+	}
+	.title-2 {
+		font-size: 22px;
+		line-height: 28px;
+		font-weight: 700;
+	}
+	.headline {
+		font-size: 17px;
+		line-height: 22px;
+		font-weight: 600;
+	}
+	.footnote {
+		font-size: 13px;
+		line-height: 18px;
+	}
+	.section-label {
+		font-size: 13px;
+		line-height: 18px;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		color: var(--label-2);
+		padding: 0 16px 6px;
+	}
+
+	/* Groupe de cellules (liste iOS « inset grouped ») */
+	.group {
+		background: var(--surface);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+	.cell {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 48px;
+		padding: 10px 16px;
+		position: relative;
+	}
+	.cell + .cell::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 16px;
+		right: 0;
+		border-top: 0.5px solid var(--separator);
+	}
+	a.cell:active,
+	button.cell:active {
+		background: var(--surface-3);
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 18px;
+		border-radius: 999px;
+		font-weight: 600;
+		font-size: 16px;
+		background: var(--accent);
+		color: var(--accent-contrast);
+		transition:
+			transform var(--dur-fast) var(--ease-ios),
+			opacity var(--dur-fast);
+		cursor: pointer;
+		user-select: none;
+		border: 0;
+		text-decoration: none;
+	}
+	.btn:active {
+		transform: scale(0.97);
+		opacity: 0.85;
+	}
+	.btn:disabled {
+		opacity: 0.4;
+		pointer-events: none;
+	}
+	.btn-secondary {
+		background: var(--accent-soft);
+		color: var(--accent);
+	}
+	.btn-plain {
+		background: transparent;
+		color: var(--accent);
+		padding: 0 8px;
+	}
+	.btn-danger {
+		background: var(--danger-soft);
+		color: var(--danger);
+	}
+	.btn-sm {
+		min-height: 34px;
+		padding: 0 14px;
+		font-size: 15px;
+	}
+	.btn-block {
+		width: 100%;
+	}
+
+	.field {
+		width: 100%;
+		min-height: 44px;
+		padding: 10px 14px;
+		border-radius: var(--radius-md);
+		background: var(--surface);
+		border: 0.5px solid var(--separator);
+		color: var(--label);
+		font-size: 17px;
+		outline: none;
+	}
+	.field:focus {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 3px var(--accent-soft);
+	}
+	.search {
+		background: var(--surface-3);
+		border: 0;
+		min-height: 36px;
+		border-radius: 10px;
+		font-size: 16px;
+		padding: 6px 12px;
+	}
+
+	/* Contrôle segmenté iOS */
+	.segmented {
+		display: flex;
+		padding: 2px;
+		border-radius: 9px;
+		background: var(--surface-3);
+		gap: 2px;
+	}
+	.segmented > * {
+		flex: 1;
+		text-align: center;
+		font-size: 13px;
+		font-weight: 600;
+		padding: 6px 8px;
+		border-radius: 7px;
+		color: var(--label);
+		white-space: nowrap;
+		text-decoration: none;
+	}
+	.segmented > [aria-current='page'],
+	.segmented > [aria-pressed='true'] {
+		background: var(--surface);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	}
+
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 5px 12px;
+		border-radius: 999px;
+		font-size: 14px;
+		font-weight: 500;
+		background: var(--surface);
+		color: var(--label);
+		border: 0.5px solid var(--separator);
+		white-space: nowrap;
+		text-decoration: none;
+	}
+	.chip[aria-pressed='true'],
+	.chip[aria-current='page'] {
+		background: var(--label);
+		color: var(--bg);
+		border-color: transparent;
+	}
+
+	.material {
+		background: var(--material);
+		-webkit-backdrop-filter: saturate(180%) blur(20px);
+		backdrop-filter: saturate(180%) blur(20px);
+	}
+
+	.badge {
+		min-width: 18px;
+		height: 18px;
+		padding: 0 5px;
+		border-radius: 999px;
+		background: var(--danger);
+		color: white;
+		font-size: 11px;
+		font-weight: 700;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.alert {
+		border-radius: var(--radius-md);
+		padding: 10px 14px;
+		font-size: 15px;
+	}
+	.alert-error {
+		background: var(--danger-soft);
+		color: var(--danger);
+	}
+	.alert-ok {
+		background: var(--success-soft);
+		color: var(--success);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 1ms !important;
+		transition-duration: 1ms !important;
+	}
+}

@@ -16,13 +16,25 @@ export function getDb(): DB {
 	if (instance) return instance;
 	mkdirSync(dataDir(), { recursive: true });
 	instance = new Database(join(dataDir(), 'game.db'));
-	migrate(instance);
+	setup(instance);
 	return instance;
 }
 
 /** Base en mémoire, pour les tests. */
 export function memoryDb(): DB {
 	const db = new Database(':memory:');
-	migrate(db);
+	setup(db);
 	return db;
+}
+
+/** Minuscules sans accents, pour la recherche (« écaflip » trouve « Ecaflip »). */
+export const norm = (s: unknown) =>
+	String(s ?? '')
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '');
+
+function setup(db: DB) {
+	migrate(db);
+	db.function('norm', { deterministic: true }, (s: unknown) => norm(s));
 }

@@ -134,7 +134,7 @@ function candidates(db: DB, card: CardRow, rng: Rng): Question[] {
 		if (f.set)
 			out.push(
 				reverse(
-					`Lequel de ces objets fait partie de la panoplie ${f.set} ?`,
+					`Lequel de ces objets fait partie de « ${f.set} » ?`,
 					n,
 					entries.filter((e) => e.category === 'item' && e.facts.set && e.facts.set !== f.set).map((e) => e.name),
 					rng
