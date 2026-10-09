@@ -12,7 +12,7 @@ Aucune monnaie payante, aucun abonnement, aucun achat : les kamas se gagnent uni
 - SQLite (better-sqlite3), migrations dans `src/lib/server/db/schema.ts`
 - Auth pseudo + mot de passe (Argon2), session en cookie httpOnly
 - Toute la logique de jeu est côté serveur (`src/lib/server/game/`) : minuteries, tirages, enchères, échanges, duels
-- Habillage inspiré de l’interface de Dofus 3 (bois sombre, parchemin, vert Dofus, or), décrit dans `docs/direction-artistique.md`. Design tokens dans **un seul fichier** : `src/lib/styles/tokens.css`. Polices Grenze et Alegreya Sans auto-hébergées (SIL OFL, `static/fonts/`). Icônes au trait dérivées de Lucide (ISC). Aucun asset graphique Ankama.
+- Habillage inspiré de l’interface de Dofus 3 (bois sombre, parchemin, vert Dofus, or), décrit dans `docs/direction-artistique.md`. Design tokens dans **un seul fichier** : `src/lib/styles/tokens.css`. Police de titre Grenze auto-hébergée (SIL OFL, `static/fonts/`), texte en police système. Icônes au trait dérivées de Lucide (ISC). Aucun asset graphique Ankama.
 
 ## Démarrer en local
 

@@ -35,13 +35,12 @@ Contrastes AA vérifiés par l'audit axe (`tests/e2e/ui-audit.mjs`) dans les deu
 
 ## Typographies
 
-- **Grenze** (SIL OFL), 600 et 700 : titres de page, noms de sections, ruban. Un serif trapu à l'esprit médiéval, proche des titres et des étiquettes de carte du jeu. Jamais en texte courant.
-- **Alegreya Sans** (SIL OFL), 400 à 800 : tout le texte, les boutons et les chiffres (`tabular-nums` pour les compteurs). Humaniste, chaleureuse, très lisible petite.
-- Les deux sont auto-hébergées (`static/fonts/`), préchargées, `font-display: swap`.
+- **Grenze** (SIL OFL), 700 : titres de page, titres de section, ruban, chiffres mis en avant (niveau, statistiques). Un serif trapu à l'esprit médiéval, proche des titres et des étiquettes de carte du jeu. Jamais en texte courant. Auto-hébergée (`static/fonts/`), réduite aux glyphes du français (12 Ko), préchargée, `font-display: swap`.
+- **Police du système** (San Francisco, Roboto, Segoe) pour le texte, les boutons et les chiffres (`tabular-nums` pour les compteurs), comme le texte de l'interface de Dofus 3. Alegreya Sans a été essayée : jolie, mais 60 Ko de polices en plus faisaient passer Lighthouse mobile sous 90.
 
 ## Cadres et matières
 
-- **Panneau** (`.panel`, `.group`) : bois sombre, bordure sombre de 2 px, liseré doré interne en haut, ombre portée teintée brun. Rayon 6 px (les fenêtres du jeu sont peu arrondies).
+- **Panneau** (`.panel`, `.group`) : bois sombre, bordure sombre de 1 px, liseré doré interne en haut, ombre portée teintée brun. Rayon 8 px (les fenêtres du jeu sont peu arrondies).
 - **Cadre orné** (`.ornate`) : panneau + quatre coins en laiton dessinés en SVG. Réservé aux blocs qui comptent (paquets, vitrine, événement).
 - **Ruban** (`.ribbon`) : bandeau doré aux extrémités fendues, pour l'événement, la montée de niveau et le tutoriel.
 - **Séparateurs gravés** : un trait sombre et un trait clair superposés, comme une rainure dans le bois.

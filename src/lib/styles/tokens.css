@@ -5,36 +5,17 @@
  *
  * Ambiance : l'établi de l'aventurier. Mode sombre = bois sombre de l'interface de Dofus 3,
  * mode clair = parchemin de la carte du Monde des Douze. Vert Dofus pour l'action, or pour la valeur.
- * - polices préchargées en font-display: swap : le texte s'affiche tout de suite, la police suit ;
  * - contrastes WCAG AA vérifiés avec axe-core dans les deux modes ;
  * - échelle typographique à 9 crans (--text-*) et grille d'espacement de 4 px (--space-*) ;
  * - zones tactiles de 44 px minimum (--tap), 40 px pour les petits boutons (--tap-sm).
  */
 
-/* 4 fichiers seulement : chaque police qui arrive relance un calcul de mise en page */
+/* Une seule police chargée (12 Ko, préchargée) : Grenze pour les titres. Le texte courant reste
+   dans la police du système, comme l'interface de Dofus 3, et ne coûte rien au chargement. */
 @font-face {
 	font-family: 'Grenze';
 	src: url('/fonts/grenze-700.woff2') format('woff2');
 	font-weight: 600 700;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Alegreya Sans';
-	src: url('/fonts/alegreya-sans-400.woff2') format('woff2');
-	font-weight: 400 500;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Alegreya Sans';
-	src: url('/fonts/alegreya-sans-400-italic.woff2') format('woff2');
-	font-weight: 400 500;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Alegreya Sans';
-	src: url('/fonts/alegreya-sans-700.woff2') format('woff2');
-	font-weight: 600 900;
 	font-display: swap;
 }
 
@@ -42,12 +23,12 @@
 	color-scheme: light;
 
 	/* ---------- Typographie ---------- */
-	--font-sans: 'Alegreya Sans', 'Gill Sans', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+	--font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 	--font-rounded: var(--font-sans);
 	--font-display: 'Grenze', 'Palatino Linotype', Palatino, Georgia, serif;
 	--text-2xs: 11px; /* légendes de la barre d'onglets, pastilles */
 	--text-xs: 12px;
-	--text-sm: 14px; /* footnote (Alegreya a un petit œil : un cran de plus qu'en SF) */
+	--text-sm: 14px; /* footnote */
 	--text-md: 16px; /* sous-titres, petits boutons */
 	--text-base: 17px; /* corps */
 	--text-lg: 20px;

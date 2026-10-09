@@ -43,7 +43,6 @@ html {
 	-webkit-tap-highlight-color: transparent;
 	text-size-adjust: 100%;
 	font-variant-numeric: lining-nums;
-	word-spacing: 0.06em; /* Alegreya serre ses mots */
 	/* Pas de zoom au double tap (le pincement reste possible) */
 	touch-action: manipulation;
 }
