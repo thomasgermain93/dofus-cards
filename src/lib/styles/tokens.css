@@ -14,7 +14,7 @@
    dans la police du système, comme l'interface de Dofus 3, et ne coûte rien au chargement. */
 @font-face {
 	font-family: 'Grenze';
-	src: url('/fonts/grenze-700.woff2') format('woff2');
+	src: url('/fonts/grenze-700-fr.woff2') format('woff2');
 	font-weight: 600 700;
 	font-display: swap;
 }
@@ -74,7 +74,7 @@
 	--slot-edge: #9a7a48;
 	--slot-inset: inset 0 2px 3px rgba(80, 52, 18, 0.35);
 	--bar-edge: #7a5c34;
-	--grain: url('/grain.webp'); /* grain de bois : tuile WebP de 4 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
+	--grain: url('/grain-2.webp'); /* grain de bois : tuile WebP de 4 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
 
 	/* ---------- Texte (contrastes AA sur --bg et --surface) ---------- */
 	--label: #2b1d0e;
