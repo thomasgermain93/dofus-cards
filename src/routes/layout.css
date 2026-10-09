@@ -71,7 +71,6 @@ body {
 	background-image:
 		radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--gold) 9%, transparent), transparent 70%),
 		var(--grain);
-	background-attachment: fixed;
 }
 @layer base {
 	h1,

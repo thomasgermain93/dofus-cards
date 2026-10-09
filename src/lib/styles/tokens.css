@@ -5,6 +5,7 @@
  *
  * Ambiance : l'établi de l'aventurier. Mode sombre = bois sombre de l'interface de Dofus 3,
  * mode clair = parchemin de la carte du Monde des Douze. Vert Dofus pour l'action, or pour la valeur.
+ * - polices en font-display: optional (préchargées) : aucun saut de mise en page au chargement ;
  * - contrastes WCAG AA vérifiés avec axe-core dans les deux modes ;
  * - échelle typographique à 9 crans (--text-*) et grille d'espacement de 4 px (--space-*) ;
  * - zones tactiles de 44 px minimum (--tap), 40 px pour les petits boutons (--tap-sm).
@@ -14,44 +15,44 @@
 	font-family: 'Grenze';
 	src: url('/fonts/grenze-700.woff2') format('woff2');
 	font-weight: 700;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Grenze';
 	src: url('/fonts/grenze-600.woff2') format('woff2');
 	font-weight: 600;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-400.woff2') format('woff2');
 	font-weight: 400;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-400-italic.woff2') format('woff2');
 	font-weight: 400;
 	font-style: italic;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-500.woff2') format('woff2');
 	font-weight: 500 600;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-700.woff2') format('woff2');
 	font-weight: 700;
-	font-display: swap;
+	font-display: optional;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-800.woff2') format('woff2');
 	font-weight: 800 900;
-	font-display: swap;
+	font-display: optional;
 }
 
 :root {
@@ -109,8 +110,7 @@
 	--slot-edge: #9a7a48;
 	--slot-inset: inset 0 2px 3px rgba(80, 52, 18, 0.35);
 	--bar-edge: #7a5c34;
-	--grain-opacity: 0.5;
-	--grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.32' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 0 0.1 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+	--grain: url('/grain.webp'); /* grain de bois : tuile WebP de 9 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
 
 	/* ---------- Texte (contrastes AA sur --bg et --surface) ---------- */
 	--label: #2b1d0e;
@@ -276,7 +276,6 @@
 		--slot-edge: #4a3d2c;
 		--slot-inset: inset 0 2px 4px rgba(0, 0, 0, 0.7);
 		--bar-edge: #0d0a07;
-		--grain-opacity: 1;
 		--label: #f1e6cc;
 		--label-2: #cdb994;
 		--label-3: #ae9a76;
@@ -320,7 +319,6 @@
 	--slot-edge: #4a3d2c;
 	--slot-inset: inset 0 2px 4px rgba(0, 0, 0, 0.7);
 	--bar-edge: #0d0a07;
-	--grain-opacity: 1;
 	--label: #f1e6cc;
 	--label-2: #cdb994;
 	--label-3: #ae9a76;
