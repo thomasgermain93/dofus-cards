@@ -124,8 +124,6 @@
 	<link rel="manifest" href="/manifest.webmanifest" />
 	<meta name="theme-color" content="#f1e2bb" media="(prefers-color-scheme: light)" />
 	<meta name="theme-color" content="#241e17" media="(prefers-color-scheme: dark)" />
-	<link rel="preload" href="/fonts/alegreya-sans-400.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-	<link rel="preload" href="/fonts/grenze-700.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
 </svelte:head>
 
 {#if bare}
