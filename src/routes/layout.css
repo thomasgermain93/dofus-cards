@@ -185,8 +185,8 @@ body {
 	.group {
 		overflow: hidden;
 	}
-	/* Cadre orné : panneau + quatre coins en laiton (blocs qui comptent : paquets, vitrine, événement) */
-	.frame {
+	/* Cadre orné (.ornate) : panneau + quatre coins en laiton (blocs qui comptent : paquets, vitrine, événement) */
+	.ornate {
 		position: relative;
 		background:
 			var(--corner-tl) top 3px left 3px / 14px no-repeat,

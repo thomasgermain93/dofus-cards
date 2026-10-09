@@ -147,12 +147,12 @@
 	</section>
 
 	{#if ev}
-		<a class="event frame mb-4" href="#paquets" data-testid="event">
+		<a class="event ornate mb-4" href="#paquets" data-testid="event">
 			<span class="ribbon ev-title">{ev.name}</span>
 			<span class="ev-body">
 				<span class="ev-ic"><Icon name="sparkles" size={22} fill /></span>
 				<span class="flex-1 min-w-0">
-					<span class="block">{ev.description}</span>
+					<span class="block ev-desc">{ev.description}</span>
 					<span class="block footnote ev-left">Encore {duration(ev.end - R.now)}</span>
 				</span>
 			</span>
@@ -168,7 +168,7 @@
 
 	<div class="dash">
 		<!-- Paquets -->
-		<section class="pack-card frame" id="paquets">
+		<section class="pack-card ornate" id="paquets">
 			<div class="pack-row">
 				<div class="pack-visual">
 					<PackArt width={104} />
@@ -420,6 +420,10 @@
 		align-items: center;
 		gap: var(--space-3);
 		width: 100%;
+	}
+	.ev-desc {
+		font-size: var(--text-md);
+		line-height: 1.35;
 	}
 	.ev-left {
 		color: var(--accent);

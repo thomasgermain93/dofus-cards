@@ -42,7 +42,7 @@ Contrastes AA vérifiés par l'audit axe (`tests/e2e/ui-audit.mjs`) dans les deu
 ## Cadres et matières
 
 - **Panneau** (`.panel`, `.group`) : bois sombre, bordure sombre de 2 px, liseré doré interne en haut, ombre portée teintée brun. Rayon 6 px (les fenêtres du jeu sont peu arrondies).
-- **Cadre orné** (`.frame`) : panneau + quatre coins en laiton dessinés en SVG. Réservé aux blocs qui comptent (paquets, vitrine, événement).
+- **Cadre orné** (`.ornate`) : panneau + quatre coins en laiton dessinés en SVG. Réservé aux blocs qui comptent (paquets, vitrine, événement).
 - **Ruban** (`.ribbon`) : bandeau doré aux extrémités fendues, pour l'événement, la montée de niveau et le tutoriel.
 - **Séparateurs gravés** : un trait sombre et un trait clair superposés, comme une rainure dans le bois.
 - **Case** (`.slot`) : emplacement creusé, utilisé par la barre d'onglets et les icônes de liste.
