@@ -23,7 +23,7 @@
 	color-scheme: light;
 
 	/* ---------- Typographie ---------- */
-	--font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, system-ui, sans-serif;
 	--font-rounded: var(--font-sans);
 	--font-display: 'Grenze', 'Palatino Linotype', Palatino, Georgia, serif;
 	--text-2xs: 11px; /* légendes de la barre d'onglets, pastilles */
@@ -74,7 +74,7 @@
 	--slot-edge: #9a7a48;
 	--slot-inset: inset 0 2px 3px rgba(80, 52, 18, 0.35);
 	--bar-edge: #7a5c34;
-	--grain: url('/grain.webp'); /* grain de bois : tuile WebP de 9 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
+	--grain: url('/grain.webp'); /* grain de bois : tuile WebP de 4 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
 
 	/* ---------- Texte (contrastes AA sur --bg et --surface) ---------- */
 	--label: #2b1d0e;
