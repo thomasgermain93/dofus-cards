@@ -5,7 +5,7 @@
  *
  * Ambiance : l'établi de l'aventurier. Mode sombre = bois sombre de l'interface de Dofus 3,
  * mode clair = parchemin de la carte du Monde des Douze. Vert Dofus pour l'action, or pour la valeur.
- * - polices en font-display: optional (préchargées) : aucun saut de mise en page au chargement ;
+ * - polices préchargées en font-display: swap : le texte s'affiche tout de suite, la police suit ;
  * - contrastes WCAG AA vérifiés avec axe-core dans les deux modes ;
  * - échelle typographique à 9 crans (--text-*) et grille d'espacement de 4 px (--space-*) ;
  * - zones tactiles de 44 px minimum (--tap), 40 px pour les petits boutons (--tap-sm).
@@ -15,44 +15,44 @@
 	font-family: 'Grenze';
 	src: url('/fonts/grenze-700.woff2') format('woff2');
 	font-weight: 700;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Grenze';
 	src: url('/fonts/grenze-600.woff2') format('woff2');
 	font-weight: 600;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-400.woff2') format('woff2');
 	font-weight: 400;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-400-italic.woff2') format('woff2');
 	font-weight: 400;
 	font-style: italic;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-500.woff2') format('woff2');
 	font-weight: 500 600;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-700.woff2') format('woff2');
 	font-weight: 700;
-	font-display: optional;
+	font-display: swap;
 }
 @font-face {
 	font-family: 'Alegreya Sans';
 	src: url('/fonts/alegreya-sans-800.woff2') format('woff2');
 	font-weight: 800 900;
-	font-display: optional;
+	font-display: swap;
 }
 
 :root {
