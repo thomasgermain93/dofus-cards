@@ -26,16 +26,22 @@
 		place-items: center;
 		border-radius: 999px;
 		overflow: hidden;
-		font-weight: 800;
-		color: white;
-		background: linear-gradient(135deg, hsl(var(--h) 70% 62%), hsl(calc(var(--h) + 40) 70% 48%));
-		box-shadow: 0 0 0 2px var(--surface);
+		font-family: var(--font-display);
+		font-weight: 700;
+		color: #fbf1d6;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+		/* Médaillon : teinte terreuse propre au pseudo, cerclé de laiton */
+		background: radial-gradient(circle at 50% 30%, hsl(var(--h) 38% 44%), hsl(var(--h) 42% 24%));
+		border: 2px solid var(--gold-deep);
+		box-shadow:
+			0 0 0 1px var(--panel-edge),
+			inset 0 1px 2px rgba(0, 0, 0, 0.4);
 	}
 	img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		transform: scale(1.6);
-		background: radial-gradient(circle, #fff, #f3ead6);
+		background: radial-gradient(circle, var(--card-parch-2), var(--card-parch));
 	}
 </style>

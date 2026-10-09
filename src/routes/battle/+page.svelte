@@ -53,14 +53,16 @@
 	.ic {
 		width: 44px;
 		height: 44px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
-		background: linear-gradient(135deg, var(--indigo), var(--purple));
+		background: var(--emblem-blue);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--emblem-ink);
 	}
 	.ic.b {
-		background: linear-gradient(135deg, var(--pink), var(--orange));
+		background: var(--emblem-red);
 	}
 	.code {
 		text-transform: uppercase;

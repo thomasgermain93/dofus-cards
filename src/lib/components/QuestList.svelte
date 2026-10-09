@@ -56,8 +56,9 @@
 		align-items: center;
 	}
 	.claimed .ring {
-		background: var(--success);
-		color: white;
+		background: var(--emblem-green);
+		color: var(--emblem-ink);
+		box-shadow: var(--emblem-shadow);
 		animation: tick 0.5s var(--ease-ios);
 	}
 	@keyframes tick {
@@ -82,24 +83,27 @@
 		flex: none;
 		display: grid;
 		place-items: center;
-		font-size: 13px;
+		font-size: 14px;
+		font-weight: 800;
 		background:
-			radial-gradient(circle, var(--surface) 58%, transparent 60%),
-			conic-gradient(var(--accent) calc(var(--p) * 360deg), var(--surface-3) 0);
+			radial-gradient(circle, var(--slot) 56%, transparent 58%),
+			conic-gradient(var(--accent-fill) calc(var(--p) * 360deg), var(--surface-3) 0);
+		box-shadow: 0 0 0 1px var(--panel-edge);
 		color: var(--accent);
 	}
 	.bar {
 		display: block;
-		height: 4px;
+		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		margin-top: 5px;
 		overflow: hidden;
 	}
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent-fill);
+		background: var(--gauge-fill);
 		border-radius: inherit;
 		transition: width var(--dur) var(--ease-ios);
 	}

@@ -29,7 +29,7 @@
 
 <section class="hero">
 	<Avatar name={p.username} image={p.avatar} x={p.avatar_x} y={p.avatar_y} size={84} />
-	<div class="min-w-0 flex-1">
+	<div class="hero-id min-w-0">
 		<h1 class="large-title truncate" title={p.username}>{p.username}</h1>
 		{#if p.title}<p class="title-tag">{p.title}</p>{/if}
 		<p class="text-label-2 footnote mt-1">
@@ -103,7 +103,7 @@
 	<!-- Vitrine -->
 	<section class="vitrine mb-5" data-testid="showcase">
 		<div class="vhead">
-			<h2 class="title-2 flex items-center gap-2"><Icon name="trophy" size={22} class="text-warning" />Vitrine</h2>
+			<h2 class="title-2 flex items-center gap-2"><Icon name="trophy" size={22} class="text-title" />Vitrine</h2>
 			{#if data.showcases.length > 1}
 				<div class="segmented vtabs">
 					{#each data.showcases as s, i (s.id)}<button type="button" aria-pressed={i === tab} onclick={() => (tab = i)}>{s.name}</button>{/each}
@@ -127,7 +127,7 @@
 		{#if data.isMe}<a class="btn btn-secondary btn-sm mt-4" href="/profile/edit#vitrines">Composer mes vitrines</a>{/if}
 	</section>
 
-	<div class="stats mb-5">
+	<div class="stats panel mb-5">
 		<div class="stat"><span class="v">{fmt(data.stats.distinct)}</span><span class="l">cartes</span></div>
 		<div class="stat"><span class="v">{fmt(data.stats.score)}</span><span class="l">score</span></div>
 		<div class="stat"><span class="v">{data.stats.legendary}</span><span class="l">légendaires</span></div>
@@ -185,9 +185,13 @@
 <style>
 	.hero {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 16px;
+		gap: 12px 16px;
 		margin-bottom: 16px;
+	}
+	.hero-id {
+		flex: 1 1 170px;
 	}
 	.title-tag {
 		display: inline-block;
@@ -196,7 +200,8 @@
 		font-weight: 700;
 		color: var(--title-ink);
 		background: var(--title-bg);
-		border-radius: 999px;
+		border-radius: var(--radius-sm);
+		border: 1px solid #7a5300;
 		padding: 2px 10px;
 	}
 	.badges {
@@ -211,24 +216,32 @@
 		font-size: 12.5px;
 		font-weight: 600;
 		padding: 4px 10px;
-		border-radius: 999px;
-		background: var(--surface);
-		border: 0.5px solid var(--separator);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+		border: 1px solid var(--slot-edge);
 	}
 	.badge-chip.collection {
-		background: linear-gradient(90deg, color-mix(in srgb, var(--green) 14%, var(--surface)), var(--surface));
+		border-color: color-mix(in srgb, var(--green) 70%, var(--slot-edge));
+		color: var(--success);
 	}
 	.badge-chip.achievement {
-		background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 18%, var(--surface)), var(--surface));
+		border-color: var(--gold-deep);
+		color: var(--accent);
 	}
+	/* Vitrine : écrin de velours vert dans un cadre de bois */
 	.vitrine {
-		border-radius: 24px;
+		border-radius: var(--radius-lg);
+		border: 2px solid #0d0a07;
+		outline: 1px solid var(--gold-deep);
+		outline-offset: -6px;
 		padding: 18px;
 		background:
 			radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 60%),
 			var(--showcase-bg);
-		color: white;
-		box-shadow: var(--shadow-card);
+		color: #f1e6cc;
+		--title: #f0d255;
+		--title-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+		box-shadow: var(--shadow-card), inset 0 0 30px rgba(0, 0, 0, 0.45);
 	}
 	.vhead {
 		display: flex;
@@ -239,20 +252,15 @@
 		margin-bottom: 8px;
 	}
 	.vtabs {
-		background: rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.35);
+		border-color: rgba(0, 0, 0, 0.5);
 	}
 	.vtabs button {
-		border: 0;
-		background: transparent;
-		color: white;
+		color: #e6d6b2;
 		cursor: pointer;
 	}
-	.vtabs button[aria-pressed='true'] {
-		background: rgba(255, 255, 255, 0.22);
-		box-shadow: none;
-	}
 	.vitrine .footnote {
-		color: rgba(255, 255, 255, 0.65);
+		color: rgba(241, 230, 204, 0.75);
 	}
 	.vgrid {
 		display: grid;
@@ -271,15 +279,14 @@
 	}
 	.vslot {
 		aspect-ratio: 5 / 7;
-		border-radius: 14px;
-		border: 1.5px dashed rgba(255, 255, 255, 0.2);
+		border-radius: var(--radius-md);
+		border: 1.5px dashed rgba(240, 210, 85, 0.3);
+		background: rgba(0, 0, 0, 0.2);
 	}
 	.stats {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		row-gap: 12px;
-		background: var(--surface);
-		border-radius: var(--radius-lg);
 		padding: 12px 4px;
 	}
 	.stat {
@@ -290,12 +297,14 @@
 		min-width: 0;
 	}
 	.v {
-		font-weight: 800;
-		font-size: 18px;
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 22px;
+		color: var(--title);
 		font-variant-numeric: tabular-nums;
 	}
 	.l {
-		font-size: 11px;
+		font-size: 13px;
 		color: var(--label-2);
 	}
 	.no-underline {

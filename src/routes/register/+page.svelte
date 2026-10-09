@@ -9,11 +9,11 @@
 <svelte:head><title>Inscription, {GAME_NAME}</title></svelte:head>
 
 <div class="auth">
-	<div class="hero"><Logo size={56} text={false} /></div>
+	<div class="hero"><Logo size={76} text={false} /></div>
 	<h1 class="large-title text-center">Créer un compte</h1>
 	<p class="text-center text-label-2 mb-6">Choisis un pseudo et c'est parti : 3 paquets offerts.</p>
 
-	<form method="POST" class="flex flex-col gap-3" use:enhance={() => { busy = true; return async ({ update }) => { busy = false; await update(); }; }}>
+	<form method="POST" class="frame flex flex-col gap-3 p-5" use:enhance={() => { busy = true; return async ({ update }) => { busy = false; await update(); }; }}>
 		{#if form?.error}<p class="alert alert-error" role="alert">{form.error}</p>{/if}
 		<input class="field" name="username" placeholder="Pseudo (3 à 20 caractères)" autocomplete="username" autocapitalize="none" minlength="3" maxlength="20" value={form?.username ?? ''} required />
 		<input class="field" name="password" type="password" placeholder="Mot de passe (8 caractères min.)" autocomplete="new-password" minlength="8" required />

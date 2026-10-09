@@ -78,11 +78,13 @@
 	.flame {
 		width: 44px;
 		height: 44px;
-		border-radius: 12px;
+border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
-		background: linear-gradient(135deg, var(--orange), var(--pink));
+		color: var(--emblem-ink);
+		background: var(--emblem-red);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
 		flex: none;
 	}
 	.days {
@@ -95,25 +97,26 @@
 	}
 	.days li {
 		position: relative;
-		border-radius: 10px;
-		background: var(--surface-2);
+		border-radius: var(--radius-md);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		padding: 6px 2px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 1px;
-		border: 1.5px solid transparent;
+		border: 1px solid var(--slot-edge);
 	}
 	.days li.big {
-		background: color-mix(in srgb, var(--gold) 16%, var(--surface-2));
+		background: color-mix(in srgb, var(--gold) 14%, var(--slot));
 	}
 	.days li.today {
-		border-color: var(--accent);
-		background: var(--accent-soft);
+		border-color: var(--gold-deep);
+		background: color-mix(in srgb, var(--gold) 20%, var(--slot));
 		animation: glow 1.6s ease-in-out infinite alternate;
 	}
 	.days li.done {
-		background: var(--surface-3);
+		opacity: 0.75;
 	}
 	.d {
 		font-size: 10px;
@@ -138,14 +141,15 @@
 		width: 18px;
 		height: 18px;
 		border-radius: 999px;
-		background: var(--success);
-		color: white;
+		background: var(--emblem-green);
+		border: 1px solid var(--panel-edge);
+		color: var(--emblem-ink);
 		display: grid;
 		place-items: center;
 	}
 	@keyframes glow {
 		to {
-			box-shadow: 0 0 0 3px var(--accent-soft);
+			box-shadow: var(--slot-inset), 0 0 10px -1px color-mix(in srgb, var(--gold) 60%, transparent);
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {

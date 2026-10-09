@@ -36,13 +36,13 @@
 		z-index: var(--z-bar);
 		width: var(--tap);
 		height: var(--tap);
-		border-radius: 12px;
-		border: 0;
+		border-radius: var(--radius-md);
+		border: 1.5px solid var(--emblem-edge);
 		display: grid;
 		place-items: center;
 		color: var(--on-gold);
-		background: var(--grad-gold);
-		box-shadow: 0 6px 20px color-mix(in srgb, var(--gold) 50%, transparent);
+		background: var(--emblem-gold);
+		box-shadow: var(--emblem-shadow), 0 0 18px color-mix(in srgb, var(--gold) 60%, transparent);
 		transform: rotate(8deg);
 		animation: wiggle 2.4s ease-in-out infinite;
 		cursor: pointer;

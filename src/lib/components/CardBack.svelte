@@ -23,7 +23,7 @@
 		display: grid;
 		place-items: center;
 		background:
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 4l6 20 20 6-20 6-6 20-6-20-20-6 20-6z' fill='%23ffffff' fill-opacity='.05'/%3E%3C/svg%3E") 0 0 / 22cqw 22cqw,
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 6c-6 0-10 9-10 16s4 11 10 11 10-4 10-11-4-16-10-16z' fill='%23f0d255' fill-opacity='.07'/%3E%3C/svg%3E") 0 0 / 22cqw 22cqw,
 			var(--card-back);
 		box-shadow:
 			inset 0 0 0 0.9cqw var(--card-back-line),
@@ -35,7 +35,7 @@
 		border-radius: 999px;
 		display: grid;
 		place-items: center;
-		background: radial-gradient(circle, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02) 70%);
+		background: radial-gradient(circle, rgba(240, 210, 85, 0.2), rgba(240, 210, 85, 0.02) 70%);
 		box-shadow: 0 0 0 0.9cqw rgba(201, 164, 92, 0.8);
 	}
 </style>

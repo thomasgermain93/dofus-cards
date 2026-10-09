@@ -78,18 +78,19 @@
 		display: block;
 		height: 5px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		margin-top: 6px;
 		overflow: hidden;
 	}
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent-fill);
+		background: var(--gauge-fill);
 		border-radius: inherit;
 	}
 	.bar span.full {
-		background: linear-gradient(90deg, var(--green), var(--gold));
+		background: var(--gauge-gold);
 	}
 	.no-underline {
 		text-decoration: none;

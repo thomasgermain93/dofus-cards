@@ -49,9 +49,11 @@
 		flex-direction: column;
 		gap: var(--space-3);
 		padding: var(--space-2) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
-		background: var(--surface);
-		border-radius: 20px 20px 0 0;
-		box-shadow: var(--shadow-float);
+		background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, var(--gold)), var(--surface) 40px), var(--surface);
+		border: 1px solid var(--panel-edge);
+		border-bottom: 0;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		box-shadow: inset 0 1px 0 var(--panel-hi), var(--shadow-float);
 		animation: up var(--dur) var(--ease-ios);
 	}
 	.grabber {
@@ -59,7 +61,8 @@
 		width: 36px;
 		height: 5px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		margin-bottom: var(--space-1);
 	}
 	.chips {

@@ -70,7 +70,7 @@
 	.bubble.mine {
 		align-self: flex-end;
 		background: var(--accent-fill);
-		color: white;
+		color: var(--accent-contrast);
 		border-radius: 18px 18px 6px 18px;
 	}
 	.bubble p {

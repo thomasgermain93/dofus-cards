@@ -147,11 +147,14 @@
 	</section>
 
 	{#if ev}
-		<a class="event mb-4" href="#paquets" data-testid="event">
-			<span class="ev-ic"><Icon name="sparkles" size={22} fill /></span>
-			<span class="flex-1 min-w-0">
-				<span class="block font-bold">{ev.name}</span>
-				<span class="block footnote">{ev.description} Encore {duration(ev.end - R.now)}.</span>
+		<a class="event frame mb-4" href="#paquets" data-testid="event">
+			<span class="ribbon ev-title">{ev.name}</span>
+			<span class="ev-body">
+				<span class="ev-ic"><Icon name="sparkles" size={22} fill /></span>
+				<span class="flex-1 min-w-0">
+					<span class="block">{ev.description}</span>
+					<span class="block footnote ev-left">Encore {duration(ev.end - R.now)}</span>
+				</span>
 			</span>
 		</a>
 	{/if}
@@ -165,7 +168,7 @@
 
 	<div class="dash">
 		<!-- Paquets -->
-		<section class="pack-card group" id="paquets">
+		<section class="pack-card frame" id="paquets">
 			<div class="pack-row">
 				<div class="pack-visual">
 					<PackArt width={104} />
@@ -257,9 +260,9 @@
 		<!-- Raccourcis -->
 		<section class="group">
 			<a class="cell no-underline text-inherit" href="/collections"><Icon name="album" class="text-accent" /><span class="flex-1">Collections par région, donjon et panoplie</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
-			<a class="cell no-underline text-inherit" href="/leaderboard"><Icon name="trophy" class="text-warning" /><span class="flex-1">Classement de la semaine</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
+			<a class="cell no-underline text-inherit" href="/leaderboard"><Icon name="trophy" class="text-accent" /><span class="flex-1">Classement de la semaine</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 			<a class="cell no-underline text-inherit" href="/achievements"><Icon name="award" class="text-accent" /><span class="flex-1">Succès</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
-			<a class="cell no-underline text-inherit" href="/duels/new?vs=bot"><Icon name="bot" class="text-success" /><span class="flex-1">Entraînement contre l'ordinateur</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
+			<a class="cell no-underline text-inherit" href="/duels/new?vs=bot"><Icon name="bot" class="text-accent" /><span class="flex-1">Entraînement contre l'ordinateur</span><Icon name="chevron-right" size={16} class="text-label-3" /></a>
 		</section>
 	</div>
 
@@ -353,12 +356,13 @@
 		min-width: 30px;
 		height: 30px;
 		border-radius: 999px;
-		background: var(--danger);
-		color: white;
+		background: linear-gradient(180deg, #e8565f, #b52a33);
+		border: 2px solid var(--gold-deep);
+		color: #fff;
 		font-weight: 800;
 		display: grid;
 		place-items: center;
-		box-shadow: 0 0 0 3px var(--surface);
+		box-shadow: 0 0 0 1px var(--panel-edge), 0 2px 0 rgba(0, 0, 0, 0.35);
 	}
 	.pack-info {
 		display: flex;
@@ -369,24 +373,27 @@
 	.daily-icon {
 		width: 48px;
 		height: 48px;
-		border-radius: 14px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
-		background: linear-gradient(135deg, var(--orange), var(--pink));
+		background: var(--emblem-red);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--emblem-ink);
 		flex: none;
 	}
 	.progress {
 		height: 8px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.progress span {
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--accent), var(--indigo));
+		background: var(--gauge-fill);
 	}
 	.mini-grid {
 		display: grid;
@@ -394,33 +401,52 @@
 		gap: 8px;
 	}
 
+	/* Événement : cadre orné coiffé d'un ruban doré */
 	.event {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+		padding: 0 var(--space-4) var(--space-4);
+		margin-top: 14px;
+		color: var(--label);
+		text-decoration: none;
+	}
+	.ev-title {
+		margin-top: -14px;
+	}
+	.ev-body {
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
-		padding: var(--space-3) var(--space-4);
-		border-radius: var(--radius-lg);
-		background: var(--pack-gold);
-		color: var(--on-gold);
-		text-decoration: none;
-		box-shadow: var(--shadow-card);
+		width: 100%;
+	}
+	.ev-left {
+		color: var(--accent);
+		font-weight: 700;
+		margin-top: 2px;
 	}
 	.ev-ic {
-		width: 40px;
-		height: 40px;
-		border-radius: 12px;
+		width: 44px;
+		height: 44px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		background: rgba(255, 255, 255, 0.45);
+		background: var(--emblem-gold);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--on-gold);
 		flex: none;
 	}
 	.dot-ic {
-		width: 32px;
-		height: 32px;
-		border-radius: 9px;
+		width: 34px;
+		height: 34px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		background: var(--accent-soft);
+		background: var(--slot);
+		border: 1px solid var(--slot-edge);
+		box-shadow: var(--slot-inset);
 		color: var(--accent);
 		flex: none;
 	}
@@ -429,58 +455,63 @@
 		gap: 8px;
 		flex-wrap: wrap;
 	}
+	/* Boosters : plaques de métal frappé (bronze, argent, or) */
 	.booster {
 		flex: 1;
 		min-width: 96px;
 		min-height: var(--tap);
-		border: 0;
-		border-radius: 14px;
-		padding: 10px 12px 10px 18px;
+		border: 1px solid var(--panel-edge);
+		border-radius: var(--radius-md);
+		padding: 8px 10px 8px 14px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 6px;
-		font-weight: 700;
-		color: var(--label);
-		background: var(--surface-2) !important;
-		position: relative;
-		overflow: hidden;
+		font-weight: 800;
+		color: #24180a;
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 		cursor: pointer;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-		transition: transform var(--dur-fast) var(--ease-ios);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.5),
+			0 3px 0 var(--panel-edge);
+		margin-bottom: 3px;
+		transition: transform 90ms ease-out, box-shadow 90ms ease-out;
 	}
 	.booster:active {
-		transform: scale(0.96);
+		transform: translateY(2px);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 0 var(--panel-edge);
 	}
-	.booster::before {
-		content: '';
-		position: absolute;
-		inset: 0 auto 0 0;
-		width: 8px;
-	}
-	.b-bronze::before {
+	.b-bronze {
 		background: var(--pack-bronze);
+		color: #fff3e2;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 	}
-	.b-silver::before {
+	.b-silver {
 		background: var(--pack-silver);
 	}
-	.b-welcome::before {
+	.b-welcome {
 		background: var(--pack-welcome);
+		color: #fffbea;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 	}
-	.b-gold::before {
+	.b-gold {
 		background: var(--pack-gold);
 	}
 	.bqty {
-		background: var(--surface-3);
-		border-radius: 999px;
-		padding: 1px 8px;
-		font-size: 13px;
+		background: rgba(20, 12, 4, 0.55);
+		color: #fbefcf;
+		text-shadow: none;
+		border-radius: var(--radius-sm);
+		padding: 1px 7px;
+		font-size: 14px;
 	}
 	.unread {
 		width: 9px;
 		height: 9px;
-		border-radius: 999px;
-		background: var(--accent-fill);
+		transform: rotate(45deg);
+		border-radius: 2px;
+		background: var(--gold);
+		box-shadow: 0 0 0 1px var(--panel-edge);
 		flex: none;
 	}
 	.no-underline {

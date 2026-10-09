@@ -16,14 +16,16 @@
 			clearTimeout(t);
 		};
 	});
-	const bits = Array.from({ length: 28 }, (_, i) => ({ x: (i * 37) % 100, d: (i % 7) * 0.08, h: (i * 47) % 360 }));
+	// Pluie de kamas et de feuilles aux couleurs du jeu
+	const COLORS = ['#f0d255', '#c99a1c', '#8fb637', '#fff1a8'];
+	const bits = Array.from({ length: 28 }, (_, i) => ({ x: (i * 37) % 100, d: (i % 7) * 0.08, c: COLORS[i % 4], coin: i % 4 !== 2 }));
 </script>
 
 {#if visible}
 <button class="lvl" onclick={ondone} aria-label="Fermer" data-testid="levelup">
-	{#each bits as b, i (i)}<span class="bit" style="left:{b.x}%; animation-delay:{b.d}s; background: hsl({b.h} 90% 60%)"></span>{/each}
+	{#each bits as b, i (i)}<span class="bit" class:coin={b.coin} style="left:{b.x}%; animation-delay:{b.d}s; background: {b.c}"></span>{/each}
 	<span class="badge-lvl">
-		<span class="small">Niveau</span>
+		<span class="ribbon">Niveau supérieur</span>
 		<span class="num">{level}</span>
 		<span class="small">Bravo !</span>
 	</span>
@@ -48,20 +50,30 @@
 		flex-direction: column;
 		align-items: center;
 		padding: var(--space-6) var(--space-10);
-		border-radius: 28px;
-		background: var(--grad-gold);
-		color: var(--on-gold);
-		box-shadow: var(--shadow-float);
+		border-radius: var(--radius-lg);
+		background:
+			var(--corner-tl) top 5px left 5px / 18px no-repeat,
+			var(--corner-tr) top 5px right 5px / 18px no-repeat,
+			var(--corner-bl) bottom 5px left 5px / 18px no-repeat,
+			var(--corner-br) bottom 5px right 5px / 18px no-repeat,
+			radial-gradient(circle at 50% 30%, #4a3c2a, #1c1712 80%);
+		border: 2px solid var(--emblem-edge);
+		color: var(--gold);
+		box-shadow: 0 0 0 1px #0d0a07, 0 0 60px -10px var(--gold), var(--shadow-float);
 		animation: pop 0.6s var(--ease-ios) both;
 	}
 	.num {
-		font-size: 72px;
-		font-weight: 900;
+		font-family: var(--font-display);
+		font-size: 84px;
+		font-weight: 700;
 		line-height: 1;
+		color: var(--gold);
+		text-shadow: 0 3px 0 #6e4a00, 0 0 24px rgba(240, 210, 85, 0.5);
 	}
 	.small {
 		font-weight: 700;
 		font-size: var(--text-md);
+		color: #f1e6cc;
 	}
 	.bit {
 		position: absolute;
@@ -70,6 +82,15 @@
 		height: 14px;
 		border-radius: 2px;
 		animation: fall 2.2s ease-in forwards;
+	}
+	.bit.coin {
+		width: 11px;
+		height: 11px;
+		border-radius: 999px;
+		box-shadow: inset -2px -2px 0 rgba(110, 74, 0, 0.6);
+	}
+	.badge-lvl .ribbon {
+		margin: -38px 0 8px;
 	}
 	@keyframes pop {
 		0% {

@@ -23,8 +23,10 @@
 	.dot {
 		width: 9px;
 		height: 9px;
-		border-radius: 999px;
-		background: var(--accent-fill);
+		transform: rotate(45deg);
+		border-radius: 2px;
+		background: var(--gold);
+		box-shadow: 0 0 0 1px var(--panel-edge);
 		flex: none;
 	}
 	.no-underline {

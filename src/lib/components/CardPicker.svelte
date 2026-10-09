@@ -97,7 +97,7 @@
 		height: 24px;
 		border-radius: 999px;
 		background: var(--accent-fill);
-		color: white;
+		color: var(--accent-contrast);
 		display: grid;
 		place-items: center;
 		font-weight: 800;

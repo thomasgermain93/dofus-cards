@@ -103,8 +103,11 @@
 		display: grid;
 		place-items: center;
 		font-weight: 700;
-		color: white;
-		background: linear-gradient(135deg, var(--teal), var(--indigo));
+		font-family: var(--font-display);
+		background: var(--emblem-wood);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--emblem-ink);
 		flex: none;
 	}
 	.friend-link {

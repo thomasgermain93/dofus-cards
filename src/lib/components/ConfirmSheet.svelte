@@ -29,7 +29,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 200;
-		background: rgba(0, 0, 0, 0.35);
+		background: var(--scrim);
 		animation: fade var(--dur) var(--ease-ios);
 	}
 	.sheet {
@@ -45,35 +45,39 @@
 		animation: up var(--dur) var(--ease-ios);
 	}
 	.box {
-		background: var(--material);
-		-webkit-backdrop-filter: saturate(180%) blur(24px);
-		backdrop-filter: saturate(180%) blur(24px);
-		border-radius: 14px;
+		background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, var(--gold)), var(--surface) 36px), var(--surface);
+		border: 1px solid var(--panel-edge);
+		outline: 1px solid color-mix(in srgb, var(--gold-deep) 60%, transparent);
+		outline-offset: -4px;
+		border-radius: var(--radius-lg);
 		overflow: hidden;
-		border: 0;
+		box-shadow: var(--shadow-float);
 		color: var(--label);
 	}
 	.head {
 		padding: 14px 16px;
 		text-align: center;
-		border-bottom: 0.5px solid var(--separator);
+		border-bottom: 1px solid var(--groove-dark);
+		box-shadow: 0 1px 0 var(--groove-light);
 	}
 	.t {
 		margin: 0;
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--label-2);
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		color: var(--title);
 	}
 	.m {
 		margin: 4px 0 0;
-		font-size: 13px;
+		font-size: var(--text-sm);
 		color: var(--label-2);
 	}
 	.act,
 	.cancel {
 		width: 100%;
 		min-height: 56px;
-		font-size: 19px;
+		font-size: 18px;
+		font-weight: 700;
 		background: transparent;
 		border: 0;
 		color: var(--accent);

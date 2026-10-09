@@ -53,12 +53,12 @@
 		max-width: 400px;
 		margin: 0 auto;
 		padding: var(--space-3) var(--space-4) var(--space-4);
-		border-radius: 20px;
-		background: var(--material);
-		-webkit-backdrop-filter: saturate(180%) blur(24px);
-		backdrop-filter: saturate(180%) blur(24px);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, var(--gold)), var(--surface) 36px), var(--surface);
+		border: 1px solid var(--panel-edge);
+		outline: 1px solid color-mix(in srgb, var(--gold-deep) 60%, transparent);
+		outline-offset: -4px;
 		box-shadow: var(--shadow-float);
-		border: 0.5px solid var(--separator);
 		animation: rise 0.5s var(--ease-ios) both;
 	}
 	.coach.collapsed {
@@ -93,21 +93,27 @@
 		gap: 4px;
 	}
 	.dots span {
-		width: 18px;
-		height: 5px;
-		border-radius: 999px;
-		background: var(--surface-3);
+		width: 9px;
+		height: 9px;
+		transform: rotate(45deg);
+		border-radius: 2px;
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 	}
 	.dots .done {
-		background: var(--success);
+		background: var(--accent-fill);
+		box-shadow: 0 0 0 1px var(--panel-edge);
 	}
 	.dots .now {
-		background: var(--accent);
+		background: var(--gold);
+		box-shadow: 0 0 0 1px var(--panel-edge), 0 0 8px var(--gold);
 	}
 	.title {
 		margin: var(--space-2) 0 2px;
+		font-family: var(--font-display);
 		font-weight: 700;
-		font-size: var(--text-base);
+		font-size: var(--text-lg);
+		color: var(--title);
 	}
 	.text {
 		margin: 0 0 var(--space-3);

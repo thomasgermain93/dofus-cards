@@ -54,24 +54,27 @@
 	.box {
 		width: 44px;
 		height: 44px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
-		background: linear-gradient(135deg, color-mix(in srgb, var(--c) 60%, white), var(--c));
+		color: #fff6dc;
+		background: radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--c) 70%, white), color-mix(in srgb, var(--c) 70%, black) 78%);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
 		flex: none;
 	}
 	.track {
 		position: relative;
 		height: 10px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 	}
 	.fill {
 		position: absolute;
 		inset: 0 auto 0 0;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--bronze), var(--r-legendary));
+		background: var(--gauge-gold);
 	}
 	.mark {
 		position: absolute;
@@ -80,14 +83,15 @@
 		height: 16px;
 		margin: -8px 0 0 -8px;
 		border-radius: 999px;
-		background: var(--surface);
+		background: var(--slot);
 		border: 3px solid var(--c);
+		box-shadow: 0 0 0 1px var(--panel-edge);
 	}
 	.mark.reached {
 		background: var(--c);
 	}
 	.open {
-		background: linear-gradient(135deg, var(--gold), var(--orange));
+		background: var(--emblem-gold);
 		color: var(--on-gold);
 	}
 </style>

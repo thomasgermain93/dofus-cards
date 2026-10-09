@@ -80,17 +80,23 @@
 	.ic {
 		width: 44px;
 		height: 44px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
+		color: var(--emblem-ink);
 		margin-bottom: 6px;
 	}
 	.bg-a {
-		background: linear-gradient(135deg, var(--pink), var(--orange));
+		background: var(--emblem-red);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--emblem-ink);
 	}
 	.bg-b {
-		background: linear-gradient(135deg, var(--green), var(--blue));
+		background: var(--emblem-green);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--emblem-ink);
 	}
 	.avatar {
 		width: 36px;

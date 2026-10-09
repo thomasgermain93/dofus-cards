@@ -270,14 +270,13 @@
 		padding: 60px 0;
 	}
 	.big {
+		font-family: var(--font-display);
 		font-size: 120px;
-		font-weight: 900;
+		font-weight: 700;
 		line-height: 1;
 		margin: 10px 0;
-		background: linear-gradient(135deg, var(--indigo), var(--pink));
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
+		color: var(--title);
+		text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
 		animation: pulse 1s ease-in-out infinite;
 	}
 	.game {
@@ -302,13 +301,14 @@
 	.timer {
 		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.timer span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, var(--pink), var(--orange), var(--green));
+		background: var(--gauge-gold);
 		transition: width 0.2s linear;
 	}
 	.subject {
@@ -427,23 +427,28 @@
 		width: 100%;
 		display: grid;
 		place-items: center;
-		color: white;
-		font-weight: 900;
-		font-size: 22px;
-		border-radius: 12px 12px 0 0;
+		color: #fff6dc;
+		text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 26px;
+		border: 1px solid #0d0a07;
+		border-bottom: 0;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+		border-radius: var(--radius-md) var(--radius-md) 0 0;
 		margin-top: 6px;
 	}
 	.s0 .block-step {
 		height: 110px;
-		background: linear-gradient(180deg, var(--gold), var(--r-legendary));
+		background: var(--gauge-gold);
 	}
 	.s1 .block-step {
 		height: 80px;
-		background: linear-gradient(180deg, var(--medal-2), var(--r-common));
+		background: linear-gradient(180deg, #e6e2d6, #9a9484);
 	}
 	.s2 .block-step {
 		height: 60px;
-		background: linear-gradient(180deg, var(--medal-3), #b0703a);
+		background: linear-gradient(180deg, #e0a670, #8a4f22);
 	}
 	.s0 {
 		animation-delay: 0.3s;

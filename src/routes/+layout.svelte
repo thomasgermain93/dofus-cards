@@ -122,8 +122,11 @@
 	<link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
 	<link rel="apple-touch-icon" href="/icons/icon-180.png" />
 	<link rel="manifest" href="/manifest.webmanifest" />
-	<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
-	<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f1e2bb" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#241e17" media="(prefers-color-scheme: dark)" />
+	<link rel="preload" href="/fonts/alegreya-sans-400.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href="/fonts/alegreya-sans-800.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href="/fonts/grenze-700.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
 </svelte:head>
 
 {#if bare}
@@ -133,7 +136,7 @@
 	</main>
 {:else if me}
 	<div class="shell">
-		<aside class="sidebar">
+		<aside class="sidebar material">
 			<a href="/" class="brand"><Logo /></a>
 			<nav>
 				{#each tabs as t (t.href)}
@@ -200,8 +203,8 @@
 			<nav class="tabbar material" aria-label="Navigation principale">
 				{#each tabs as t (t.href)}
 					<a href={t.href} aria-current={active(t.href) ? 'page' : undefined}>
-						<span class="tab-icon">
-							<Icon name={t.icon} size={24} stroke={active(t.href) ? 2.3 : 1.8} />
+						<span class="tab-icon slot">
+							<Icon name={t.icon} size={22} stroke={active(t.href) ? 2.3 : 1.9} />
 							{#if t.badge}<span class="badge dot">{t.badge}</span>{/if}
 						</span>
 						<span class="tab-label">{t.label}</span>
@@ -227,6 +230,7 @@
 	.content {
 		min-width: 0;
 	}
+	/* Barre du haut : planche de bois, rainure dorée en bas */
 	.topbar {
 		position: sticky;
 		top: 0;
@@ -235,8 +239,11 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 8px;
-		padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
-		border-bottom: 0.5px solid var(--separator);
+		padding: calc(env(safe-area-inset-top) + 6px) 12px 6px 16px;
+		border-bottom: 1px solid var(--bar-edge);
+		box-shadow:
+			inset 0 -1px 0 color-mix(in srgb, var(--gold) 22%, transparent),
+			0 4px 10px -6px rgba(0, 0, 0, 0.5);
 	}
 	.topbar-brand {
 		display: inline-flex;
@@ -280,16 +287,19 @@
 		gap: 10px;
 		margin-top: var(--space-2);
 	}
+	/* Compteurs : plaques creusées, chiffres dorés */
 	.pill {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
+		gap: 5px;
 		height: 32px;
 		padding: 0 10px;
-		border-radius: 999px;
-		background: var(--surface);
-		font-size: 13px;
-		font-weight: 700;
+		border-radius: var(--radius-md);
+		background: var(--slot);
+		border: 1px solid var(--slot-edge);
+		box-shadow: var(--slot-inset);
+		font-size: 15px;
+		font-weight: 800;
 		color: var(--label);
 		text-decoration: none;
 		font-variant-numeric: tabular-nums;
@@ -300,21 +310,21 @@
 		height: var(--tap);
 		display: grid;
 		place-items: center;
-		color: var(--accent);
-		border-radius: 999px;
+		color: var(--label-2);
+		border-radius: var(--radius-md);
 	}
 	.badge.dot {
 		position: absolute;
-		top: -2px;
-		right: -4px;
-		box-shadow: 0 0 0 2px var(--bg);
+		top: -3px;
+		right: -5px;
 	}
 	.page {
 		max-width: var(--content-max);
 		margin: 0 auto;
 		/* la barre d'onglets ne masque jamais la fin de page (safe-area iOS comprise) */
-		padding: var(--space-2) var(--gutter) calc(var(--tabbar-h) + var(--space-8) + env(safe-area-inset-bottom));
+		padding: var(--space-3) var(--gutter) calc(var(--tabbar-h) + var(--space-8) + env(safe-area-inset-bottom));
 	}
+	/* Barre d'onglets : la barre de sorts du jeu, une case creusée par onglet */
 	.tabbar {
 		position: fixed;
 		z-index: 40;
@@ -322,30 +332,51 @@
 		right: 0;
 		bottom: 0;
 		display: flex;
-		border-top: 0.5px solid var(--separator);
-		padding-bottom: env(safe-area-inset-bottom);
+		gap: 4px;
+		padding: 6px 6px calc(4px + env(safe-area-inset-bottom));
+		border-top: 1px solid var(--bar-edge);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, var(--gold) 22%, transparent),
+			0 -4px 12px -6px rgba(0, 0, 0, 0.5);
 	}
 	.tabbar a {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 2px;
-		padding: 7px 0 6px;
+		gap: 3px;
 		color: var(--label-3);
 		text-decoration: none;
 		transition: color var(--dur-fast);
 	}
-	.tabbar a[aria-current='page'] {
-		color: var(--accent);
-	}
-	.tab-icon {
+	.tabbar a .tab-icon {
 		position: relative;
-		display: grid;
+		width: 100%;
+		max-width: 60px;
+		height: 36px;
+		transition:
+			border-color var(--dur-fast),
+			box-shadow var(--dur-fast),
+			transform 120ms var(--ease-bounce);
+	}
+	.tabbar a:active .tab-icon {
+		transform: scale(0.94);
+	}
+	.tabbar a[aria-current='page'] {
+		color: var(--title);
+	}
+	.tabbar a[aria-current='page'] .tab-icon {
+		border-color: var(--gold-deep);
+		background: color-mix(in srgb, var(--slot) 80%, var(--gold));
+		box-shadow:
+			var(--slot-inset),
+			0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent),
+			0 0 12px -2px color-mix(in srgb, var(--gold) 55%, transparent);
 	}
 	.tab-label {
-		font-size: var(--text-2xs);
-		font-weight: 600;
+		font-size: var(--text-xs);
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	@media (min-width: 1024px) {
@@ -353,6 +384,7 @@
 			display: grid;
 			grid-template-columns: 248px 1fr;
 		}
+		/* Barre latérale : panneau de bois sur toute la hauteur */
 		.sidebar {
 			display: flex;
 			flex-direction: column;
@@ -360,8 +392,8 @@
 			top: 0;
 			height: 100dvh;
 			padding: 20px 12px;
-			border-right: 0.5px solid var(--separator);
-			background: var(--surface-2);
+			border-right: 1px solid var(--bar-edge);
+			box-shadow: inset -1px 0 0 color-mix(in srgb, var(--gold) 18%, transparent);
 		}
 		.brand {
 			padding: 4px 12px 20px;
@@ -371,29 +403,33 @@
 		nav {
 			display: flex;
 			flex-direction: column;
-			gap: 2px;
+			gap: 4px;
 		}
 		.side-link {
 			display: flex;
 			align-items: center;
 			gap: 12px;
 			min-height: var(--tap);
-			padding: 9px 12px;
-			border-radius: 10px;
+			padding: 8px 12px;
+			border-radius: var(--radius-md);
+			border: 1px solid transparent;
 			color: var(--label);
-			font-weight: 500;
+			font-weight: 600;
 			text-decoration: none;
 		}
 		.side-link:hover {
-			background: var(--surface-3);
+			background: color-mix(in srgb, var(--material) 80%, var(--gold));
 		}
 		.side-link[aria-current='page'] {
-			background: var(--accent-fill);
-			color: white;
+			background: var(--slot);
+			border-color: var(--gold-deep);
+			box-shadow: var(--slot-inset);
+			color: var(--title);
 		}
 		.side-sep {
-			height: 0.5px;
-			background: var(--separator);
+			height: 2px;
+			border-top: 1px solid var(--groove-dark);
+			border-bottom: 1px solid var(--groove-light);
 			margin: 10px 12px;
 		}
 		.side-me {
@@ -402,12 +438,12 @@
 			align-items: center;
 			gap: 10px;
 			padding: 10px 12px;
-			border-radius: 12px;
+			border-radius: var(--radius-md);
 			color: inherit;
 			text-decoration: none;
 		}
 		.side-me:hover {
-			background: var(--surface-3);
+			background: color-mix(in srgb, var(--material) 80%, var(--gold));
 		}
 		.topbar-brand,
 		.mobile-only,
@@ -419,7 +455,7 @@
 			padding: 10px 32px;
 		}
 		.page {
-			padding: 16px 32px 32px;
+			padding: 20px 32px 32px;
 		}
 	}
 </style>

@@ -33,13 +33,14 @@
 	.bar {
 		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent-fill);
+		background: var(--gauge-fill);
 	}
 	.grid-cards {
 		display: grid;

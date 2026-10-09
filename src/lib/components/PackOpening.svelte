@@ -367,15 +367,19 @@
 		inset: 0;
 		z-index: 100;
 		background: var(--stage-bg);
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
 		display: flex;
 		align-items: center;
 		align-items: safe center;
 		justify-content: center;
 		overflow-y: auto;
 		overflow-x: hidden;
-		color: white;
+		/* La scène est toujours dans l'ombre (lueur de bougie), quel que soit le mode */
+		--title: #f0d255;
+		--title-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+		--label: #f1e6cc;
+		--label-2: #cdb994;
+		--label-3: #ae9a76;
+		color: #f1e6cc;
 		animation: fade var(--dur) var(--ease-ios);
 		padding: calc(env(safe-area-inset-top) + 60px) 16px calc(env(safe-area-inset-bottom) + 20px);
 	}
@@ -411,22 +415,24 @@
 	.round {
 		width: 38px;
 		height: 38px;
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.14);
-		color: white;
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, #54452f, #3d3222);
+		border: 1px solid #0d0a07;
+		box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.2), 0 2px 0 #0d0a07;
+		color: #f1e6cc;
 		display: grid;
 		place-items: center;
-		border: 0;
 		cursor: pointer;
 	}
 	.pill {
 		height: 36px;
 		padding: 0 10px 0 16px;
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.14);
-		color: white;
-		border: 0;
-		font-weight: 600;
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, #54452f, #3d3222);
+		border: 1px solid #0d0a07;
+		box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.2), 0 2px 0 #0d0a07;
+		color: #f1e6cc;
+		font-weight: 700;
 		font-size: 15px;
 		display: inline-flex;
 		align-items: center;
@@ -706,27 +712,29 @@
 	}
 	.q {
 		flex: 1;
-		border: 0;
-		border-radius: 999px;
-		font-size: 11.5px;
-		font-weight: 700;
+		border: 1px solid #0d0a07;
+		border-radius: var(--radius-sm);
+		font-size: 12px;
+		font-weight: 800;
 		padding: 6px 2px;
 		cursor: pointer;
 		white-space: nowrap;
 	}
 	.q.sell {
-		background: rgba(255, 214, 10, 0.2);
-		color: var(--gold);
+		background: var(--grad-gold);
+		color: var(--on-gold);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 	}
 	.q.keep {
-		background: rgba(255, 255, 255, 0.14);
-		color: white;
+		background: linear-gradient(180deg, #54452f, #3d3222);
+		color: #f1e6cc;
+		box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.2);
 	}
 	.kept {
 		margin: 6px 0 0;
 		font-size: 12px;
 		text-align: center;
-		color: rgba(255, 255, 255, 0.7);
+		color: rgba(241, 230, 204, 0.75);
 		display: flex;
 		align-items: center;
 		justify-content: center;

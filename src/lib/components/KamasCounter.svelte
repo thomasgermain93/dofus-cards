@@ -59,7 +59,7 @@
 </script>
 
 <span class="k" class:pulse data-testid="kamas-counter" data-value={value} bind:this={el}>
-	<Icon name="coins" size={13} />{fmt(Math.round(shown.current))}<span class="sr-only"> kamas</span>
+	<Icon name="coins" size={16} />{fmt(Math.round(shown.current))}<span class="sr-only"> kamas</span>
 	{#each gains as g (g.id)}<span class="gain">+{fmt(g.amount)}</span>{/each}
 </span>
 
@@ -69,8 +69,8 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		font-weight: 700;
-		font-size: 13px;
+		font-weight: 800;
+		font-size: 15px;
 		font-variant-numeric: tabular-nums;
 		color: var(--kamas);
 		transition: transform 0.45s var(--ease-ios);
@@ -96,7 +96,8 @@
 		font-weight: 800;
 		color: var(--success);
 		background: var(--surface);
-		border-radius: 999px;
+		border: 1px solid var(--panel-edge);
+		border-radius: var(--radius-sm);
 		padding: 1px 7px;
 		box-shadow: var(--shadow-card);
 		white-space: nowrap;

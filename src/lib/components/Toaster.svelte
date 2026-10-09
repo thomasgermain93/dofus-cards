@@ -32,35 +32,39 @@
 		align-items: center;
 		gap: var(--space-2);
 		padding: 10px 16px 10px 10px;
-		border-radius: var(--radius-pill);
-		background: var(--material);
-		-webkit-backdrop-filter: saturate(180%) blur(20px);
-		backdrop-filter: saturate(180%) blur(20px);
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, var(--gold)), var(--surface) 36px), var(--surface);
+		border: 1px solid var(--panel-edge);
+		outline: 1px solid color-mix(in srgb, var(--gold-deep) 60%, transparent);
+		outline-offset: -4px;
 		color: var(--label);
-		font-weight: 600;
+		font-weight: 700;
 		font-size: var(--text-md);
 		box-shadow: var(--shadow-float);
 		animation: drop 0.5s var(--ease-ios) both;
 	}
 	.ic {
-		width: 28px;
-		height: 28px;
-		border-radius: 999px;
+		width: 30px;
+		height: 30px;
+		border-radius: var(--radius-sm);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
 		display: grid;
 		place-items: center;
-		color: white;
+		color: var(--accent-contrast);
 		background: var(--accent-fill);
 		flex: none;
 	}
-	.success .ic {
-		background: var(--success);
+	.ic {
+		background: var(--emblem-green);
+		color: var(--emblem-ink);
 	}
 	.reward .ic {
-		background: var(--grad-gold);
+		background: var(--emblem-gold);
 		color: var(--on-gold);
 	}
 	.error .ic {
-		background: var(--danger);
+		background: var(--emblem-red);
 	}
 	@keyframes drop {
 		0% {

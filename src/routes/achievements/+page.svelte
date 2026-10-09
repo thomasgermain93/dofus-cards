@@ -50,19 +50,22 @@
 		color: var(--label-3);
 	}
 	.done .medal {
-		background: linear-gradient(135deg, var(--gold), var(--orange));
-		color: white;
+		background: var(--emblem-gold);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--on-gold);
 	}
 	.bar {
 		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.bar span {
 		display: block;
 		height: 100%;
-		background: var(--accent-fill);
+		background: var(--gauge-fill);
 		border-radius: inherit;
 	}
 </style>

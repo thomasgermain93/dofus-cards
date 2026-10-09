@@ -16,9 +16,10 @@
 		display: inline-grid;
 		place-items: center;
 		flex: none;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		border: 2px solid var(--rc);
-		background: color-mix(in srgb, var(--rc) 12%, var(--surface));
+		background: radial-gradient(circle, var(--card-parch-2), var(--card-parch));
+		box-shadow: 0 0 0 1px var(--panel-edge);
 	}
 	img {
 		width: 80%;

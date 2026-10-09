@@ -227,13 +227,15 @@
 	}
 	.vs {
 		align-self: center;
-		font-family: var(--font-rounded);
-		font-weight: 900;
-		font-size: 13px;
-		color: white;
-		background: linear-gradient(135deg, var(--pink), var(--orange));
-		border-radius: 8px;
-		padding: 2px 8px;
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 16px;
+		color: var(--emblem-ink);
+		background: var(--emblem-red);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		border-radius: var(--radius-sm);
+		padding: 1px 9px;
 	}
 	.side-p {
 		display: flex;
@@ -267,13 +269,14 @@
 		display: block;
 		height: 5px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.qtimer span {
 		display: block;
 		height: 100%;
-		background: var(--accent-fill);
+		background: var(--gauge-fill);
 		transition: width 0.2s linear;
 	}
 	.qtimer span.hurry {
@@ -401,10 +404,12 @@
 		gap: 12px;
 		min-height: 56px;
 		padding: 12px 16px;
-		border-radius: var(--radius-lg);
-		background: var(--surface);
-		border: 1.5px solid transparent;
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 90%, var(--gold)), var(--surface));
+		border: 1px solid var(--panel-edge);
+		box-shadow: var(--shadow-card);
 		font-size: 17px;
+		font-weight: 600;
 		color: var(--label);
 		cursor: pointer;
 		transition:
@@ -418,12 +423,16 @@
 	.letter {
 		width: 28px;
 		height: 28px;
-		border-radius: 999px;
-		background: var(--surface-3);
+		border-radius: var(--radius-sm);
+		background: var(--slot);
+		border: 1px solid var(--slot-edge);
+		box-shadow: var(--slot-inset);
+		color: var(--accent);
 		display: grid;
 		place-items: center;
+		font-family: var(--font-display);
 		font-weight: 700;
-		font-size: 14px;
+		font-size: 16px;
 		flex: none;
 	}
 	.choice.right {
@@ -445,17 +454,22 @@
 		border-radius: var(--radius-lg);
 		padding: 18px;
 		margin-bottom: 16px;
-		color: white;
+		color: #fff6dc;
+		border: 1px solid #0d0a07;
+		outline: 1px solid rgba(240, 210, 85, 0.55);
+		outline-offset: -5px;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+		box-shadow: var(--shadow-card);
 		animation: pop 0.5s var(--ease-ios);
 	}
 	.banner.win {
-		background: linear-gradient(135deg, var(--green), var(--blue));
+		background: radial-gradient(circle at 50% 0%, #8fb637, #3f5614 80%);
 	}
 	.banner.loss {
-		background: linear-gradient(135deg, var(--r-common), #48484a);
+		background: radial-gradient(circle at 50% 0%, #6a5a44, #2e251a 80%);
 	}
 	.banner.draw {
-		background: linear-gradient(135deg, var(--orange), var(--purple));
+		background: radial-gradient(circle at 50% 0%, #c99a1c, #6e4a00 80%);
 	}
 	.sides {
 		display: grid;
@@ -469,18 +483,19 @@
 	.hpbar {
 		height: 10px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.hpbar span {
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--green), var(--green));
+		background: var(--gauge-fill);
 		transition: width 1.2s var(--ease-ios);
 	}
 	.hpbar span.low {
-		background: linear-gradient(90deg, var(--danger), var(--orange));
+		background: linear-gradient(180deg, #f08a90, #c8323b 50%, #8a2229);
 	}
 	@keyframes shake {
 		25% {

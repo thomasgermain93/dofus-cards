@@ -284,13 +284,14 @@
 	.bar {
 		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.bar span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, var(--indigo), var(--purple));
+		background: var(--gauge-gold);
 	}
 	.segmented button {
 		border: 0;

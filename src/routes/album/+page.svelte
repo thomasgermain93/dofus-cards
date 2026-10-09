@@ -318,11 +318,13 @@
 	.sell-dupes .coin {
 		width: 44px;
 		height: 44px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		display: grid;
 		place-items: center;
-		color: white;
-		background: linear-gradient(135deg, var(--gold), var(--orange));
+		background: var(--emblem-gold);
+		border: 1.5px solid var(--emblem-edge);
+		box-shadow: var(--emblem-shadow);
+		color: var(--on-gold);
 		flex: none;
 	}
 	.bareme {
@@ -361,7 +363,7 @@
 		height: 24px;
 		border-radius: 999px;
 		background: var(--accent-fill);
-		color: white;
+		color: var(--accent-contrast);
 		font-weight: 800;
 		font-size: 13px;
 		display: grid;
@@ -423,13 +425,14 @@
 	.progress {
 		height: 6px;
 		border-radius: 999px;
-		background: var(--surface-3);
+		background: var(--slot);
+		box-shadow: var(--slot-inset);
 		overflow: hidden;
 	}
 	.progress span {
 		display: block;
 		height: 100%;
-		background: linear-gradient(90deg, var(--accent), var(--indigo));
+		background: var(--gauge-fill);
 		border-radius: inherit;
 	}
 	.segmented {
@@ -471,10 +474,15 @@
 	.segmented::-webkit-scrollbar {
 		display: none;
 	}
+	/* gemme de rareté, comme sur la carte */
 	.dot {
+		display: inline-block;
 		width: 8px;
 		height: 8px;
-		border-radius: 999px;
+		transform: rotate(45deg);
+		border-radius: 2px;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+		flex: none;
 	}
 	.grid-cards {
 		display: grid;
