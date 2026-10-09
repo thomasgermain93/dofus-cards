@@ -140,7 +140,8 @@ Points de la semaine (lundi 00:00 UTC) : nouvelle carte obtenue en paquet = 1 / 
 - **Événement** « Semaine des Dofus » (`EVENT` dans `constants.ts`) : du 9 au 18 octobre 2026, chaque paquet a 1 chance sur 6 de remplacer sa dernière carte par un Dofus ou une Prysmaradite.
 - **Motion** : transitions de page (View Transitions API, uniquement sur les liens et le retour), kamas qui volent vers le compteur, quêtes qui se cochent, toasts de succès, montée de niveau célébrée (après l'ouverture du paquet), micro-interactions des boutons. Tout est coupé avec `prefers-reduced-motion`.
 - **Images** : `npm run images:webp` convertit le cache en WebP 320 px (fait au démarrage du conteneur), `/img/...png` sert la version WebP quand elle existe. Album, fiches, collections et profils restent consultables hors ligne (service worker, réseau d'abord).
-- Lighthouse mobile en production (9 octobre 2026), performance / accessibilité / bonnes pratiques : accueil 93 / 100 / 100, album 95 / 100 / 96, fiche 96 / 100 / 100.
+- Lighthouse mobile en production (9 octobre 2026, après la passe design), performance / accessibilité / bonnes pratiques : accueil 91 / 100 / 100, album 92 / 100 / 96, fiche 93 / 100 / 100.
+- `node tests/e2e/dpass-shots.mjs` : captures avant / après de la passe design (390 et 1440 px, clair et sombre).
 - `node tests/e2e/b5-onboarding.mjs` : inscription, tutoriel complet, récompense, événement, carte mystère, transition.
 
 ## Modération
