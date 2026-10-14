@@ -1,0 +1,2 @@
+Bruitages : Kenney (https://kenney.nl), licence CC0 1.0 (domaine public), convertis en MP3.
+tear = cards-pack-open-1, flip = card-slide-3, place = card-place-1, rare = impactGlass_light_001, epic = bong_001, legendary = impactBell_heavy_000.

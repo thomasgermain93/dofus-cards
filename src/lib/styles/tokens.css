@@ -1,0 +1,309 @@
+/*
+ * Design tokens : SEUL fichier à modifier pour changer l'habillage (direction : docs/direction-artistique.md).
+ * Les composants n'utilisent que ces variables (directement, ou via les classes
+ * Tailwind déclarées dans routes/layout.css : bg-surface, text-label-2, rounded-card...).
+ *
+ * Ambiance : l'établi de l'aventurier. Mode sombre = bois sombre de l'interface de Dofus 3,
+ * mode clair = parchemin de la carte du Monde des Douze. Vert Dofus pour l'action, or pour la valeur.
+ * - contrastes WCAG AA vérifiés avec axe-core dans les deux modes ;
+ * - échelle typographique à 9 crans (--text-*) et grille d'espacement de 4 px (--space-*) ;
+ * - zones tactiles de 44 px minimum (--tap), 40 px pour les petits boutons (--tap-sm).
+ */
+
+/* Une seule police chargée (12 Ko, préchargée) : Grenze pour les titres. Le texte courant reste
+   dans la police du système, comme l'interface de Dofus 3, et ne coûte rien au chargement. */
+@font-face {
+	font-family: 'Grenze';
+	src: url('/fonts/grenze-700-fr.woff2') format('woff2');
+	font-weight: 600 700;
+	font-display: swap;
+}
+
+:root {
+	color-scheme: light;
+
+	/* ---------- Typographie ---------- */
+	--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, system-ui, sans-serif;
+	--font-rounded: var(--font-sans);
+	--font-display: 'Grenze', 'Palatino Linotype', Palatino, Georgia, serif;
+	--text-2xs: 11px; /* légendes de la barre d'onglets, pastilles */
+	--text-xs: 12px;
+	--text-sm: 14px; /* footnote */
+	--text-md: 16px; /* sous-titres, petits boutons */
+	--text-base: 17px; /* corps */
+	--text-lg: 20px;
+	--text-xl: 23px; /* titres de section (Grenze) */
+	--text-2xl: 29px;
+	--text-3xl: 36px; /* titre de page (Grenze) */
+	--leading-tight: 1.15;
+	--leading: 1.42;
+
+	/* ---------- Espacements (grille de 4 px) ---------- */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--gutter: 16px; /* marge latérale mobile */
+	--reading: 680px; /* largeur de lecture des textes longs */
+	--content-max: 1080px;
+
+	/* ---------- Tailles ---------- */
+	--tap: 44px;
+	--tap-sm: 40px;
+	--tabbar-h: 64px;
+	--sidebar-w: 248px;
+
+	/* ---------- Matières : parchemin (mode clair) ---------- */
+	--bg: #e3cf9c;
+	--surface: #f4e7c5; /* panneau */
+	--surface-2: #ecdcb2; /* panneau enfoncé, puces */
+	--surface-3: #dcc690; /* case, piste de jauge */
+	--material: #f1e2bb; /* barres du haut et du bas */
+	--separator: rgba(92, 64, 30, 0.28);
+	--groove-dark: rgba(92, 64, 30, 0.3); /* rainure gravée : trait sombre... */
+	--groove-light: rgba(255, 248, 225, 0.75); /* ... et trait clair juste dessous */
+	--scrim: rgba(28, 18, 8, 0.5);
+	--panel-edge: #8a6a3e; /* bord des panneaux */
+	--panel-hi: rgba(255, 250, 230, 0.9); /* liseré clair en haut des panneaux */
+	--panel-shade: rgba(92, 60, 20, 0.22); /* ombre portée teintée */
+	--slot: #d6bf86; /* case creusée (onglets, icônes) */
+	--slot-edge: #9a7a48;
+	--slot-inset: inset 0 2px 3px rgba(80, 52, 18, 0.35);
+	--bar-edge: #7a5c34;
+	--grain: url('/grain-2.webp'); /* grain de bois : tuile WebP de 4 Ko (un filtre SVG coûte trop cher à peindre sur mobile) */
+
+	/* ---------- Texte (contrastes AA sur --bg et --surface) ---------- */
+	--label: #2b1d0e;
+	--label-2: #5a4224;
+	--label-3: #654a2a;
+	--title: #4a2f10; /* titres Grenze */
+	--title-shadow: 0 1px 0 rgba(255, 246, 214, 0.8);
+
+	/* ---------- Action et états ---------- */
+	--accent: #6a4500; /* liens et texte d'action : or bruni */
+	--accent-fill: #7fa82c; /* jauges et pastilles d'action : vert Dofus */
+	--accent-contrast: #172204;
+	--accent-soft: rgba(106, 69, 0, 0.12);
+	--success: #33500a;
+	--success-soft: rgba(111, 154, 34, 0.2);
+	--danger: #921c25;
+	--danger-soft: rgba(163, 34, 43, 0.12);
+	--warning: #773c00;
+	--kamas: #573800;
+	--focus-ring: 0 0 0 3px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 0 5px color-mix(in srgb, var(--label) 50%, transparent);
+
+	/* ---------- Boutons en relief (bouton « Fin de tour » de Dofus 3) ---------- */
+	--btn-top: #a3c94a;
+	--btn-bottom: #7fa82c;
+	--btn-edge: #4b6619;
+	--btn-depth: #3f5614;
+	--btn-ink: #172204;
+	--btn2-top: #f7ecd0;
+	--btn2-bottom: #e4cf9c;
+	--btn2-edge: #8a6a3e;
+	--btn2-depth: #8a6a3e;
+	--btn2-ink: #3a2610;
+	--btn-danger-top: #d4525a;
+	--btn-danger-bottom: #b23840;
+	--btn-danger-edge: #6e1a20;
+	--btn-danger-ink: #fff4f4;
+
+	/* ---------- Couleurs d'illustration (icônes, médailles) ---------- */
+	--gold: #f0d255;
+	--gold-deep: #c99a1c;
+	--orange: #d9822b;
+	--pink: #e0525b; /* rouge cœur */
+	--green: #8fb637;
+	--blue: #3f8fc9; /* étoile des PA */
+	--indigo: #5f6fa8;
+	--purple: #8a5fb3;
+	--teal: #3f9e8f;
+	--grad-accent: linear-gradient(180deg, #6f9a22, #4b6619);
+	--grad-warm: linear-gradient(180deg, #e08a3a, #b4452c);
+	--grad-fresh: linear-gradient(180deg, #8fb637, #3f8f6f);
+	--grad-gold: linear-gradient(180deg, #f6dc6a, #d6a525 60%, #a87810);
+	--grad-progress: linear-gradient(180deg, #a3c94a, #6f9a22);
+	--medal-1: #f0d255;
+	--medal-1-ink: #4a3300;
+	--medal-2: #cfc8b8;
+	--medal-2-ink: #3a342a;
+	--medal-3: #d39a62;
+	--medal-3-ink: #4a2600;
+	--title-bg: linear-gradient(180deg, #f6dc6a, #e2b434);
+	--title-ink: #4a3000;
+	--showcase-bg: linear-gradient(180deg, #2c3a1a, #1b2410);
+	--bronze: #b8743a;
+	--silver: #9aa0a0;
+
+	/* ---------- Emblèmes (plaque d'icône sertie de laiton) et jauges (barre d'XP du jeu) ---------- */
+	--emblem-red: radial-gradient(circle at 50% 28%, #e0646b, #8a2229 75%);
+	--emblem-green: radial-gradient(circle at 50% 28%, #a9cf4e, #4b6619 75%);
+	--emblem-gold: radial-gradient(circle at 50% 28%, #f8e07a, #a87810 75%);
+	--emblem-blue: radial-gradient(circle at 50% 28%, #62aee0, #1f4f78 75%);
+	--emblem-wood: radial-gradient(circle at 50% 28%, #75603f, #2e251a 75%);
+	--emblem-ink: #fff6dc;
+	--emblem-edge: #c99a1c;
+	--emblem-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -2px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--panel-edge), 0 2px 0 rgba(0, 0, 0, 0.3);
+	--gauge-fill: linear-gradient(180deg, #c4e06a, #8fb637 45%, #5f8a1e);
+	--gauge-gold: linear-gradient(180deg, #fbe78c, #e2b434 50%, #a87810);
+
+	/* ---------- Raretés ---------- */
+	--r-common: #8a8274;
+	--r-uncommon: #5f9a2a;
+	--r-rare: #2f7fc0;
+	--r-superrare: #8e52c0;
+	--r-ultrarare: #e07a1a;
+	--r-legendary: #d9a514;
+	--r-legendary-2: #e0523a;
+
+	/* ---------- Cartes (cadre parchemin façon TCG 2005) ---------- */
+	--card-ink: #2a1f14;
+	--card-ink-2: #7a5a30;
+	--card-parch: #f3e8cc;
+	--card-parch-2: #fbf5e3;
+	--card-edge: #1c1612;
+	--card-heart: #c9302c;
+	--card-token-atk: radial-gradient(circle at 40% 30%, #fff3a6, #f2c230 60%, #b88a10);
+	--card-token-lvl: radial-gradient(circle at 40% 30%, #d6f7c4, #8fb637 60%, #4b6619);
+	--card-back: radial-gradient(circle at 50% 42%, #4f6a22, #2a3a12 62%, #141a08);
+	--card-back-line: #d6b25c;
+
+	--foil-line: #e0b400;
+	--foil-light: #f5d36b;
+	--foil-pale: #fff7d1;
+	--foil-ink: #8a6100;
+	--legendary-ring: conic-gradient(from var(--angle, 0deg), #6b4a10, #e0a800, #fff1a8, #e0523a, #6b4a10);
+
+	/* ---------- Ouverture de paquet (scène sombre, lueur de bougie) ---------- */
+	--glow-gold: #ffe680;
+	--on-gold: #3d2e00;
+	--on-green: #172204;
+	--shiny-tag: linear-gradient(90deg, #ffe680, #ffb3a0, #b8e6a0);
+	--stage-bg: radial-gradient(circle at 50% 38%, rgba(74, 52, 22, 0.95), rgba(14, 10, 6, 0.97) 70%);
+	--pack-free: linear-gradient(160deg, #2f4a12 0%, #6f9a22 48%, #2a3d10 100%);
+	--pack-bronze: linear-gradient(160deg, #5a3010 0%, #b8743a 50%, #6e3c16 100%);
+	--pack-silver: linear-gradient(160deg, #3c4040 0%, #b4b8b4 50%, #5a5f5c 100%);
+	--pack-gold: linear-gradient(160deg, #6e4a00 0%, #f0c63a 50%, #9c6c00 100%);
+	--pack-welcome: linear-gradient(160deg, #1d4a40 0%, #3f9e8f 46%, #c99a1c 100%);
+
+	/* ---------- Formes (fenêtres du jeu : peu arrondies) ---------- */
+	--radius-card: 8px;
+	--radius-lg: 8px;
+	--radius-md: 6px;
+	--radius-sm: 4px;
+	--radius-pill: 999px;
+
+	--shadow-card: 0 1px 0 var(--panel-hi) inset, 0 2px 0 var(--panel-shade), 0 6px 14px -6px var(--panel-shade);
+	--shadow-float: 0 14px 36px rgba(40, 24, 8, 0.35);
+
+	/* ---------- Coins en laiton du cadre orné (.ornate), SVG faits main ---------- */
+	--corner-tl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M1 13V4a3 3 0 0 1 3-3h9' fill='none' stroke='%23c99a1c' stroke-width='2'/%3E%3Ccircle cx='4.5' cy='4.5' r='2' fill='%23f0d255' stroke='%236e4a00' stroke-width='.8'/%3E%3C/svg%3E");
+	--corner-tr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M13 13V4a3 3 0 0 0-3-3H1' fill='none' stroke='%23c99a1c' stroke-width='2'/%3E%3Ccircle cx='9.5' cy='4.5' r='2' fill='%23f0d255' stroke='%236e4a00' stroke-width='.8'/%3E%3C/svg%3E");
+	--corner-bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M1 1v9a3 3 0 0 0 3 3h9' fill='none' stroke='%23c99a1c' stroke-width='2'/%3E%3Ccircle cx='4.5' cy='9.5' r='2' fill='%23f0d255' stroke='%236e4a00' stroke-width='.8'/%3E%3C/svg%3E");
+	--corner-br: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M13 1v9a3 3 0 0 1-3 3H1' fill='none' stroke='%23c99a1c' stroke-width='2'/%3E%3Ccircle cx='9.5' cy='9.5' r='2' fill='%23f0d255' stroke='%236e4a00' stroke-width='.8'/%3E%3C/svg%3E");
+
+	/* ---------- Animations ---------- */
+	--ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+	--ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+	--dur-fast: 160ms;
+	--dur: 280ms;
+
+	/* ---------- Plans ---------- */
+	--z-topbar: 30;
+	--z-tabbar: 40;
+	--z-bar: 45;
+	--z-overlay: 100;
+	--z-sheet: 200;
+}
+
+/* ---------- Bois sombre (mode sombre) ---------- */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		color-scheme: dark;
+		--bg: #1c1712;
+		--surface: #29221a;
+		--surface-2: #221c15;
+		--surface-3: #3a3026;
+		--material: #241e17;
+		--separator: rgba(240, 210, 140, 0.14);
+		--groove-dark: rgba(0, 0, 0, 0.55);
+		--groove-light: rgba(240, 210, 140, 0.09);
+		--scrim: rgba(8, 5, 2, 0.66);
+		--panel-edge: #0d0a07;
+		--panel-hi: rgba(240, 210, 85, 0.14);
+		--panel-shade: rgba(0, 0, 0, 0.5);
+		--slot: #171310;
+		--slot-edge: #4a3d2c;
+		--slot-inset: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+		--bar-edge: #0d0a07;
+		--label: #f1e6cc;
+		--label-2: #cdb994;
+		--label-3: #ae9a76;
+		--title: #f0d255;
+		--title-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+		--accent: #f0d255;
+		--accent-fill: #8fb637;
+		--accent-contrast: #172204;
+		--accent-soft: rgba(240, 210, 85, 0.13);
+		--success: #a9d052;
+		--success-soft: rgba(143, 182, 55, 0.18);
+		--danger: #ff858b;
+		--danger-soft: rgba(237, 94, 102, 0.16);
+		--warning: #f0a64a;
+		--kamas: #f0d255;
+		--btn2-top: #54452f;
+		--btn2-bottom: #3d3222;
+		--btn2-edge: #0d0a07;
+		--btn2-depth: #0d0a07;
+		--btn2-ink: #f1e6cc;
+		--title-ink: #4a3000;
+		--shadow-card: 0 1px 0 var(--panel-hi) inset, 0 2px 0 rgba(0, 0, 0, 0.45), 0 8px 18px -8px rgba(0, 0, 0, 0.7);
+		--shadow-float: 0 14px 40px rgba(0, 0, 0, 0.7);
+	}
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--bg: #1c1712;
+	--surface: #29221a;
+	--surface-2: #221c15;
+	--surface-3: #3a3026;
+	--material: #241e17;
+	--separator: rgba(240, 210, 140, 0.14);
+	--groove-dark: rgba(0, 0, 0, 0.55);
+	--groove-light: rgba(240, 210, 140, 0.09);
+	--scrim: rgba(8, 5, 2, 0.66);
+	--panel-edge: #0d0a07;
+	--panel-hi: rgba(240, 210, 85, 0.14);
+	--panel-shade: rgba(0, 0, 0, 0.5);
+	--slot: #171310;
+	--slot-edge: #4a3d2c;
+	--slot-inset: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+	--bar-edge: #0d0a07;
+	--label: #f1e6cc;
+	--label-2: #cdb994;
+	--label-3: #ae9a76;
+	--title: #f0d255;
+	--title-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+	--accent: #f0d255;
+	--accent-fill: #8fb637;
+	--accent-contrast: #172204;
+	--accent-soft: rgba(240, 210, 85, 0.13);
+	--success: #a9d052;
+	--success-soft: rgba(143, 182, 55, 0.18);
+	--danger: #ff858b;
+	--danger-soft: rgba(237, 94, 102, 0.16);
+	--warning: #f0a64a;
+	--kamas: #f0d255;
+	--btn2-top: #54452f;
+	--btn2-bottom: #3d3222;
+	--btn2-edge: #0d0a07;
+	--btn2-depth: #0d0a07;
+	--btn2-ink: #f1e6cc;
+	--title-ink: #4a3000;
+	--shadow-card: 0 1px 0 var(--panel-hi) inset, 0 2px 0 rgba(0, 0, 0, 0.45), 0 8px 18px -8px rgba(0, 0, 0, 0.7);
+	--shadow-float: 0 14px 40px rgba(0, 0, 0, 0.7);
+}
